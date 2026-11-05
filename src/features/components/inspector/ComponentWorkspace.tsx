@@ -18,6 +18,7 @@ import type { Mapping } from '../../mapping/schema'
 import { resolveDialog, placeField, validateDialog, pruneDialogs } from '../../dialog/ops'
 import type { ComponentDialog } from '../../dialog/schema'
 import { DialogEditor, type Target } from '../../dialog/ui/DialogEditor'
+import { DialogPreview } from '../../preview/ui/DialogPreview'
 import { PropertyList } from './PropertyList'
 import { PropertyPanel } from './PropertyPanel'
 import { ChildrenEditor, StandardSuggestions, UnsupportedList } from './Extras'
@@ -30,7 +31,7 @@ export function ComponentWorkspace({ project }: { project: Project }) {
   const [error, setError] = useState('')
   const [undo, setUndo] = useState<Undo | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
-  const [view, setView] = useState<'properties' | 'fields' | 'dialog'>('properties')
+  const [view, setView] = useState<'properties' | 'fields' | 'dialog' | 'preview'>('properties')
   const [fieldPropId, setFieldPropId] = useState('')
   const [dialogSelected, setDialogSelected] = useState('')
   const [lastFieldProp, setLastFieldProp] = useState<Property | undefined>(undefined)
@@ -170,7 +171,7 @@ export function ComponentWorkspace({ project }: { project: Project }) {
         {error && <p role="alert" className="mt-3 rounded-lg bg-danger-soft p-3 text-[13px] font-semibold text-danger">{error}</p>}
 
         <div role="tablist" aria-label="Component view" className="mt-6 flex gap-1 border-b border-hairline">
-          {([['properties', 'Properties'], ['fields', 'AEM fields'], ['dialog', 'Dialog']] as const).map(([id, label]) => (
+          {([['properties', 'Properties'], ['fields', 'AEM fields'], ['dialog', 'Dialog'], ['preview', 'Preview']] as const).map(([id, label]) => (
             <button key={id} role="tab" type="button" aria-selected={view === id} onClick={() => { setView(id); setPropId(''); setFieldPropId(''); setDialogSelected('') }}
               className={`-mb-px h-9 cursor-pointer border-b-2 px-3 text-[14px] font-bold ${view === id ? 'border-accent text-accent-text' : 'border-transparent text-ink hover:text-ink-strong'}`}>
               {label}{id === 'fields' && fieldErrors > 0 && <span className="ml-2 text-[12px] font-semibold text-danger">{fieldErrors} to fix</span>}{id === 'dialog' && dialogErrors > 0 && <span className="ml-2 text-[12px] font-semibold text-danger">{dialogErrors} to fix</span>}
@@ -178,7 +179,11 @@ export function ComponentWorkspace({ project }: { project: Project }) {
           ))}
         </div>
 
-        {view === 'dialog' ? (
+        {view === 'preview' ? (
+          <div role="tabpanel" className="mt-4">
+            <DialogPreview key={component.id} component={component} dialog={dialog} fields={fields} />
+          </div>
+        ) : view === 'dialog' ? (
           <div role="tabpanel" className="mt-4">
             <DialogEditor
               component={component} dialog={dialog} stored={!!storedDialog} fields={fields} fieldIssues={fieldIssues} groups={groups}

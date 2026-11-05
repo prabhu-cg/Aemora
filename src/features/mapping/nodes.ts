@@ -17,6 +17,11 @@ const numberOrUndef = (v: unknown) => (typeof v === 'number' && Number.isFinite(
 const longOrUndef = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? l(Math.trunc(v)) : undefined)
 const boolOrUndef = (v: unknown) => (typeof v === 'boolean' ? b(v) : undefined)
 
+/** A select gets an empty choice when asked for, or when it is optional and has no default. */
+export function hasEmptyOption(r: Pick<ResolvedField, 'constraints' | 'required' | 'defaultValue'>): boolean {
+  return r.constraints.emptyOption === true || (r.constraints.emptyOption === undefined && !r.required && r.defaultValue === null)
+}
+
 export const nodeName = (key: string) => key.replace(/[^A-Za-z0-9_-]/g, '_').replace(/^([^A-Za-z_])/, '_$1')
 
 function typeHint(r: { key: string; name: string }, hint: string): AemNode {
@@ -95,7 +100,7 @@ export function fieldToNodes(r: ResolvedField): AemNode[] {
     case 'select':
       return [node(id, typed(r.resourceType, {
         ...common, multiple: boolOrUndef(c.multiple) ?? undefined,
-        emptyOption: (c.emptyOption === true || (c.emptyOption === undefined && !r.required && dv === null)) ? b(true) : undefined,
+        emptyOption: hasEmptyOption(r) ? b(true) : undefined,
       }), [selectItems(r.allowedValues, dv === null ? null : String(dv))])]
     case 'multifield': {
       const mf = r.multifield
