@@ -1,0 +1,4 @@
+@import "tailwindcss";
+@import "@fontsource-variable/manrope";
+
+body { font-family: "Manrope Variable", ui-sans-serif, system-ui, sans-serif; color: #444444; }
