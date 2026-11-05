@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { AssetSchema, ComponentSchema } from '../components/schema'
 import { MappingSchema } from '../mapping/schema'
+import { DialogStoreSchema } from '../dialog/schema'
 
 /** Bump when the stored/exported project shape changes; add a migration in migrate.ts. */
 export const SCHEMA_VERSION = 1
@@ -27,7 +28,7 @@ export const ProjectSchema = z.object({
   components: z.array(ComponentSchema).default([]),
   assets: z.array(AssetSchema).max(20).default([]),
   mappings: z.array(MappingSchema).default([]),
-  dialog: loose.default({}),
+  dialog: DialogStoreSchema.default({ components: {} }),
   generatedXml: z
     .object({ xml: z.string(), generatedAt: z.string(), edited: z.boolean().default(false) })
     .nullable()

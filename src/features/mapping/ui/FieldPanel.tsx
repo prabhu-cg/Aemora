@@ -45,9 +45,10 @@ export function FieldPanel({ open, property, field, issues, groups, actions, onC
   )
 }
 
-function FieldForm({ property, field, issues, groups, actions }: { property: Property; field: ResolvedField; issues: FieldIssue[]; groups: string[]; actions: FieldActions }) {
+/** The form for one field. Used in the side panel and, with `inline`, in the dialog editor's right-hand panel. */
+export function FieldForm({ property, field, issues, groups, actions, inline = false }: { property: Property; field: ResolvedField; issues: FieldIssue[]; groups: string[]; actions: FieldActions; inline?: boolean }) {
   const ref = useRef<HTMLFormElement>(null)
-  useEffect(() => { ref.current?.querySelector<HTMLElement>('select,input,textarea')?.focus({ preventScroll: true }) }, [])
+  useEffect(() => { if (!inline) ref.current?.querySelector<HTMLElement>('select,input,textarea')?.focus({ preventScroll: true }) }, [inline])
   const def = FIELD_TYPES[field.fieldType]
   const [label, setLabel] = useState(field.label)
   const [name, setName] = useState(field.name)
@@ -135,14 +136,14 @@ function FieldForm({ property, field, issues, groups, actions }: { property: Pro
         </Field>
       )}
 
-      <Field label="Dialog grouping" hint="The tab this field appears on. Use “Tab › Section” to place it in a section.">
+      {!inline && <Field label="Starting group" hint="Used when the dialog is built or rebuilt from groups: “Tab” or “Tab › Section”. Move fields between tabs in the Dialog view.">
         {(id, by) => (
           <>
             <input id={id} aria-describedby={by} className={input} list={`${id}-g`} defaultValue={field.group} placeholder="No group" onChange={(e) => actions.setOverrides({ group: e.target.value })} />
             <datalist id={`${id}-g`}>{groups.map((g) => <option key={g} value={g} />)}</datalist>
           </>
         )}
-      </Field>
+      </Field>}
 
       {def.constraints.length > 0 && (
         <fieldset key={field.fieldType} className="rounded-lg border border-hairline p-3">

@@ -15,6 +15,9 @@ import { validateFields } from '../../mapping/validate'
 import { FieldPanel, type FieldActions } from '../../mapping/ui/FieldPanel'
 import { MappingView } from '../../mapping/ui/MappingView'
 import type { Mapping } from '../../mapping/schema'
+import { resolveDialog, placeField, validateDialog, pruneDialogs } from '../../dialog/ops'
+import type { ComponentDialog } from '../../dialog/schema'
+import { DialogEditor, type Target } from '../../dialog/ui/DialogEditor'
 import { PropertyList } from './PropertyList'
 import { PropertyPanel } from './PropertyPanel'
 import { ChildrenEditor, StandardSuggestions, UnsupportedList } from './Extras'
@@ -27,8 +30,9 @@ export function ComponentWorkspace({ project }: { project: Project }) {
   const [error, setError] = useState('')
   const [undo, setUndo] = useState<Undo | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
-  const [view, setView] = useState<'properties' | 'fields'>('properties')
+  const [view, setView] = useState<'properties' | 'fields' | 'dialog'>('properties')
   const [fieldPropId, setFieldPropId] = useState('')
+  const [dialogSelected, setDialogSelected] = useState('')
   const [lastFieldProp, setLastFieldProp] = useState<Property | undefined>(undefined)
   const [lastProperty, setLastProperty] = useState<Property | undefined>(undefined)
 
@@ -78,6 +82,38 @@ export function ComponentWorkspace({ project }: { project: Project }) {
     reset: () => { editMappings((ms) => resetMapping(ms, propertyId), propertyId) },
   })
   const fieldErrors = fieldIssues.filter((i) => i.level === 'error').length
+  const storedDialog = project.dialog?.components?.[component.id]
+  const dialog = resolveDialog(component, storedDialog)
+  const dialogErrors = validateDialog(dialog).filter((i) => i.level === 'error').length
+
+  /** Apply a change to the freshly stored dialog. The first edit stores the layout the user was looking at. */
+  const commitDialog = (fn: (d: ComponentDialog) => ComponentDialog) =>
+    mutateProject(project.id, (pr) => {
+      const c = pr.components.find((x) => x.id === component.id)
+      if (!c) return pr
+      const current = resolveDialog(c, pr.dialog.components[c.id])
+      return { ...pr, dialog: { components: { ...pr.dialog.components, [c.id]: fn(current) } } }
+    }).then(() => setError('')).catch(() => setError('Could not save that change to this browser. It was not applied.'))
+
+  const addDialogField = async (target: Target): Promise<string | undefined> => {
+    const made = { id: '' }
+    try {
+      await mutateProject(project.id, (pr) => {
+        const c = pr.components.find((x) => x.id === component.id)
+        if (!c) return pr
+        const added = addProperty(c, { label: 'New field' })
+        made.id = added.property.id
+        const current = resolveDialog(c, pr.dialog.components[c.id])
+        const next = placeField(resolveDialog(added.component, current), added.property.id, target)
+        return { ...pr, components: pr.components.map((x) => (x.id === c.id ? added.component : x)), dialog: { components: { ...pr.dialog.components, [c.id]: next } } }
+      })
+      setError('')
+      return made.id || undefined
+    } catch {
+      setError('Could not add the field. Nothing was changed.')
+      return undefined
+    }
+  }
   const errors = issues.filter((i) => i.level === 'error').length
   const warnings = issues.length - errors
   const suggestedCount = component.properties.filter((p) => p.origin.suggested).length
@@ -119,7 +155,7 @@ export function ComponentWorkspace({ project }: { project: Project }) {
           {confirmDelete ? (
             <span role="alert" className="flex items-center gap-2 text-[13px]">
               Delete “{component.name}” and its properties?
-              <Button size="sm" variant="outline" className="!border-danger !text-danger" onClick={() => { setConfirmDelete(false); setPropId(''); mutateProject(project.id, (p) => { const components = p.components.filter((c) => c.id !== component.id); return { ...p, components, mappings: pruneMappings(p.mappings, components) } }).catch(() => setError('Could not delete the component.')) }}>Delete</Button>
+              <Button size="sm" variant="outline" className="!border-danger !text-danger" onClick={() => { setConfirmDelete(false); setPropId(''); mutateProject(project.id, (p) => { const components = p.components.filter((c) => c.id !== component.id); return { ...p, components, mappings: pruneMappings(p.mappings, components), dialog: pruneDialogs(p.dialog, components) } }).catch(() => setError('Could not delete the component.')) }}>Delete</Button>
               <Button size="sm" variant="ghost" onClick={() => setConfirmDelete(false)}>Cancel</Button>
             </span>
           ) : (
@@ -134,15 +170,25 @@ export function ComponentWorkspace({ project }: { project: Project }) {
         {error && <p role="alert" className="mt-3 rounded-lg bg-danger-soft p-3 text-[13px] font-semibold text-danger">{error}</p>}
 
         <div role="tablist" aria-label="Component view" className="mt-6 flex gap-1 border-b border-hairline">
-          {([['properties', 'Properties'], ['fields', 'AEM fields']] as const).map(([id, label]) => (
-            <button key={id} role="tab" type="button" aria-selected={view === id} onClick={() => { setView(id); setPropId(''); setFieldPropId('') }}
+          {([['properties', 'Properties'], ['fields', 'AEM fields'], ['dialog', 'Dialog']] as const).map(([id, label]) => (
+            <button key={id} role="tab" type="button" aria-selected={view === id} onClick={() => { setView(id); setPropId(''); setFieldPropId(''); setDialogSelected('') }}
               className={`-mb-px h-9 cursor-pointer border-b-2 px-3 text-[14px] font-bold ${view === id ? 'border-accent text-accent-text' : 'border-transparent text-ink hover:text-ink-strong'}`}>
-              {label}{id === 'fields' && fieldErrors > 0 && <span className="ml-2 text-[12px] font-semibold text-danger">{fieldErrors} to fix</span>}
+              {label}{id === 'fields' && fieldErrors > 0 && <span className="ml-2 text-[12px] font-semibold text-danger">{fieldErrors} to fix</span>}{id === 'dialog' && dialogErrors > 0 && <span className="ml-2 text-[12px] font-semibold text-danger">{dialogErrors} to fix</span>}
             </button>
           ))}
         </div>
 
-        {view === 'fields' ? (
+        {view === 'dialog' ? (
+          <div role="tabpanel" className="mt-4">
+            <DialogEditor
+              component={component} dialog={dialog} stored={!!storedDialog} fields={fields} fieldIssues={fieldIssues} groups={groups}
+              selectedId={dialogSelected} onSelect={setDialogSelected} onChange={(fn) => { void commitDialog(fn) }}
+              onAddField={addDialogField}
+              onRebuild={() => { setDialogSelected(''); mutateProject(project.id, (pr) => { const rest = { ...pr.dialog.components }; delete rest[component.id]; return { ...pr, dialog: { components: rest } } }) }}
+              actionsFor={actionsFor}
+            />
+          </div>
+        ) : view === 'fields' ? (
           <div role="tabpanel" className="mt-4">
             <MappingView
               component={component} fields={fields} issues={fieldIssues} selectedId={fieldPropId} onSelect={setFieldPropId}

@@ -81,7 +81,7 @@ export function GeneratorPage() {
         <ComponentWorkspace project={project} />
       </section>
 
-      <Upcoming chunk="chunks 5 to 7" items={['Shape the dialog: tabs, sections and field order', 'Preview it, then generate and validate the XML']} />
+      <Upcoming chunk="chunks 6 and 7" items={['A simulated preview of the authoring dialog', 'XML generation, editing and validation']} />
     </PageFrame>
   )
 }

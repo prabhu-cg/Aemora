@@ -31,6 +31,16 @@ export class AemoraDB extends Dexie {
         })
       }
     })
+    // v3 (chunk 5): `dialog` became { components: {} } instead of an empty object.
+    this.version(3).stores({}).upgrade(async (tx) => {
+      for (const name of ['projects', 'previous'] as const) {
+        await tx.table(name).toCollection().modify((row: Record<string, unknown>) => {
+          const d = row.dialog as { components?: unknown } | undefined
+          if (!d || typeof d !== 'object' || typeof d.components !== 'object' || d.components === null) row.dialog = { components: {} }
+          if (!Array.isArray(row.mappings)) row.mappings = []
+        })
+      }
+    })
   }
 }
 

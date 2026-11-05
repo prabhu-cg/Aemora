@@ -119,10 +119,12 @@ describe('export and import', () => {
   })
   it('strips prototype-pollution keys from imported data', async () => {
     const p = await createProject({ name: 'Poison' })
-    const json = exportProjectJson({ ...p, dialog: {} }).replace('"dialog": {}', '"dialog": {"__proto__": {"polluted": true}, "ok": 1}')
+    const withComponent = { ...p, components: [makeComponent({ name: 'X' })] }
+    const json = exportProjectJson(withComponent).replace('"meta": {}', '"meta": {"__proto__": {"polluted": true}, "ok": 1}')
+    expect(json).toContain('__proto__')
     const res = await importFromText(json)
     expect(({} as Record<string, unknown>).polluted).toBeUndefined()
-    expect(Object.keys(res.imported[0].dialog)).toEqual(['ok'])
+    expect(Object.keys(res.imported[0].components[0].meta)).toEqual(['ok'])
   })
   it('never contains Figma credentials in exports', async () => {
     const p = await createProject({ name: 'Secrets' })

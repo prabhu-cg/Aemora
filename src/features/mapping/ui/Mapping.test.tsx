@@ -132,9 +132,9 @@ describe('AEM fields view', () => {
     expect(await within(panel).findByLabelText('Item field 2 type')).toBeTruthy()
     await user.click(within(panel).getByRole('button', { name: /Add field to each item/ }))
     await waitFor(async () => expect((await stored(p.id)).mappings[0].multifield!.subfields).toHaveLength(3))
-    await user.click(within(panel).getByRole('button', { name: 'Remove item field 3' }))
-    await user.click(within(panel).getByRole('button', { name: 'Remove item field 2' }))
-    await user.click(within(panel).getByRole('button', { name: 'Remove item field 1' }))
+    await user.click(await within(panel).findByRole('button', { name: 'Remove item field 3' }))
+    await user.click(await within(panel).findByRole('button', { name: 'Remove item field 2' }))
+    await user.click(await within(panel).findByRole('button', { name: 'Remove item field 1' }))
     expect((await within(panel).findAllByText(/needs at least one field per item/)).length).toBeGreaterThan(0)
   })
 
