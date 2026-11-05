@@ -1,7 +1,7 @@
 import { useId, type InputHTMLAttributes, type TextareaHTMLAttributes } from 'react'
 
 const input =
-  'w-full rounded-lg border border-hairline-strong bg-surface px-3 text-ink-strong placeholder:text-ink-muted/70 focus-visible:outline-2 focus-visible:outline-accent-text aria-[invalid=true]:border-danger'
+  'w-full rounded-lg border border-hairline-strong bg-surface px-3 text-ink-strong placeholder:text-ink-muted focus-visible:outline-2 focus-visible:outline-accent-text aria-[invalid=true]:border-danger'
 
 export function TextField({ label, hint, error, ...rest }: { label: string; hint?: string; error?: string } & InputHTMLAttributes<HTMLInputElement>) {
   const id = useId()

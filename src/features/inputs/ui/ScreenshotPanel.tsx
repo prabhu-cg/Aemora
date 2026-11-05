@@ -134,7 +134,7 @@ export function ScreenshotPanel({ onResult }: { onResult: (r: ImportResult) => v
             </label>
           </div>
 
-          <h4 className="mt-5 text-[13px] font-extrabold text-ink-strong">Properties</h4>
+          <h3 className="mt-5 text-[13px] font-extrabold text-ink-strong">Properties</h3>
           <ul aria-label="Properties" className="mt-2 space-y-3">
             {draft.properties.map((p, i) => (
               <li key={p.id} className="rounded-lg border border-hairline p-3">

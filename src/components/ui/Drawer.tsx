@@ -19,7 +19,19 @@ export function Drawer({ open, title, onClose, children, side = 'right' }: { ope
     const prev = document.activeElement as HTMLElement | null
     const root = ref.current
     ;(root?.querySelector<HTMLElement>('input,textarea,select') ?? root?.querySelector<HTMLElement>('button'))?.focus({ preventScroll: true })
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && closeRef.current()
+    const focusables = () => [...(ref.current?.querySelectorAll<HTMLElement>('a[href],button,input,select,textarea,[tabindex]') ?? [])].filter((el) => !el.matches(':disabled') && el.tabIndex >= 0)
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') return closeRef.current()
+      if (e.key !== 'Tab') return
+      // Keep Tab inside the dialog while it is open: first and last controls wrap around.
+      const list = focusables()
+      if (!list.length) return e.preventDefault()
+      const first = list[0], last = list[list.length - 1]
+      const active = document.activeElement
+      if (!ref.current?.contains(active)) { e.preventDefault(); first.focus() }
+      else if (e.shiftKey && active === first) { e.preventDefault(); last.focus() }
+      else if (!e.shiftKey && active === last) { e.preventDefault(); first.focus() }
+    }
     document.addEventListener('keydown', onKey)
     return () => {
       document.removeEventListener('keydown', onKey)
@@ -39,6 +51,7 @@ export function Drawer({ open, title, onClose, children, side = 'right' }: { ope
       <div
         ref={ref}
         role="dialog"
+        aria-modal="true"
         aria-label={title}
         data-state={state}
         data-side={side}

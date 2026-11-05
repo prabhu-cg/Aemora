@@ -231,6 +231,19 @@ describe('panel motion', () => {
   })
 })
 
+describe('keyboard focus around the side panel', () => {
+  it('returns focus to the row that opened the panel when it closes', async () => {
+    const user = userEvent.setup()
+    await open()
+    const row = screen.getByRole('button', { name: 'Edit Label' })
+    await user.click(row)
+    await screen.findByRole('complementary', { name: /^Property:/ })
+    await waitFor(() => expect(document.activeElement).not.toBe(row)) // focus moved into the form
+    await user.keyboard('{Escape}')
+    await waitFor(() => expect(document.activeElement).toBe(row))
+  })
+})
+
 describe('components overview', () => {
   it('lists components across projects and links to them', async () => {
     const p = await createProject({ name: 'Teaser' })

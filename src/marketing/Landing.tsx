@@ -214,7 +214,7 @@ export function Landing() {
         <section aria-label="Get started" className="bg-accent text-on-accent">
           <Frame className="py-20 text-center sm:py-24">
             <h2 className="mx-auto max-w-[20ch] text-[clamp(2rem,4.6vw,3.25rem)] leading-[1.05] tracking-[-0.03em] !text-on-accent">Try it on a real component.</h2>
-            <p className="mx-auto mt-4 max-w-[48ch] text-[1.125rem] text-on-accent/90">Paste a component’s properties and have a dialog to review in a few minutes. Nothing to install or sign up for.</p>
+            <p className="mx-auto mt-4 max-w-[48ch] text-[1.125rem] text-on-accent">Paste a component’s properties and have a dialog to review in a few minutes. Nothing to install or sign up for.</p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Link to="/app" className="inline-flex h-11 items-center rounded-lg bg-white px-6 text-sm font-bold text-accent-hover hover:bg-white/90 focus-visible:!outline-white">Open the tool</Link>
               <Link to="/app/sample" className="inline-flex h-11 items-center rounded-lg border border-white/70 px-6 text-sm font-bold text-on-accent hover:bg-white/10 focus-visible:!outline-white">Open the sample project</Link>

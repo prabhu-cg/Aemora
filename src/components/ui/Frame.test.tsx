@@ -10,8 +10,9 @@ describe('layout frame', () => {
     expect(FRAME).toContain('mx-auto')
     expect(FRAME).toMatch(/px-5 sm:px-6 lg:px-8/)
   })
-  it('wraps both the tool and the landing page content', () => {
+  it('wraps both the tool and the landing page content', async () => {
     const { unmount } = render(<MemoryRouter initialEntries={['/app']}><AppRoutes /></MemoryRouter>)
+    await screen.findByRole('navigation', { name: 'Main' })
     expect(document.querySelector('main#main-content > .max-w-\\[1152px\\]')).not.toBeNull()
     unmount()
     render(<MemoryRouter initialEntries={['/']}><AppRoutes /></MemoryRouter>)

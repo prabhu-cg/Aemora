@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useLayoutEffect, useRef, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { PANEL_EXIT_MS, usePresence } from '../../lib/presence'
@@ -18,6 +18,20 @@ export function SidePanel({ open, title, onClose, children }: { open: boolean; t
     if (state === 'open') document.body.setAttribute('data-side-panel', 'open')
     return () => document.body.removeAttribute('data-side-panel')
   }, [state])
+
+  // When the panel closes, put keyboard focus back on whatever opened it (a row), if focus was in the panel or lost.
+  // The opener is noted in a layout effect, before the form inside moves focus into the panel. It is restored in a
+  // normal effect, after React has finished its own update: React puts focus back on the previously focused field
+  // at the end of an update, which would undo a focus change made earlier.
+  const opener = useRef<Element | null>(null)
+  useLayoutEffect(() => { if (open) opener.current = document.activeElement }, [open])
+  useEffect(() => {
+    if (open) return
+    const o = opener.current
+    opener.current = null
+    const a = document.activeElement
+    if (o instanceof HTMLElement && o.isConnected && (a === document.body || ref.current?.contains(a))) o.focus({ preventScroll: true })
+  }, [open])
 
   if (!mounted) return null
   // Portal to <body>: an animated ancestor would otherwise become the containing block for `fixed`.

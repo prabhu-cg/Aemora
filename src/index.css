@@ -22,6 +22,14 @@
 }
 
 /*
+ * Field outlines use the dedicated control-border colour (3:1 or better) instead of the decorative hairline.
+ * Unlayered on purpose so it wins over the utility classes components use, and the error state is restored after it.
+ */
+input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):not([type='file']):not([type='hidden']),
+select, textarea { border-color: var(--control-border); }
+input[aria-invalid='true'], select[aria-invalid='true'], textarea[aria-invalid='true'] { border-color: var(--danger); }
+
+/*
  * Dropdowns: one chevron, same inset and size everywhere. Native arrows sit at different
  * offsets per browser and size. Unlayered on purpose so the padding wins over utility classes.
  */
@@ -73,10 +81,10 @@ select:not([multiple]):disabled { opacity: 0.6; }
  */
 .aem-skin {
   --bg: #ffffff; --surface: #ffffff; --sand: #f5f5f5;
-  --hairline: #e1e1e1; --hairline-strong: #b3b3b3;
+  --hairline: #e1e1e1; --hairline-strong: #b3b3b3; --control-border: #8a8a8a;
   --ink: #4b4b4b; --ink-strong: #2c2c2c; --ink-muted: #6e6e6e;
   --accent: #1473e6; --accent-hover: #0d66d0; --accent-text: #0d66d0; --accent-tint: #e6f0fc; --on-accent: #ffffff;
-  --danger: #d7373f; --danger-soft: #fdecec; --success: #268e6c; --success-soft: #e3f3ee;
+  --danger: #c4262e; --danger-soft: #fdecec; --success: #1b7556; --success-soft: #e3f3ee;
   --info: #0d66d0; --info-soft: #e6f0fc; --warning: #8a5a00; --warning-soft: #fdf3e0;
   color-scheme: light;
   color: var(--ink);

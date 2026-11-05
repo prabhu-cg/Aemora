@@ -9,6 +9,8 @@
   --sand: #f4f2ea;
   --hairline: #e8ddc8;
   --hairline-strong: #d6c7ab;
+  /* The outline of text fields, selects and textareas. It is the only thing that marks where a field is, so it must reach 3:1 (WCAG 1.4.11), unlike decorative dividers. */
+  --control-border: #8a7f6e;
   --ink: #444444;
   --ink-strong: #2b2926;
   --ink-muted: #6f6963;
@@ -37,6 +39,7 @@
   --sand: #27221e;
   --hairline: #302a25;
   --hairline-strong: #453d35;
+  --control-border: #7d7266;
   --ink: #e7e2da;
   --ink-strong: #faf7f2;
   --ink-muted: #a8a097;
@@ -69,6 +72,7 @@
   --color-brand-ink: var(--brand-ink);
   --color-hairline: var(--hairline);
   --color-hairline-strong: var(--hairline-strong);
+  --color-control-border: var(--control-border);
   --color-ink: var(--ink);
   --color-ink-strong: var(--ink-strong);
   --color-ink-muted: var(--ink-muted);
