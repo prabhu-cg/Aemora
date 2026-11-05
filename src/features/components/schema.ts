@@ -26,8 +26,9 @@ export type Origin = z.infer<typeof OriginSchema>
 export const PropertySchema = z.object({
   id: z.string().min(1),
   /** Machine name; becomes the JCR property name in the dialog. */
-  key: z.string().min(1).max(80),
-  label: z.string().min(1).max(120),
+  // May be empty while someone is mid-edit; validateComponent reports it.
+  key: z.string().max(80),
+  label: z.string().max(120),
   type: z.enum(PROPERTY_TYPES),
   required: z.boolean().default(false),
   defaultValue: z.union([z.string(), z.number(), z.boolean()]).nullable().default(null),
@@ -60,7 +61,7 @@ export type ChildLink = z.infer<typeof ChildLinkSchema>
 
 export const ComponentSchema = z.object({
   id: z.string().min(1),
-  name: z.string().min(1).max(120),
+  name: z.string().max(120),
   type: z.enum(COMPONENT_TYPES),
   description: z.string().max(2000).default(''),
   properties: z.array(PropertySchema).max(300).default([]),

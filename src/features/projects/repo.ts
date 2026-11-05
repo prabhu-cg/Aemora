@@ -40,6 +40,21 @@ export async function saveProject(project: Project): Promise<Project> {
   return parsed
 }
 
+/**
+ * Apply a change to the freshly stored row inside one transaction, so rapid edits never
+ * overwrite each other with stale data. The previous version is kept like any other save.
+ */
+export async function mutateProject(id: string, fn: (p: Project) => Project): Promise<Project> {
+  return db.transaction('rw', db.projects, db.previous, async () => {
+    const existing = await db.projects.get(id)
+    if (!existing) throw new ProjectError('That project no longer exists.')
+    const next = ProjectSchema.parse({ ...fn(structuredClone(existing)), updatedAt: now() })
+    await db.previous.put(existing)
+    await db.projects.put(next)
+    return next
+  })
+}
+
 export async function createProject(input: NewProjectInput): Promise<Project> {
   const data = NewProjectInputSchema.parse(input)
   const t = now()

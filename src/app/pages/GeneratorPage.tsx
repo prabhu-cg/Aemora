@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { PageFrame, Upcoming } from './PageFrame'
 import { InputPanel } from '../../features/inputs/ui/InputPanel'
-import { ComponentList } from '../../features/components/ComponentList'
+import { ComponentWorkspace } from '../../features/components/inspector/ComponentWorkspace'
 import { applyImport } from '../../features/inputs/apply'
 import { saveProject } from '../../features/projects/repo'
 import type { ImportResult } from '../../features/inputs/types'
@@ -78,10 +78,10 @@ export function GeneratorPage() {
         {notice && (
           <p role={notice.tone === 'error' ? 'alert' : 'status'} className={`mb-3 rounded-lg p-3 text-[13px] font-semibold ${notice.tone === 'error' ? 'bg-danger-soft text-danger' : 'bg-success-soft text-success'}`}>{notice.text}</p>
         )}
-        <ComponentList components={project.components} />
+        <ComponentWorkspace project={project} />
       </section>
 
-      <Upcoming chunk="chunks 3 to 7" items={['Edit properties in the inspector', 'Map to AEM fields, shape the dialog, preview and generate XML']} />
+      <Upcoming chunk="chunks 4 to 7" items={['Map properties to AEM fields', 'Shape the dialog, preview it and generate XML']} />
     </PageFrame>
   )
 }
