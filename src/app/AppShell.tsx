@@ -1,51 +1,45 @@
-import { NavLink, Outlet } from 'react-router-dom'
-import { Boxes, FolderKanban, Settings, Wand2, type LucideIcon } from 'lucide-react'
+import { useState } from 'react'
+import { Link, Outlet } from 'react-router-dom'
+import { Menu } from 'lucide-react'
 import { Logo } from '../components/ui/Logo'
 import { ThemeToggle } from '../components/ui/ThemeToggle'
-
-const nav: { to: string; label: string; icon: LucideIcon; end?: boolean }[] = [
-  { to: '/app', label: 'Projects', icon: FolderKanban, end: true },
-  { to: '/app/generator', label: 'Dialog Generator', icon: Wand2 },
-  { to: '/app/components', label: 'Components', icon: Boxes },
-  { to: '/app/settings', label: 'Settings', icon: Settings },
-]
+import { Drawer } from '../components/ui/Drawer'
+import { SidebarNav } from './SidebarNav'
 
 export function AppShell() {
+  const [menu, setMenu] = useState(false)
   return (
-    <div className="grid h-dvh grid-cols-[56px_1fr] grid-rows-[48px_1fr] lg:grid-cols-[224px_1fr]">
-      <header className="col-span-2 flex items-center justify-between border-b border-hairline bg-bg px-4">
-        <NavLink to="/" aria-label="Aemora home"><Logo /></NavLink>
-        <div className="flex items-center gap-1">
-          <span className="mr-2 hidden text-[12px] font-bold text-ink-muted sm:inline">
-            AEM Cloud Service · Touch UI dialogs
-          </span>
+    <div className="min-h-dvh bg-bg">
+      <a href="#main-content" className="sr-only z-50 rounded-md bg-bg px-4 py-2 text-sm font-semibold focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:outline-2 focus:outline-accent-text">
+        Skip to main content
+      </a>
+
+      <aside className="fixed inset-y-0 left-0 hidden w-72 flex-col border-r border-sidebar-border bg-sidebar lg:flex">
+        <div className="flex h-16 shrink-0 items-center px-5">
+          <Link to="/" aria-label="Aemora home" className="rounded-lg"><Logo tagline /></Link>
+        </div>
+        <div className="flex-1 overflow-y-auto px-3 pb-4"><SidebarNav /></div>
+        <div className="flex items-center justify-between gap-1 border-t border-sidebar-border p-3">
+          <span className="px-2 text-xs text-ink-muted">Stored in this browser</span>
           <ThemeToggle />
         </div>
+      </aside>
+
+      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-hairline bg-bg/92 px-4 backdrop-blur lg:hidden">
+        <button type="button" onClick={() => setMenu(true)} aria-label="Open navigation" className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-ink hover:bg-sand">
+          <Menu size={18} aria-hidden="true" />
+        </button>
+        <Link to="/" aria-label="Aemora home" className="rounded-lg"><Logo markClassName="size-7" /></Link>
+        <ThemeToggle />
       </header>
-      <nav aria-label="Primary" className="border-r border-hairline bg-sand p-2">
-        <ul className="flex flex-col gap-1">
-          {nav.map(({ to, label, icon: Icon, end }) => (
-            <li key={to}>
-              <NavLink
-                to={to}
-                end={end}
-                title={label}
-                className={({ isActive }) =>
-                  `flex h-9 items-center gap-3 rounded-lg px-2.5 text-[14px] font-semibold transition-colors lg:px-3 ${
-                    isActive ? 'bg-accent-tint text-accent-text' : 'text-ink hover:bg-hairline/60'
-                  }`
-                }
-              >
-                <Icon size={18} aria-hidden="true" className="shrink-0" />
-                <span className="hidden lg:inline">{label}</span>
-                <span className="sr-only lg:hidden">{label}</span>
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-      </nav>
-      <main className="overflow-auto bg-bg">
-        <Outlet />
+      <Drawer open={menu} title="Navigation" side="left" onClose={() => setMenu(false)}>
+        <SidebarNav onNavigate={() => setMenu(false)} />
+      </Drawer>
+
+      <main id="main-content" tabIndex={-1} className="outline-none lg:pl-72">
+        <div className="mx-auto w-full max-w-[1400px] pb-16">
+          <Outlet />
+        </div>
       </main>
     </div>
   )

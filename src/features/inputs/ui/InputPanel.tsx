@@ -10,14 +10,18 @@ import { ReviewPanel } from './ReviewPanel'
 import { ScreenshotPanel } from './ScreenshotPanel'
 import { TextImportPanel } from './TextImportPanel'
 
-const TABS = [
+/** The companion Figma plugin is not built yet. Flip to true to show the paste/upload tab again. */
+export const SHOW_PLUGIN_TAB = false
+
+const ALL_TABS = [
   { id: 'json', label: 'JSON' },
   { id: 'clipboard', label: 'Clipboard' },
   { id: 'figma', label: 'Figma API' },
   { id: 'plugin', label: 'Figma plugin' },
   { id: 'screenshot', label: 'Screenshot' },
 ] as const
-type TabId = (typeof TABS)[number]['id']
+type TabId = (typeof ALL_TABS)[number]['id']
+const TABS = ALL_TABS.filter((t) => SHOW_PLUGIN_TAB || t.id !== 'plugin')
 
 export function InputPanel({ onAdd, busy }: { onAdd: (r: ImportResult) => Promise<void>; busy: boolean }) {
   const [tab, setTab] = useState<TabId>('json')

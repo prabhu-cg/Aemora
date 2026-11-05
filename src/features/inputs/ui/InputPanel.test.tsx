@@ -104,3 +104,11 @@ describe('input panel', () => {
     expect(await screen.findByText(/Enter a Figma file URL/)).toBeTruthy()
   })
 })
+
+describe('input methods', () => {
+  it('hides the Figma plugin tab for now and keeps the other four', async () => {
+    await open()
+    const names = screen.getAllByRole('tab').map((t) => t.textContent)
+    expect(names).toEqual(['JSON', 'Clipboard', 'Figma API', 'Screenshot'])
+  })
+})

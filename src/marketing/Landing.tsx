@@ -8,7 +8,7 @@ export function Landing() {
   return (
     <div className="min-h-dvh bg-bg">
       <header className="flex h-16 items-center justify-between border-b border-hairline px-6">
-        <Logo />
+        <Logo tagline />
         <ThemeToggle />
       </header>
       <main className="mx-auto max-w-3xl px-6 py-24 text-center">

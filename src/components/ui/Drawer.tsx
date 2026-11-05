@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 
 /** Right-side drawer for contextual forms. Escape closes; focus moves in and is restored on close. */
-export function Drawer({ open, title, onClose, children }: { open: boolean; title: string; onClose: () => void; children: ReactNode }) {
+export function Drawer({ open, title, onClose, children, side = 'right' }: { open: boolean; title: string; onClose: () => void; children: ReactNode; side?: 'left' | 'right' }) {
   const ref = useRef<HTMLDivElement>(null)
   // Keep the latest onClose without re-running the focus effect on every parent render.
   const closeRef = useRef(onClose)
@@ -23,12 +23,12 @@ export function Drawer({ open, title, onClose, children }: { open: boolean; titl
   if (!open) return null
   // Portal to <body>: an animated ancestor would otherwise become the containing block for `fixed`.
   return createPortal(
-    <div className="fixed inset-0 z-40 flex justify-end bg-ink-strong/30" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+    <div className={`fixed inset-0 z-40 flex bg-ink-strong/30 ${side === 'left' ? 'justify-start' : 'justify-end'}`} onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div
         ref={ref}
         role="dialog"
         aria-label={title}
-        className="h-full w-full max-w-md overflow-auto border-l border-hairline-strong bg-surface p-6 shadow-[0_18px_40px_-14px_#10101433]"
+        className={`h-full w-full overflow-auto bg-surface p-6 shadow-[0_18px_40px_-14px_#10101433] ${side === 'left' ? 'max-w-72 border-r border-hairline-strong' : 'max-w-md border-l border-hairline-strong'}`}
       >
         <div className="flex items-start justify-between">
           <h2 className="text-lg">{title}</h2>
