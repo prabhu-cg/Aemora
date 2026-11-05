@@ -4,6 +4,7 @@ import { Menu } from 'lucide-react'
 import { Logo } from '../components/ui/Logo'
 import { ThemeToggle } from '../components/ui/ThemeToggle'
 import { Drawer } from '../components/ui/Drawer'
+import { Frame } from '../components/ui/Frame'
 import { SidebarNav } from './SidebarNav'
 
 export function AppShell() {
@@ -37,9 +38,9 @@ export function AppShell() {
       </Drawer>
 
       <main id="main-content" tabIndex={-1} className="outline-none lg:pl-72">
-        <div className="mx-auto w-full max-w-[1400px] pb-16">
+        <Frame className="pb-16">
           <Outlet />
-        </div>
+        </Frame>
       </main>
     </div>
   )

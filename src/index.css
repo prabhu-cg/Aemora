@@ -3,12 +3,13 @@
 @import "./styles/tokens.css";
 
 @layer base {
-  html { font-size: 14px; }
   body {
     margin: 0;
     background: var(--bg);
     color: var(--ink);
     font-family: var(--font-sans);
+    /* App density: 14px text on a 16px root, so rem-based spacing matches Yedara. */
+    font-size: 14px;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
   }

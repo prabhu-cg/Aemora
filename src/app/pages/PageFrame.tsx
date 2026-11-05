@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 export function PageFrame({ title, lede, children }: { title: string; lede: string; children?: ReactNode }) {
   return (
-    <div className="rise mx-auto max-w-5xl px-6 py-8">
+    <div className="rise py-8 lg:pt-10">
       <h1 className="text-[26px] leading-tight">{title}</h1>
       <p className="mt-2 max-w-[62ch] text-ink-muted">{lede}</p>
       <div className="mt-8">{children}</div>
