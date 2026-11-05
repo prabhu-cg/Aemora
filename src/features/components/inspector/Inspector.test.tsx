@@ -153,7 +153,7 @@ describe('property inspector', () => {
     await waitFor(async () => expect((await first(p.id)).unsupported).toHaveLength(0))
     await user.click(await screen.findByRole('button', { name: /Undo/ }))
     await waitFor(async () => expect((await first(p.id)).unsupported).toHaveLength(1))
-    await user.click(within(screen.getByRole('region', { name: 'Unsupported items' })).getByRole('button', { name: /Turn Focal point\.cropRatio into a property/ }))
+    await user.click(within(await screen.findByRole('region', { name: 'Unsupported items' })).getByRole('button', { name: /Turn Focal point\.cropRatio into a property/ }))
     await waitFor(async () => {
       const c = await first(p.id)
       expect(c.unsupported).toHaveLength(0)

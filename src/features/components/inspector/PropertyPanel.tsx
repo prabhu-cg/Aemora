@@ -31,6 +31,7 @@ type PanelProps = {
   onChange: (patch: PropertyPatch) => void
   onRemove: () => void
   onClose: () => void
+  readOnly?: boolean
 }
 
 /**
@@ -45,7 +46,7 @@ export function PropertyPanel({ open, ...p }: PanelProps & { open: boolean }) {
   )
 }
 
-function PropertyForm({ component, property, issues, onChange, onRemove }: PanelProps) {
+function PropertyForm({ component, property, issues, onChange, onRemove, readOnly = false }: PanelProps) {
   const formRef = useRef<HTMLFormElement>(null)
   useEffect(() => { formRef.current?.querySelector<HTMLElement>('input,textarea,select')?.focus({ preventScroll: true }) }, [])
   // Local copy keeps typing smooth; each change is also saved straight away.
@@ -77,6 +78,7 @@ function PropertyForm({ component, property, issues, onChange, onRemove }: Panel
 
   return (
       <form ref={formRef} className="flex flex-col gap-4" onSubmit={(e) => e.preventDefault()}>
+      <fieldset disabled={readOnly} className="contents">
         <Field label="Label" error={err('empty-label')} hint="What authors see above the field.">
           {(id, by) => <input id={id} aria-describedby={by} aria-invalid={!!err('empty-label')} className={input} value={d.label} onChange={(e) => edit({ label: e.target.value })} />}
         </Field>
@@ -144,6 +146,7 @@ function PropertyForm({ component, property, issues, onChange, onRemove }: Panel
         <div className="border-t border-hairline pt-4">
           <Button type="button" variant="outline" className="!border-danger !text-danger" onClick={onRemove}><Trash2 size={15} aria-hidden="true" />Remove property</Button>
         </div>
+      </fieldset>
       </form>
   )
 }

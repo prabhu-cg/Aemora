@@ -38,7 +38,7 @@ export function StandardSuggestions({ component, onAdd }: { component: Component
   )
 }
 
-export function UnsupportedList({ items, onPromote, onDismiss }: { items: Unsupported[]; onPromote: (id: string) => void; onDismiss: (id: string) => void }) {
+export function UnsupportedList({ items, onPromote, onDismiss, readOnly = false }: { items: Unsupported[]; onPromote: (id: string) => void; onDismiss: (id: string) => void; readOnly?: boolean }) {
   if (!items.length) return null
   return (
     <section aria-label="Unsupported items" className="mt-8">
@@ -51,8 +51,8 @@ export function UnsupportedList({ items, onPromote, onDismiss }: { items: Unsupp
               <p className="font-bold text-ink-strong">{u.name}{u.rawType && <span className="ml-2 font-normal text-ink-muted">{u.rawType}</span>}</p>
               <p className="text-[13px] text-ink-muted">{u.reason}</p>
             </div>
-            <Button size="sm" variant="outline" onClick={() => onPromote(u.id)} aria-label={`Turn ${u.name} into a property`}>Make a property</Button>
-            <Button size="sm" variant="ghost" onClick={() => onDismiss(u.id)} aria-label={`Dismiss ${u.name}`}>Dismiss</Button>
+            <Button size="sm" variant="outline" disabled={readOnly} onClick={() => onPromote(u.id)} aria-label={`Turn ${u.name} into a property`}>Make a property</Button>
+            <Button size="sm" variant="ghost" disabled={readOnly} onClick={() => onDismiss(u.id)} aria-label={`Dismiss ${u.name}`}>Dismiss</Button>
           </li>
         ))}
       </ul>
@@ -66,12 +66,13 @@ const APPROACH_HELP = {
 } as const
 
 /** V1 distinction: expose selected child properties, or reference an independently authored component. */
-export function ChildrenEditor({ component, siblings, onChange }: { component: ComponentDef; siblings: ComponentDef[]; onChange: (index: number, patch: Partial<ChildLink>) => void }) {
+export function ChildrenEditor({ component, siblings, onChange, readOnly = false }: { component: ComponentDef; siblings: ComponentDef[]; onChange: (index: number, patch: Partial<ChildLink>) => void; readOnly?: boolean }) {
   if (!component.children.length) return null
   return (
     <section aria-label="Nested components" className="mt-8">
       <h3 className="text-base">Nested components</h3>
       <p className="mt-1 text-[13px] text-ink-muted">Choose how each nested component appears in this dialog. The choice is recorded in the generated configuration.</p>
+      <fieldset disabled={readOnly} className="contents">
       <ul className="mt-2 divide-y divide-hairline border-y border-hairline">
         {component.children.map((ch, i) => {
           const match = siblings.find((s) => s.id !== component.id && s.name.toLowerCase() === ch.name.toLowerCase())
@@ -111,6 +112,7 @@ export function ChildrenEditor({ component, siblings, onChange }: { component: C
           )
         })}
       </ul>
+      </fieldset>
     </section>
   )
 }

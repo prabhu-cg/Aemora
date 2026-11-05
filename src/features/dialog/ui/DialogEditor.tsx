@@ -30,6 +30,7 @@ interface Props {
   onAddField: (target: Target) => Promise<string | undefined>
   onRebuild: () => void
   actionsFor: (propertyId: string) => FieldActions
+  readOnly?: boolean
 }
 
 const iconBtn = 'inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-ink-muted hover:bg-ink-strong/5 hover:text-ink-strong disabled:opacity-30 disabled:pointer-events-none cursor-pointer'
@@ -37,6 +38,7 @@ const titleInput = 'h-8 min-w-0 flex-1 rounded-md border border-transparent bg-t
 
 export function DialogEditor(p: Props) {
   const { component, dialog, fields, fieldIssues, selectedId, onSelect, onChange } = p
+  const ro = !!p.readOnly
   const [confirmRebuild, setConfirmRebuild] = useState(false)
   const byId = new Map(fields.map((f) => [f.propertyId, f]))
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }))
@@ -87,10 +89,10 @@ export function DialogEditor(p: Props) {
       <div className="min-w-0">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <label className="min-w-0 flex-1 basis-56 text-[13px] font-bold text-ink-strong">Dialog title
-            <input className="mt-1 h-9 w-full rounded-lg border border-hairline-strong bg-surface px-3 text-sm font-normal" defaultValue={dialog.title} aria-invalid={!dialog.title.trim()}
+            <input className="mt-1 h-9 w-full rounded-lg border border-hairline-strong bg-surface px-3 text-sm font-normal" defaultValue={dialog.title} aria-invalid={!dialog.title.trim()} readOnly={ro}
               onChange={(e) => { const v = e.target.value; onChange((d) => setTitle(d, v)) }} />
           </label>
-          {p.stored && (confirmRebuild ? (
+          {p.stored && !ro && (confirmRebuild ? (
             <span role="alert" className="flex flex-wrap items-center gap-2 text-[13px]">
               Rebuild from property groups? Your tab, section and order changes will be replaced.
               <Button size="sm" variant="outline" className="!border-danger !text-danger" onClick={() => { setConfirmRebuild(false); p.onRebuild() }}>Rebuild</Button>
@@ -111,15 +113,15 @@ export function DialogEditor(p: Props) {
           </ul>
         )}
 
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+        <DndContext sensors={ro ? [] : sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
           <div className="mt-5 space-y-8">
             {dialog.tabs.map((t, i) => (
-              <TabBlock key={t.id} tab={t} index={i} count={dialog.tabs.length} byId={byId} issuesOf={issuesOf} selectedId={selectedId} onSelect={onSelect} onChange={onChange} onAdd={add} />
+              <TabBlock key={t.id} tab={t} index={i} count={dialog.tabs.length} byId={byId} issuesOf={issuesOf} selectedId={selectedId} onSelect={onSelect} onChange={onChange} onAdd={add} ro={ro} />
             ))}
           </div>
         </DndContext>
         <div className="mt-4">
-          <Button variant="outline" size="sm" onClick={() => onChange((d) => addTab(d).dialog)}><Plus size={14} aria-hidden="true" />Add tab</Button>
+          <Button variant="outline" size="sm" disabled={ro} onClick={() => onChange((d) => addTab(d).dialog)}><Plus size={14} aria-hidden="true" />Add tab</Button>
         </div>
 
         {excluded.length > 0 && (
@@ -130,7 +132,7 @@ export function DialogEditor(p: Props) {
               {excluded.map((x) => (
                 <li key={x.id} className="flex items-center justify-between gap-3 py-2">
                   <span><strong className="text-ink-strong">{x.label || x.key}</strong> <code className="text-[12px] text-ink-muted">{x.key}</code></span>
-                  <Button size="sm" variant="outline" onClick={() => onChange((d) => includeField(d, x.id))} aria-label={`Add ${x.label || x.key} to the dialog`}>Add to dialog</Button>
+                  <Button size="sm" variant="outline" disabled={ro} onClick={() => onChange((d) => includeField(d, x.id))} aria-label={`Add ${x.label || x.key} to the dialog`}>Add to dialog</Button>
                 </li>
               ))}
             </ul>
@@ -149,7 +151,7 @@ export function DialogEditor(p: Props) {
                 const at = locate(dialog, selected.id)
                 const here = at ? containerKey(at) : ''
                 return (
-                  <select id="field-location" className="h-9 w-full rounded-lg border border-hairline-strong bg-surface px-3 text-ink-strong" value={here}
+                  <select id="field-location" disabled={ro} className="h-9 w-full rounded-lg border border-hairline-strong bg-surface px-3 text-ink-strong" value={here}
                     onChange={(e) => { const c = containers(dialog).find((x) => x.key === e.target.value); if (c) onChange((d) => placeField(d, selected.id, c)) }}>
                     {!at && <option value="">Not in the dialog</option>}
                     {containers(dialog).map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
@@ -158,8 +160,8 @@ export function DialogEditor(p: Props) {
               })()}
               <p className="mt-1 text-[12px] text-ink-muted">Or drag the field in the list.</p>
             </div>
-            <FieldForm key={selected.id} inline property={selected} field={selectedField} issues={issuesOf(selected.id)} groups={p.groups} actions={p.actionsFor(selected.id)} />
-            {locate(dialog, selected.id) && (
+            <FieldForm key={selected.id} inline readOnly={ro} property={selected} field={selectedField} issues={issuesOf(selected.id)} groups={p.groups} actions={p.actionsFor(selected.id)} />
+            {!ro && locate(dialog, selected.id) && (
               <div className="mt-4 border-t border-hairline pt-4">
                 <Button variant="outline" size="sm" onClick={() => onChange((d) => excludeField(d, selected.id))}><EyeOff size={14} aria-hidden="true" />Remove from dialog</Button>
                 <p className="mt-1 text-[12px] text-ink-muted">The property stays; it just will not be a dialog field.</p>
@@ -181,6 +183,7 @@ interface BlockCtx {
   onSelect: (id: string) => void
   onChange: Props['onChange']
   onAdd: (t: Target) => void
+  ro: boolean
 }
 
 function Droppable({ id, children, empty }: { id: string; children: React.ReactNode; empty: boolean }) {
@@ -193,10 +196,10 @@ function TabBlock({ tab, index, count, ...ctx }: { tab: Tab; index: number; coun
   return (
     <section aria-label={`Tab ${tab.title || index + 1}`}>
       <div className="flex items-center gap-1 border-b border-hairline pb-1.5">
-        <input aria-label={`Tab ${index + 1} title`} aria-invalid={!tab.title.trim()} className={`${titleInput} text-base`} defaultValue={tab.title} placeholder="Tab title" onChange={(e) => { const v = e.target.value; ctx.onChange((d) => renameTab(d, tab.id, v)) }} />
-        <button type="button" className={iconBtn} aria-label={`Move tab ${tab.title || index + 1} up`} disabled={index === 0} onClick={() => ctx.onChange((d) => moveTab(d, tab.id, -1))}><ArrowUp size={15} aria-hidden="true" /></button>
-        <button type="button" className={iconBtn} aria-label={`Move tab ${tab.title || index + 1} down`} disabled={index === count - 1} onClick={() => ctx.onChange((d) => moveTab(d, tab.id, 1))}><ArrowDown size={15} aria-hidden="true" /></button>
-        <button type="button" className={iconBtn} aria-label={`Remove tab ${tab.title || index + 1}`} title={count < 2 ? 'The last tab cannot be removed' : 'Its fields move to the neighbouring tab'} disabled={count < 2} onClick={() => ctx.onChange((d) => removeTab(d, tab.id))}><Trash2 size={15} aria-hidden="true" /></button>
+        <input aria-label={`Tab ${index + 1} title`} aria-invalid={!tab.title.trim()} className={`${titleInput} text-base`} defaultValue={tab.title} readOnly={ctx.ro} placeholder="Tab title" onChange={(e) => { const v = e.target.value; ctx.onChange((d) => renameTab(d, tab.id, v)) }} />
+        <button type="button" className={iconBtn} aria-label={`Move tab ${tab.title || index + 1} up`} disabled={ctx.ro || index === 0} onClick={() => ctx.onChange((d) => moveTab(d, tab.id, -1))}><ArrowUp size={15} aria-hidden="true" /></button>
+        <button type="button" className={iconBtn} aria-label={`Move tab ${tab.title || index + 1} down`} disabled={ctx.ro || index === count - 1} onClick={() => ctx.onChange((d) => moveTab(d, tab.id, 1))}><ArrowDown size={15} aria-hidden="true" /></button>
+        <button type="button" className={iconBtn} aria-label={`Remove tab ${tab.title || index + 1}`} title={count < 2 ? 'The last tab cannot be removed' : 'Its fields move to the neighbouring tab'} disabled={ctx.ro || count < 2} onClick={() => ctx.onChange((d) => removeTab(d, tab.id))}><Trash2 size={15} aria-hidden="true" /></button>
       </div>
       <Droppable id={`tab:${tab.id}`} empty={!tab.items.length}>
         <SortableContext items={ids} strategy={verticalListSortingStrategy}>
@@ -209,8 +212,8 @@ function TabBlock({ tab, index, count, ...ctx }: { tab: Tab; index: number; coun
         {!tab.items.length && <p className="px-2 py-3 text-[13px] text-ink-muted">No fields. Drag one here or add a field.</p>}
       </Droppable>
       <div className="mt-2 flex gap-2">
-        <Button size="sm" variant="outline" onClick={() => ctx.onChange((d) => addSection(d, tab.id).dialog)}><Plus size={14} aria-hidden="true" />Add section</Button>
-        <Button size="sm" variant="outline" onClick={() => ctx.onAdd({ tabId: tab.id })} aria-label={`Add field to ${tab.title || 'tab'}`}><Plus size={14} aria-hidden="true" />Add field</Button>
+        <Button size="sm" variant="outline" disabled={ctx.ro} onClick={() => ctx.onChange((d) => addSection(d, tab.id).dialog)}><Plus size={14} aria-hidden="true" />Add section</Button>
+        <Button size="sm" variant="outline" disabled={ctx.ro} onClick={() => ctx.onAdd({ tabId: tab.id })} aria-label={`Add field to ${tab.title || 'tab'}`}><Plus size={14} aria-hidden="true" />Add field</Button>
       </div>
     </section>
   )
@@ -222,11 +225,11 @@ function SectionBlock({ section, tabId, first, last, ...ctx }: { section: Sectio
   return (
     <li ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} className={`my-2 rounded-lg bg-sand/70 p-2 ${isDragging ? 'relative z-10 shadow-[0_8px_24px_-6px_#1010141f]' : ''}`}>
       <div className="flex items-center gap-1">
-        <button ref={setActivatorNodeRef} type="button" className={`${iconBtn} cursor-grab touch-none`} aria-label={`Reorder section ${section.title}. Press space, then use the arrow keys.`} {...attributes} {...listeners}><GripVertical size={16} aria-hidden="true" /></button>
-        <input aria-label={`Section title: ${section.title || 'untitled'}`} aria-invalid={!section.title.trim()} className={titleInput} defaultValue={section.title} placeholder="Section title" onChange={(e) => { const v = e.target.value; ctx.onChange((d) => renameSection(d, section.id, v)) }} />
-        <button type="button" className={iconBtn} aria-label={`Move section ${section.title} up`} disabled={first} onClick={() => ctx.onChange((d) => moveItem(d, section.id, -1))}><ArrowUp size={15} aria-hidden="true" /></button>
-        <button type="button" className={iconBtn} aria-label={`Move section ${section.title} down`} disabled={last} onClick={() => ctx.onChange((d) => moveItem(d, section.id, 1))}><ArrowDown size={15} aria-hidden="true" /></button>
-        <button type="button" className={iconBtn} aria-label={`Remove section ${section.title}`} title="Its fields stay, in the tab" onClick={() => ctx.onChange((d) => removeSection(d, section.id))}><Trash2 size={15} aria-hidden="true" /></button>
+        <button ref={setActivatorNodeRef} type="button" disabled={ctx.ro} className={`${iconBtn} cursor-grab touch-none`} aria-label={`Reorder section ${section.title}. Press space, then use the arrow keys.`} {...attributes} {...listeners}><GripVertical size={16} aria-hidden="true" /></button>
+        <input aria-label={`Section title: ${section.title || 'untitled'}`} aria-invalid={!section.title.trim()} className={titleInput} defaultValue={section.title} readOnly={ctx.ro} placeholder="Section title" onChange={(e) => { const v = e.target.value; ctx.onChange((d) => renameSection(d, section.id, v)) }} />
+        <button type="button" className={iconBtn} aria-label={`Move section ${section.title} up`} disabled={ctx.ro || first} onClick={() => ctx.onChange((d) => moveItem(d, section.id, -1))}><ArrowUp size={15} aria-hidden="true" /></button>
+        <button type="button" className={iconBtn} aria-label={`Move section ${section.title} down`} disabled={ctx.ro || last} onClick={() => ctx.onChange((d) => moveItem(d, section.id, 1))}><ArrowDown size={15} aria-hidden="true" /></button>
+        <button type="button" className={iconBtn} aria-label={`Remove section ${section.title}`} disabled={ctx.ro} title="Its fields stay, in the tab" onClick={() => ctx.onChange((d) => removeSection(d, section.id))}><Trash2 size={15} aria-hidden="true" /></button>
       </div>
       <Droppable id={`sec:${section.id}`} empty={!section.fieldIds.length}>
         <SortableContext items={ids} strategy={verticalListSortingStrategy}>
@@ -236,12 +239,12 @@ function SectionBlock({ section, tabId, first, last, ...ctx }: { section: Sectio
         </SortableContext>
         {!section.fieldIds.length && <p className="ml-6 px-2 py-2 text-[13px] text-ink-muted">Empty section. Drag a field here or add one.</p>}
       </Droppable>
-      <div className="ml-6 mt-1"><Button size="sm" variant="ghost" onClick={() => ctx.onAdd({ tabId, sectionId: section.id })} aria-label={`Add field to ${section.title || 'section'}`}><Plus size={14} aria-hidden="true" />Add field</Button></div>
+      <div className="ml-6 mt-1"><Button size="sm" variant="ghost" disabled={ctx.ro} onClick={() => ctx.onAdd({ tabId, sectionId: section.id })} aria-label={`Add field to ${section.title || 'section'}`}><Plus size={14} aria-hidden="true" />Add field</Button></div>
     </li>
   )
 }
 
-function FieldRow({ propertyId, container, first, last, byId, issuesOf, selectedId, onSelect, onChange }: { propertyId: string; container: string; first: boolean; last: boolean } & BlockCtx) {
+function FieldRow({ propertyId, container, first, last, byId, issuesOf, selectedId, onSelect, onChange, ro }: { propertyId: string; container: string; first: boolean; last: boolean } & BlockCtx) {
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id: `f:${propertyId}`, data: { kind: 'field', container } })
   const f = byId.get(propertyId)
   if (!f) return null
@@ -251,7 +254,7 @@ function FieldRow({ propertyId, container, first, last, byId, issuesOf, selected
   return (
     <li ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }}
       className={`flex items-center gap-1 rounded-md ${propertyId === selectedId ? 'bg-ink-strong/5' : 'hover:bg-ink-strong/[0.03]'} ${isDragging ? 'relative z-10 bg-bg shadow-[0_8px_24px_-6px_#1010141f]' : ''}`}>
-      <button ref={setActivatorNodeRef} type="button" className={`${iconBtn} cursor-grab touch-none`} aria-label={`Reorder ${name}. Press space, then use the arrow keys.`} {...attributes} {...listeners}><GripVertical size={16} aria-hidden="true" /></button>
+      <button ref={setActivatorNodeRef} type="button" disabled={ro} className={`${iconBtn} cursor-grab touch-none`} aria-label={`Reorder ${name}. Press space, then use the arrow keys.`} {...attributes} {...listeners}><GripVertical size={16} aria-hidden="true" /></button>
       <button type="button" onClick={() => onSelect(propertyId)} aria-pressed={propertyId === selectedId} aria-label={`Select ${name}`} className="flex min-w-0 flex-1 cursor-pointer flex-wrap items-center gap-x-3 gap-y-0.5 py-2 pr-1 text-left">
         <span className="min-w-0 basis-32 truncate font-bold text-ink-strong">{name}</span>
         <span className="text-[12px] text-ink-muted">{FIELD_TYPES[f.fieldType].label}</span>
@@ -259,8 +262,8 @@ function FieldRow({ propertyId, container, first, last, byId, issuesOf, selected
         {errors.length > 0 ? <span className="flex items-center gap-1 text-[12px] font-semibold text-danger"><CircleAlert size={13} aria-hidden="true" />{errors[0].message}</span>
           : issues.length > 0 ? <span className="flex items-center gap-1 text-[12px] font-semibold text-warning"><AlertTriangle size={13} aria-hidden="true" />{issues[0].message}</span> : null}
       </button>
-      <button type="button" className={iconBtn} aria-label={`Move ${name} up`} disabled={first} onClick={() => onChange((d) => moveItem(d, propertyId, -1))}><ArrowUp size={15} aria-hidden="true" /></button>
-      <button type="button" className={iconBtn} aria-label={`Move ${name} down`} disabled={last} onClick={() => onChange((d) => moveItem(d, propertyId, 1))}><ArrowDown size={15} aria-hidden="true" /></button>
+      <button type="button" className={iconBtn} aria-label={`Move ${name} up`} disabled={ro || first} onClick={() => onChange((d) => moveItem(d, propertyId, -1))}><ArrowUp size={15} aria-hidden="true" /></button>
+      <button type="button" className={iconBtn} aria-label={`Move ${name} down`} disabled={ro || last} onClick={() => onChange((d) => moveItem(d, propertyId, 1))}><ArrowDown size={15} aria-hidden="true" /></button>
     </li>
   )
 }

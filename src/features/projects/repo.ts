@@ -100,6 +100,14 @@ export async function duplicateProject(id: string): Promise<Project> {
   return copy
 }
 
+/** Store a copy of any project (such as the built-in sample) as a new, editable project of the user's own. */
+export async function copyProject(source: Project, name?: string): Promise<Project> {
+  const t = now()
+  const copy = ProjectSchema.parse({ ...structuredClone(source), id: newId(), name: (name ?? `${source.name} (my copy)`).slice(0, 120), createdAt: t, updatedAt: t })
+  await db.projects.add(copy)
+  return copy
+}
+
 export async function deleteProject(id: string): Promise<void> {
   await db.transaction('rw', db.projects, db.previous, async () => {
     await db.projects.delete(id)

@@ -22,6 +22,7 @@ describe('database migration', () => {
     const row = await upgraded.projects.get('old-1')
     expect(row?.assets).toEqual([])
     expect(row?.dialog).toEqual({ components: {} })
+    expect(row?.generatedXml).toEqual({})
     const merged = applyImport(row!, parseComponentJson('{"name":"Button","properties":[{"name":"Label"}]}')).project
     expect(ProjectSchema.safeParse(merged).success).toBe(true)
     upgraded.close()

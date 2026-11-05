@@ -19,19 +19,22 @@ import { resolveDialog, placeField, validateDialog, pruneDialogs } from '../../d
 import type { ComponentDialog } from '../../dialog/schema'
 import { DialogEditor, type Target } from '../../dialog/ui/DialogEditor'
 import { DialogPreview } from '../../preview/ui/DialogPreview'
+import { XmlPanel } from '../../xml/ui/XmlPanel'
 import { PropertyList } from './PropertyList'
 import { PropertyPanel } from './PropertyPanel'
 import { ChildrenEditor, StandardSuggestions, UnsupportedList } from './Extras'
 
 type Undo = { kind: 'property'; property: Property; index: number } | { kind: 'unsupported'; item: Unsupported }
 
-export function ComponentWorkspace({ project }: { project: Project }) {
+export function ComponentWorkspace({ project, readOnly = false }: { project: Project; readOnly?: boolean }) {
+  // In a read-only project every write is a no-op, whatever calls it. The controls are disabled as well.
+  const mutate: typeof mutateProject = readOnly ? async () => project : mutateProject
   const [selectedId, setSelectedId] = useState('')
   const [propId, setPropId] = useState('')
   const [error, setError] = useState('')
   const [undo, setUndo] = useState<Undo | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
-  const [view, setView] = useState<'properties' | 'fields' | 'dialog' | 'preview'>('properties')
+  const [view, setView] = useState<'properties' | 'fields' | 'dialog' | 'preview' | 'xml'>('properties')
   const [fieldPropId, setFieldPropId] = useState('')
   const [dialogSelected, setDialogSelected] = useState('')
   const [lastFieldProp, setLastFieldProp] = useState<Property | undefined>(undefined)
@@ -53,7 +56,7 @@ export function ComponentWorkspace({ project }: { project: Project }) {
   const shownFieldProperty = fieldProperty ?? lastFieldProp
 
   const edit = (fn: (c: ComponentDef) => ComponentDef) =>
-    mutateProject(project.id, (p) => {
+    mutate(project.id, (p) => {
       const components = p.components.map((c) => (c.id === component.id ? fn(c) : c))
       return { ...p, components, mappings: pruneMappings(p.mappings, components) }
     })
@@ -61,7 +64,7 @@ export function ComponentWorkspace({ project }: { project: Project }) {
       .catch(() => setError('Could not save that change to this browser. It was not applied.'))
 
   const editMappings = (fn: (ms: Mapping[], c: ComponentDef, p: Property) => Mapping[], propertyId: string) =>
-    mutateProject(project.id, (pr) => {
+    mutate(project.id, (pr) => {
       const c = pr.components.find((x) => x.id === component.id)
       const prop = c?.properties.find((x) => x.id === propertyId)
       return c && prop ? { ...pr, mappings: fn(pr.mappings, c, prop) } : pr
@@ -89,7 +92,7 @@ export function ComponentWorkspace({ project }: { project: Project }) {
 
   /** Apply a change to the freshly stored dialog. The first edit stores the layout the user was looking at. */
   const commitDialog = (fn: (d: ComponentDialog) => ComponentDialog) =>
-    mutateProject(project.id, (pr) => {
+    mutate(project.id, (pr) => {
       const c = pr.components.find((x) => x.id === component.id)
       if (!c) return pr
       const current = resolveDialog(c, pr.dialog.components[c.id])
@@ -99,7 +102,7 @@ export function ComponentWorkspace({ project }: { project: Project }) {
   const addDialogField = async (target: Target): Promise<string | undefined> => {
     const made = { id: '' }
     try {
-      await mutateProject(project.id, (pr) => {
+      await mutate(project.id, (pr) => {
         const c = pr.components.find((x) => x.id === component.id)
         if (!c) return pr
         const added = addProperty(c, { label: 'New field' })
@@ -145,33 +148,33 @@ export function ComponentWorkspace({ project }: { project: Project }) {
       <div key={component.id} className="min-w-0">
         <div className="flex flex-wrap items-end gap-3">
           <label className="min-w-0 flex-1 basis-56 text-[13px] font-bold text-ink-strong">Component name
-            <input className="mt-1 h-9 w-full rounded-lg border border-hairline-strong bg-surface px-3 text-base font-extrabold tracking-tight" defaultValue={component.name} aria-invalid={!component.name.trim()}
+            <input className="mt-1 h-9 w-full rounded-lg border border-hairline-strong bg-surface px-3 text-base font-extrabold tracking-tight" defaultValue={component.name} readOnly={readOnly} aria-invalid={!component.name.trim()}
               onChange={(e) => { const name = e.target.value; edit((c) => patchComponent(c, { name })) }} />
           </label>
           <label className="text-[13px] font-bold text-ink-strong">Type
-            <select className="mt-1 block h-9 rounded-lg border border-hairline-strong bg-surface px-2 text-sm" value={component.type} onChange={(e) => { const type = e.target.value as ComponentDef['type']; edit((c) => patchComponent(c, { type })) }}>
+            <select disabled={readOnly} className="mt-1 block h-9 rounded-lg border border-hairline-strong bg-surface px-2 text-sm" value={component.type} onChange={(e) => { const type = e.target.value as ComponentDef['type']; edit((c) => patchComponent(c, { type })) }}>
               {COMPONENT_TYPES.map((t) => <option key={t}>{t}</option>)}
             </select>
           </label>
           {confirmDelete ? (
             <span role="alert" className="flex items-center gap-2 text-[13px]">
               Delete “{component.name}” and its properties?
-              <Button size="sm" variant="outline" className="!border-danger !text-danger" onClick={() => { setConfirmDelete(false); setPropId(''); mutateProject(project.id, (p) => { const components = p.components.filter((c) => c.id !== component.id); return { ...p, components, mappings: pruneMappings(p.mappings, components), dialog: pruneDialogs(p.dialog, components) } }).catch(() => setError('Could not delete the component.')) }}>Delete</Button>
+              <Button size="sm" variant="outline" className="!border-danger !text-danger" onClick={() => { setConfirmDelete(false); setPropId(''); mutate(project.id, (p) => { const components = p.components.filter((c) => c.id !== component.id); return { ...p, components, mappings: pruneMappings(p.mappings, components), dialog: pruneDialogs(p.dialog, components), generatedXml: Object.fromEntries(Object.entries(p.generatedXml ?? {}).filter(([id]) => components.some((c) => c.id === id))) } }).catch(() => setError('Could not delete the component.')) }}>Delete</Button>
               <Button size="sm" variant="ghost" onClick={() => setConfirmDelete(false)}>Cancel</Button>
             </span>
           ) : (
-            <Button variant="ghost" size="sm" onClick={() => setConfirmDelete(true)} aria-label={`Delete component ${component.name}`}><Trash2 size={15} aria-hidden="true" />Delete</Button>
+            <Button variant="ghost" size="sm" disabled={readOnly} onClick={() => setConfirmDelete(true)} aria-label={`Delete component ${component.name}`}><Trash2 size={15} aria-hidden="true" />Delete</Button>
           )}
         </div>
         <label className="mt-3 block text-[13px] font-bold text-ink-strong">Description
-          <input className="mt-1 h-9 w-full rounded-lg border border-hairline-strong bg-surface px-3 text-sm font-normal" defaultValue={component.description} placeholder="What this component is for"
+          <input className="mt-1 h-9 w-full rounded-lg border border-hairline-strong bg-surface px-3 text-sm font-normal" defaultValue={component.description} readOnly={readOnly} placeholder="What this component is for"
             onChange={(e) => { const description = e.target.value; edit((c) => patchComponent(c, { description })) }} />
         </label>
 
         {error && <p role="alert" className="mt-3 rounded-lg bg-danger-soft p-3 text-[13px] font-semibold text-danger">{error}</p>}
 
         <div role="tablist" aria-label="Component view" className="mt-6 flex gap-1 border-b border-hairline">
-          {([['properties', 'Properties'], ['fields', 'AEM fields'], ['dialog', 'Dialog'], ['preview', 'Preview']] as const).map(([id, label]) => (
+          {([['properties', 'Properties'], ['fields', 'AEM fields'], ['dialog', 'Dialog'], ['preview', 'Preview'], ['xml', 'XML']] as const).map(([id, label]) => (
             <button key={id} role="tab" type="button" aria-selected={view === id} onClick={() => { setView(id); setPropId(''); setFieldPropId(''); setDialogSelected('') }}
               className={`-mb-px h-9 cursor-pointer border-b-2 px-3 text-[14px] font-bold ${view === id ? 'border-accent text-accent-text' : 'border-transparent text-ink hover:text-ink-strong'}`}>
               {label}{id === 'fields' && fieldErrors > 0 && <span className="ml-2 text-[12px] font-semibold text-danger">{fieldErrors} to fix</span>}{id === 'dialog' && dialogErrors > 0 && <span className="ml-2 text-[12px] font-semibold text-danger">{dialogErrors} to fix</span>}
@@ -179,26 +182,41 @@ export function ComponentWorkspace({ project }: { project: Project }) {
           ))}
         </div>
 
-        {view === 'preview' ? (
+        {view === 'xml' ? (
+          <div role="tabpanel" className="mt-4">
+            <XmlPanel
+              readOnly={readOnly}
+              key={component.id} project={project} component={component} dialog={dialog} fields={fields}
+              onStore={(entry) => mutate(project.id, (pr) => {
+                const rest = { ...(pr.generatedXml ?? {}) }
+                if (entry) rest[component.id] = { xml: entry.xml, base: entry.base, format: entry.format, edited: true, generatedAt: new Date().toISOString() }
+                else delete rest[component.id]
+                return { ...pr, generatedXml: rest }
+              }).catch(() => setError('Could not save your XML edits to this browser. They were not applied.'))}
+            />
+          </div>
+        ) : view === 'preview' ? (
           <div role="tabpanel" className="mt-4">
             <DialogPreview key={component.id} component={component} dialog={dialog} fields={fields} />
           </div>
         ) : view === 'dialog' ? (
           <div role="tabpanel" className="mt-4">
             <DialogEditor
+              readOnly={readOnly}
               component={component} dialog={dialog} stored={!!storedDialog} fields={fields} fieldIssues={fieldIssues} groups={groups}
               selectedId={dialogSelected} onSelect={setDialogSelected} onChange={(fn) => { void commitDialog(fn) }}
               onAddField={addDialogField}
-              onRebuild={() => { setDialogSelected(''); mutateProject(project.id, (pr) => { const rest = { ...pr.dialog.components }; delete rest[component.id]; return { ...pr, dialog: { components: rest } } }) }}
+              onRebuild={() => { setDialogSelected(''); mutate(project.id, (pr) => { const rest = { ...pr.dialog.components }; delete rest[component.id]; return { ...pr, dialog: { components: rest } } }) }}
               actionsFor={actionsFor}
             />
           </div>
         ) : view === 'fields' ? (
           <div role="tabpanel" className="mt-4">
             <MappingView
+              readOnly={readOnly}
               component={component} fields={fields} issues={fieldIssues} selectedId={fieldPropId} onSelect={setFieldPropId}
               onFieldType={(pid, t) => { void actionsFor(pid).setFieldType(t) }}
-              onResetAll={() => { mutateProject(project.id, (pr) => ({ ...pr, mappings: pr.mappings.filter((m) => m.componentId !== component.id) })) }}
+              onResetAll={() => { mutate(project.id, (pr) => ({ ...pr, mappings: pr.mappings.filter((m) => m.componentId !== component.id) })) }}
             />
           </div>
         ) : (
@@ -211,14 +229,14 @@ export function ComponentWorkspace({ project }: { project: Project }) {
                 {errors ? `${errors} to fix` : ''}{errors && warnings ? ', ' : ''}{warnings ? `${warnings} to review` : ''}
               </span>
             )}
-            <Button size="sm" onClick={() => {
+            <Button size="sm" disabled={readOnly} onClick={() => {
               const added = addProperty(component, { label: 'New property' })
               edit(() => added.component); setPropId(added.property.id)
             }}><Plus size={15} aria-hidden="true" />Add property</Button>
           </div>
         </div>
 
-        {suggestedCount > 0 && (
+        {suggestedCount > 0 && !readOnly && (
           <div role="status" className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-accent-tint p-3 text-[13px] text-accent-text">
             <span><strong>{suggestedCount} suggested from detection.</strong> Check them before using them.</span>
             <span className="flex gap-2">
@@ -240,27 +258,29 @@ export function ComponentWorkspace({ project }: { project: Project }) {
 
         <div className="mt-3">
           {component.properties.length ? (
-            <PropertyList component={component} issues={issues} selectedId={propId} onSelect={setPropId} onMove={(from, to) => edit((c) => moveProperty(c, from, to))} />
+            <PropertyList component={component} issues={issues} selectedId={propId} onSelect={setPropId} onMove={(from, to) => edit((c) => moveProperty(c, from, to))} readOnly={readOnly} />
           ) : (
             <p className="rounded-lg border border-dashed border-hairline-strong p-4 text-ink-muted">No properties yet. Add one, or start from the standard properties below.</p>
           )}
         </div>
         {groups.length > 0 && <p className="mt-2 text-[12px] text-ink-muted">Groups: {groups.join(' · ')}. Each group becomes a tab (or a section) in the dialog.</p>}
 
-        <StandardSuggestions component={component} onAdd={(props) => edit((c) => addSuggested(c, props))} />
+        {!readOnly && <StandardSuggestions component={component} onAdd={(props) => edit((c) => addSuggested(c, props))} />}
 
         <UnsupportedList
+          readOnly={readOnly}
           items={component.unsupported}
           onPromote={(id) => { const r = promoteUnsupported(component, id); if (r) { edit(() => r.component); setPropId(r.property.id) } }}
           onDismiss={(id) => { const item = component.unsupported.find((u) => u.id === id); if (item) { setUndo({ kind: 'unsupported', item }); edit((c) => dismissUnsupported(c, id)) } }}
         />
-        <ChildrenEditor component={component} siblings={components} onChange={(i, patch) => edit((c) => patchChild(c, i, patch))} />
+        <ChildrenEditor readOnly={readOnly} component={component} siblings={components} onChange={(i, patch) => edit((c) => patchChild(c, i, patch))} />
         </div>
         )}
       </div>
 
       {shownFieldProperty && view === 'fields' && (
         <FieldPanel
+          readOnly={readOnly}
           open={!!fieldProperty}
           property={shownFieldProperty}
           field={fields.find((f) => f.propertyId === shownFieldProperty.id) ?? resolveComponent({ ...component, properties: [shownFieldProperty] }, project.mappings)[0]}
@@ -273,6 +293,7 @@ export function ComponentWorkspace({ project }: { project: Project }) {
 
       {shownProperty && view === 'properties' && (
         <PropertyPanel
+          readOnly={readOnly}
           open={!!property}
           component={component}
           property={shownProperty}

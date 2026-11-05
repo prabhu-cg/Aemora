@@ -16,6 +16,6 @@ describe('layout frame', () => {
     unmount()
     render(<MemoryRouter initialEntries={['/']}><AppRoutes /></MemoryRouter>)
     expect(screen.getByRole('banner').querySelector('.max-w-\\[1152px\\]')).not.toBeNull()
-    expect(document.querySelector('main.max-w-\\[1152px\\]')).not.toBeNull()
+    expect(document.querySelectorAll('main .max-w-\\[1152px\\]').length).toBeGreaterThanOrEqual(5) // every landing section sits in the frame
   })
 })

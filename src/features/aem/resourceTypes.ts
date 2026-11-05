@@ -10,6 +10,7 @@ export const RESOURCE_TYPES = {
   fixedColumns: 'granite/ui/components/coral/foundation/fixedcolumns',
   container: 'granite/ui/components/coral/foundation/container',
   fieldset: 'granite/ui/components/coral/foundation/form/fieldset',
+  layoutFixedColumns: 'granite/ui/components/coral/foundation/layouts/fixedcolumns',
   textfield: `${F}/textfield`,
   textarea: `${F}/textarea`,
   numberfield: `${F}/numberfield`,

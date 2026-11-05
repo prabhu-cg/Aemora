@@ -61,9 +61,51 @@ select:not([multiple]):disabled { opacity: 0.6; }
 }
 
 @media (prefers-reduced-motion: no-preference) {
+  .rise-late { animation: rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both; }
   .rise { animation: rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
   @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 }
+
+/*
+ * A light skin that borrows the proportions and colours of AEM's Touch UI dialogs (Coral): blue accent,
+ * 32px controls, 4px corners, grey tab strip. It re-points our own tokens inside .aem-skin, so every
+ * widget inside keeps working. It is an imitation for the simulated preview, not Adobe's CSS.
+ */
+.aem-skin {
+  --bg: #ffffff; --surface: #ffffff; --sand: #f5f5f5;
+  --hairline: #e1e1e1; --hairline-strong: #b3b3b3;
+  --ink: #4b4b4b; --ink-strong: #2c2c2c; --ink-muted: #6e6e6e;
+  --accent: #1473e6; --accent-hover: #0d66d0; --accent-text: #0d66d0; --accent-tint: #e6f0fc; --on-accent: #ffffff;
+  --danger: #d7373f; --danger-soft: #fdecec; --success: #268e6c; --success-soft: #e3f3ee;
+  --info: #0d66d0; --info-soft: #e6f0fc; --warning: #8a5a00; --warning-soft: #fdf3e0;
+  color-scheme: light;
+  color: var(--ink);
+  font-family: "Adobe Clean", ui-sans-serif, system-ui, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 13px;
+}
+.aem-skin h1, .aem-skin h2, .aem-skin h3 { font-weight: 700; letter-spacing: 0; }
+.aem-skin .rounded-lg, .aem-skin .rounded-md { border-radius: 4px; }
+.aem-skin input:not([type='checkbox']):not([type='radio']):not([type='color']), .aem-skin select { height: 32px; font-size: 13px; }
+.aem-skin textarea { font-size: 13px; }
+.aem-skin ::selection { background: #2680eb; color: #fff; }
+.aem-skin :focus-visible { outline: 2px solid #2680eb; outline-offset: 1px; }
+
+/* Landing: Yedara's hero ground is dots only. Fine dots on a 24px grid, fading toward the edges and bottom. */
+.hero-aura {
+  background-image: radial-gradient(circle, var(--hairline-strong) 1.4px, transparent 1.6px);
+  background-size: 24px 24px;
+  -webkit-mask-image: radial-gradient(ellipse 70% 80% at 50% 25%, #000 30%, transparent 75%);
+  mask-image: radial-gradient(ellipse 70% 80% at 50% 25%, #000 30%, transparent 75%);
+}
+html { scroll-padding-top: 5rem; }
+
+/* XML editor token colours. Quiet: structure in ink, values in the accent family. */
+.xml-tag { color: var(--accent-text); font-weight: 700; }
+.xml-attr { color: var(--info); }
+.xml-value { color: var(--success); }
+.xml-punct { color: var(--ink-muted); }
+.xml-comment { color: var(--ink-muted); font-style: italic; }
+.xml-decl { color: var(--ink-muted); }
 
 /* Reduced motion: no travel. The panel and backdrop fade, and the page does not shift. */
 @media (prefers-reduced-motion: reduce) {

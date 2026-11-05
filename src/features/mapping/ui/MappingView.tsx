@@ -6,7 +6,8 @@ import { FIELD_TYPES, fieldTypeList } from '../fieldTypes'
 import type { FieldTypeId } from '../schema'
 import type { FieldIssue } from '../validate'
 
-export function MappingView({ component, fields, issues, selectedId, onSelect, onFieldType, onResetAll }: {
+export function MappingView({ component, fields, issues, selectedId, onSelect, onFieldType, onResetAll, readOnly = false }: {
+  readOnly?: boolean
   component: ComponentDef
   fields: ResolvedField[]
   issues: FieldIssue[]
@@ -21,7 +22,7 @@ export function MappingView({ component, fields, issues, selectedId, onSelect, o
     <div>
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <p className="text-[13px] text-ink-muted">Every property gets a suggested Granite field. Change any of them; the choice is yours.</p>
-        <Button size="sm" variant="outline" disabled={!edited} onClick={onResetAll}><RotateCcw size={14} aria-hidden="true" />Reset all to suggestions{edited ? ` (${edited})` : ''}</Button>
+        <Button size="sm" variant="outline" disabled={readOnly || !edited} onClick={onResetAll}><RotateCcw size={14} aria-hidden="true" />Reset all to suggestions{edited ? ` (${edited})` : ''}</Button>
       </div>
       <ul aria-label={`AEM fields for ${component.name}`} className="border-y border-hairline">
         {fields.map((f) => {
@@ -43,7 +44,7 @@ export function MappingView({ component, fields, issues, selectedId, onSelect, o
                   <span className="flex items-center gap-1 text-[12px] font-semibold text-warning"><AlertTriangle size={13} aria-hidden="true" />{(mine[0]?.message) ?? warn}</span>
                 ) : null}
               </button>
-              <select aria-label={`AEM field type for ${f.label || f.key}`} value={f.fieldType} onChange={(e) => onFieldType(f.propertyId, e.target.value as FieldTypeId)}
+              <select aria-label={`AEM field type for ${f.label || f.key}`} disabled={readOnly} value={f.fieldType} onChange={(e) => onFieldType(f.propertyId, e.target.value as FieldTypeId)}
                 className="h-8 w-52 rounded-lg border border-hairline-strong bg-surface px-2 text-[13px] text-ink-strong">
                 {fieldTypeList.map((t) => <option key={t.id} value={t.id}>{t.label}{t.id === suggestFieldType(p) ? ' (suggested)' : ''}</option>)}
               </select>

@@ -10,7 +10,7 @@ describe('routing and shell', () => {
   it('renders the landing page at /', () => {
     at('/')
     expect(screen.getByRole('heading', { level: 1 }).textContent).toMatch(/AEM dialog XML/)
-    expect(screen.getByRole('link', { name: /open the tool/i }).getAttribute('href')).toBe('/app')
+    expect(screen.getAllByRole('link', { name: /open the tool/i }).every((l) => l.getAttribute('href') === '/app')).toBe(true)
   })
   it('renders the four navigation items in the app shell', () => {
     at('/app')
@@ -34,7 +34,7 @@ describe('routing and shell', () => {
   })
   it('shows the brand tagline on the landing page and opens the mobile navigation drawer', async () => {
     at('/')
-    expect(screen.getByText('Generate. Build. Scale.')).toBeTruthy()
+    expect(screen.getAllByText('Generate. Build. Scale.').length).toBeGreaterThan(0)
     at('/app')
     await userEvent.click(screen.getByRole('button', { name: 'Open navigation' }))
     const dialog = await screen.findByRole('dialog', { name: 'Navigation' })

@@ -1,5 +1,5 @@
 import { useId, useRef, useState, type ReactNode } from 'react'
-import { ArrowDown, ArrowUp, FolderOpen, Plus, Trash2, Upload, X } from 'lucide-react'
+import { ArrowDown, ArrowUp, CircleHelp, FolderOpen, Plus, Trash2, Upload, X } from 'lucide-react'
 import type { ResolvedField } from '../../mapping/engine'
 import { hasEmptyOption } from '../../mapping/nodes'
 import type { Subfield } from '../../mapping/schema'
@@ -194,21 +194,36 @@ export function FieldControl({ field, value, onChange, common }: { field: Resolv
   }
 }
 
-/** Label, control, helper text and error, wired together for screen readers. */
+/** The (?) icon AEM puts beside a label. The description is a tooltip on hover or focus, and also the field's accessible description. */
+function Hint({ id, text, label }: { id: string; text: string; label: string }) {
+  return (
+    <span className="group relative ml-1.5 inline-flex align-middle">
+      <button type="button" aria-label={`About ${label}`} aria-describedby={id} className="inline-flex cursor-help text-ink-muted hover:text-ink-strong"><CircleHelp size={14} aria-hidden="true" /></button>
+      <span id={id} role="tooltip" className="pointer-events-none absolute left-0 top-full z-20 mt-1 hidden w-60 rounded-md bg-ink-strong px-2.5 py-1.5 text-[12px] font-normal leading-snug text-bg shadow-lg group-focus-within:block group-hover:block">{text}</span>
+    </span>
+  )
+}
+
+/** Label, control, description tooltip and error, wired together for screen readers. */
 export function PreviewField({ field, value, onChange, error, onBlur }: { field: ResolvedField; value: Value; onChange: (v: Value) => void; error: string | null; onBlur: () => void }) {
   const id = useId()
   const hasDesc = !!field.description
   const describedBy = [hasDesc && `${id}-d`, error && `${id}-e`].filter(Boolean).join(' ') || undefined
   const inlineLabel = field.fieldType === 'checkbox' || field.fieldType === 'switch'
   const labelFor: ReactNode = inlineLabel ? null : (
-    <label htmlFor={id} className="mb-1 block text-[13px] font-bold text-ink-strong">{field.label}{field.required && <span aria-hidden="true" className="text-danger"> *</span>}{field.required && <span className="sr-only"> (required)</span>}</label>
+    <div className="mb-1 flex items-center">
+      <label htmlFor={id} className="text-[12px] font-normal text-ink">{field.label}{field.required && <span aria-hidden="true" className="text-danger"> *</span>}{field.required && <span className="sr-only"> (required)</span>}</label>
+      {hasDesc && <Hint id={`${id}-d`} text={field.description} label={field.label} />}
+    </div>
   )
   return (
     <div>
       {labelFor}
-      <FieldControl field={field} value={value} onChange={onChange} common={{ id, describedBy, invalid: !!error, onBlur }} />
-      {hasDesc && <p id={`${id}-d`} className="mt-1 text-[12px] text-ink-muted">{field.description}</p>}
-      {error && <p id={`${id}-e`} role="alert" className="mt-1 text-[12px] font-semibold text-danger">{error}</p>}
+      <div className="flex items-center">
+        <div className="min-w-0 flex-1"><FieldControl field={field} value={value} onChange={onChange} common={{ id, describedBy, invalid: !!error, onBlur }} /></div>
+        {inlineLabel && hasDesc && <Hint id={`${id}-d`} text={field.description} label={field.label} />}
+      </div>
+      {error && <p id={`${id}-e`} role="alert" className="mt-1 flex items-center gap-1 text-[12px] font-semibold text-danger">{error}</p>}
     </div>
   )
 }

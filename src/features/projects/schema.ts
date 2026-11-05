@@ -15,8 +15,19 @@ export const InputSourceSchema = z.object({
 })
 
 // components and assets are typed (chunk 2). The rest are tightened in later chunks
-// (dialog: chunk 5, generatedXml and validation: chunk 7) and carried through intact until then.
+// (validation results are derived, not stored) and carried through intact until then.
 const loose = z.record(z.string(), z.unknown())
+
+export const GeneratedXmlSchema = z.object({
+  /** The XML text, including hand edits. */
+  xml: z.string().max(2_000_000),
+  /** What Aemora generated at the moment of the first hand edit, to tell when the design has moved on since. */
+  base: z.string().max(2_000_000).default(''),
+  generatedAt: z.string(),
+  edited: z.boolean().default(false),
+  format: z.enum(['standalone', 'inline']).default('standalone'),
+})
+export type GeneratedXml = z.infer<typeof GeneratedXmlSchema>
 
 export const ProjectSchema = z.object({
   schemaVersion: z.literal(SCHEMA_VERSION),
@@ -29,10 +40,8 @@ export const ProjectSchema = z.object({
   assets: z.array(AssetSchema).max(20).default([]),
   mappings: z.array(MappingSchema).default([]),
   dialog: DialogStoreSchema.default({ components: {} }),
-  generatedXml: z
-    .object({ xml: z.string(), generatedAt: z.string(), edited: z.boolean().default(false) })
-    .nullable()
-    .default(null),
+  /** One entry per component, written only when someone edits the XML by hand. Otherwise the XML is derived. */
+  generatedXml: z.preprocess((v) => (v == null || Array.isArray(v) ? {} : v), z.record(z.string(), GeneratedXmlSchema)).default({}),
   validation: z.array(loose).default([]),
   createdAt: z.string(),
   updatedAt: z.string(),

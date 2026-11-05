@@ -11,11 +11,12 @@ interface Props {
   selectedId: string
   onSelect: (id: string) => void
   onMove: (from: number, to: number) => void
+  readOnly?: boolean
 }
 
 const iconBtn = 'inline-flex h-7 w-7 items-center justify-center rounded-md text-ink-muted hover:bg-sand hover:text-ink-strong disabled:opacity-30 disabled:pointer-events-none cursor-pointer'
 
-export function PropertyList({ component, issues, selectedId, onSelect, onMove }: Props) {
+export function PropertyList({ component, issues, selectedId, onSelect, onMove, readOnly = false }: Props) {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }))
   const ids = component.properties.map((p) => p.id)
   const onDragEnd = (e: DragEndEvent) => {
@@ -27,7 +28,7 @@ export function PropertyList({ component, issues, selectedId, onSelect, onMove }
       <SortableContext items={ids} strategy={verticalListSortingStrategy}>
         <ul aria-label={`Properties of ${component.name}`} className="border-y border-hairline">
           {component.properties.map((p, i) => (
-            <Row key={p.id} property={p} index={i} last={i === ids.length - 1} issues={issuesFor(issues, p.id)} selected={p.id === selectedId} onSelect={onSelect} onMove={onMove} />
+            <Row key={p.id} property={p} index={i} last={i === ids.length - 1} issues={issuesFor(issues, p.id)} selected={p.id === selectedId} onSelect={onSelect} onMove={onMove} readOnly={readOnly} />
           ))}
         </ul>
       </SortableContext>
@@ -35,8 +36,8 @@ export function PropertyList({ component, issues, selectedId, onSelect, onMove }
   )
 }
 
-function Row({ property: p, index, last, issues, selected, onSelect, onMove }: {
-  property: Property; index: number; last: boolean; issues: Issue[]; selected: boolean; onSelect: (id: string) => void; onMove: Props['onMove']
+function Row({ property: p, index, last, issues, selected, onSelect, onMove, readOnly }: {
+  property: Property; index: number; last: boolean; issues: Issue[]; selected: boolean; onSelect: (id: string) => void; onMove: Props['onMove']; readOnly: boolean
 }) {
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id: p.id })
   const errors = issues.filter((i) => i.level === 'error')
@@ -46,7 +47,7 @@ function Row({ property: p, index, last, issues, selected, onSelect, onMove }: {
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={`flex items-center gap-1 border-t border-hairline first:border-t-0 ${selected ? 'bg-ink-strong/5' : 'bg-bg hover:bg-ink-strong/[0.03]'} ${isDragging ? 'relative z-10 shadow-[0_8px_24px_-6px_#1010141f]' : ''}`}
     >
-      <button ref={setActivatorNodeRef} type="button" className={`${iconBtn} cursor-grab touch-none`} aria-label={`Reorder ${p.label}. Press space, then use the arrow keys.`} {...attributes} {...listeners}>
+      <button ref={setActivatorNodeRef} type="button" disabled={readOnly} className={`${iconBtn} cursor-grab touch-none`} aria-label={`Reorder ${p.label}. Press space, then use the arrow keys.`} {...attributes} {...listeners}>
         <GripVertical size={16} aria-hidden="true" />
       </button>
       <button
@@ -65,8 +66,8 @@ function Row({ property: p, index, last, issues, selected, onSelect, onMove }: {
           <span className="flex items-center gap-1 text-[12px] font-semibold text-warning"><AlertTriangle size={13} aria-hidden="true" />{issues[0].message}</span>
         ) : null}
       </button>
-      <button type="button" className={iconBtn} aria-label={`Move ${p.label} up`} disabled={index === 0} onClick={() => onMove(index, index - 1)}><ArrowUp size={15} aria-hidden="true" /></button>
-      <button type="button" className={iconBtn} aria-label={`Move ${p.label} down`} disabled={last} onClick={() => onMove(index, index + 1)}><ArrowDown size={15} aria-hidden="true" /></button>
+      <button type="button" className={iconBtn} aria-label={`Move ${p.label} up`} disabled={readOnly || index === 0} onClick={() => onMove(index, index - 1)}><ArrowUp size={15} aria-hidden="true" /></button>
+      <button type="button" className={iconBtn} aria-label={`Move ${p.label} down`} disabled={readOnly || last} onClick={() => onMove(index, index + 1)}><ArrowDown size={15} aria-hidden="true" /></button>
     </li>
   )
 }

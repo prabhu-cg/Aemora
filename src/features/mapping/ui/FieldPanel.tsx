@@ -35,18 +35,18 @@ export interface FieldActions {
   reset: () => void
 }
 
-export function FieldPanel({ open, property, field, issues, groups, actions, onClose }: {
-  open: boolean; property: Property; field: ResolvedField; issues: FieldIssue[]; groups: string[]; actions: FieldActions; onClose: () => void
+export function FieldPanel({ open, property, field, issues, groups, actions, onClose, readOnly = false }: {
+  readOnly?: boolean; open: boolean; property: Property; field: ResolvedField; issues: FieldIssue[]; groups: string[]; actions: FieldActions; onClose: () => void
 }) {
   return (
     <SidePanel open={open} title={`Field: ${property.label || property.key}`} onClose={onClose}>
-      <FieldForm key={property.id} property={property} field={field} issues={issues} groups={groups} actions={actions} />
+      <FieldForm key={property.id} property={property} field={field} issues={issues} groups={groups} actions={actions} readOnly={readOnly} />
     </SidePanel>
   )
 }
 
 /** The form for one field. Used in the side panel and, with `inline`, in the dialog editor's right-hand panel. */
-export function FieldForm({ property, field, issues, groups, actions, inline = false }: { property: Property; field: ResolvedField; issues: FieldIssue[]; groups: string[]; actions: FieldActions; inline?: boolean }) {
+export function FieldForm({ property, field, issues, groups, actions, inline = false, readOnly = false }: { readOnly?: boolean; property: Property; field: ResolvedField; issues: FieldIssue[]; groups: string[]; actions: FieldActions; inline?: boolean }) {
   const ref = useRef<HTMLFormElement>(null)
   useEffect(() => { if (!inline) ref.current?.querySelector<HTMLElement>('select,input,textarea')?.focus({ preventScroll: true }) }, [inline])
   const def = FIELD_TYPES[field.fieldType]
@@ -76,6 +76,7 @@ export function FieldForm({ property, field, issues, groups, actions, inline = f
 
   return (
     <form ref={ref} onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-4">
+      <fieldset disabled={readOnly} className="contents">
       <Field label="AEM field type" hint={<>{def.description}{field.fieldType !== suggested && <> Suggested for this property: {FIELD_TYPES[suggested].label}.</>}</>}>
         {(id, by) => (
           <select id={id} aria-describedby={by} className={input} value={field.fieldType} onChange={(e) => changeType(e.target.value as FieldTypeId)}>
@@ -214,6 +215,7 @@ export function FieldForm({ property, field, issues, groups, actions, inline = f
       <div>
         <Button type="button" variant="outline" size="sm" disabled={!field.edited} onClick={actions.reset}><RotateCcw size={14} aria-hidden="true" />Reset to suggestion</Button>
       </div>
+      </fieldset>
     </form>
   )
 }

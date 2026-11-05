@@ -41,6 +41,15 @@ export class AemoraDB extends Dexie {
         })
       }
     })
+    // v4 (chunk 7): generated XML is kept per component. It used to be a single value or null.
+    this.version(4).stores({}).upgrade(async (tx) => {
+      for (const name of ['projects', 'previous'] as const) {
+        await tx.table(name).toCollection().modify((row: Record<string, unknown>) => {
+          const g = row.generatedXml
+          if (g === null || g === undefined || typeof g !== 'object' || Array.isArray(g)) row.generatedXml = {}
+        })
+      }
+    })
   }
 }
 
