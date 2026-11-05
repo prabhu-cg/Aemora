@@ -1,0 +1,15 @@
+{
+  "schema": "aemora.components/v1",
+  "components": [
+    {
+      "name": "Image",
+      "properties": [
+        { "name": "Asset", "type": "image", "required": true },
+        { "name": "Alt text", "type": "string", "description": "Describes the image for screen readers." },
+        { "name": "Decorative", "type": "boolean", "default": false },
+        { "name": "Display variant", "type": "enum", "values": ["default", "rounded", "cover"], "default": "default" },
+        { "name": "Focal point", "type": "string", "cropRatio": "16:9" }
+      ]
+    }
+  ]
+}

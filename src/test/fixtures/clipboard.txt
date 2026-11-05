@@ -1,0 +1,8 @@
+Component: Button [button]
+Primary call to action
+- Label: text, required, default=Learn more
+- Size: enum(small|medium|large), default=medium
+- Opens in new tab: boolean
+- Icon position: none | left | right
+- Tracking id
+Some stray note that is not a property

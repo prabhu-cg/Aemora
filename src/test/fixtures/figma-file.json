@@ -1,0 +1,43 @@
+{
+  "name": "Design System",
+  "document": {
+    "id": "0:0", "type": "DOCUMENT", "name": "Document",
+    "children": [{
+      "id": "0:1", "type": "CANVAS", "name": "Components",
+      "children": [
+        {
+          "id": "1:10", "type": "COMPONENT_SET", "name": "Button",
+          "description": "Primary action",
+          "absoluteBoundingBox": { "x": 0, "y": 0, "width": 320, "height": 120 },
+          "componentPropertyDefinitions": {
+            "Label#1:0": { "type": "TEXT", "defaultValue": "Learn more" },
+            "Show icon#1:1": { "type": "BOOLEAN", "defaultValue": false },
+            "Size": { "type": "VARIANT", "defaultValue": "Medium", "variantOptions": ["Small", "Medium", "Large"] },
+            "Disabled": { "type": "VARIANT", "defaultValue": "False", "variantOptions": ["True", "False"] },
+            "Icon#1:2": { "type": "INSTANCE_SWAP", "defaultValue": "9:9" }
+          },
+          "children": [
+            {
+              "id": "1:11", "type": "COMPONENT", "name": "Size=Medium, Disabled=False",
+              "children": [
+                { "id": "1:12", "type": "TEXT", "name": "Label", "characters": "Learn more", "componentPropertyReferences": { "characters": "Label#1:0" } },
+                { "id": "1:13", "type": "TEXT", "name": "Helper text", "characters": "Opens in a new tab" },
+                { "id": "1:14", "type": "RECTANGLE", "name": "Focus ring", "visible": false }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "2:10", "type": "COMPONENT", "name": "Card",
+          "absoluteBoundingBox": { "x": 400, "y": 0, "width": 360, "height": 420 },
+          "children": [
+            { "id": "2:11", "type": "TEXT", "name": "Heading", "characters": "Card heading" },
+            { "id": "2:12", "type": "TEXT", "name": "Description", "characters": "Short supporting description for the card." },
+            { "id": "2:13", "type": "FRAME", "name": "Image" }
+          ]
+        },
+        { "id": "3:1", "type": "FRAME", "name": "Not a component", "children": [] }
+      ]
+    }]
+  }
+}

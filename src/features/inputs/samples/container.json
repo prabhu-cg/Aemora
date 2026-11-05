@@ -1,0 +1,15 @@
+{
+  "schema": "aemora.components/v1",
+  "components": [
+    {
+      "name": "Container",
+      "properties": [
+        { "name": "Layout", "type": "enum", "values": ["stack", "row", "grid"], "default": "stack" },
+        { "name": "Spacing", "type": "enum", "values": ["none", "small", "medium", "large"], "default": "medium" },
+        { "name": "Alignment", "type": "enum", "values": ["start", "center", "end"], "default": "start" },
+        { "name": "Links", "type": "list", "description": "Repeated links." }
+      ],
+      "children": [{ "name": "Content", "approach": "reference-component" }]
+    }
+  ]
+}

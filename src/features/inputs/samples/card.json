@@ -1,0 +1,20 @@
+{
+  "schema": "aemora.components/v1",
+  "components": [
+    {
+      "name": "Card",
+      "description": "Teaser card with image and call to action.",
+      "properties": [
+        { "name": "Heading", "type": "string", "required": true },
+        { "name": "Description", "type": "text" },
+        { "name": "Image", "type": "image" },
+        { "name": "Background variant", "type": "enum", "values": ["default", "subtle", "accent"], "default": "default" },
+        { "name": "Alignment", "type": "enum", "values": ["left", "center"], "default": "left" },
+        { "name": "Show description", "type": "boolean", "default": true }
+      ],
+      "children": [
+        { "name": "Primary Button", "approach": "expose-properties", "expose": ["label", "link", "variant"] }
+      ]
+    }
+  ]
+}

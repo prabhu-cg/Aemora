@@ -1,12 +1,20 @@
+import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { PageFrame, Upcoming } from './PageFrame'
+import { InputPanel } from '../../features/inputs/ui/InputPanel'
+import { ComponentList } from '../../features/components/ComponentList'
+import { applyImport } from '../../features/inputs/apply'
+import { saveProject } from '../../features/projects/repo'
+import type { ImportResult } from '../../features/inputs/types'
 import { db } from '../../features/projects/db'
 import { buttonClass } from '../../components/ui/buttonClass'
 import { relativeTime } from '../../lib/time'
 
 export function GeneratorPage() {
   const { projectId } = useParams()
+  const [notice, setNotice] = useState<{ tone: 'success' | 'error'; text: string } | null>(null)
+  const [busy, setBusy] = useState(false)
   const project = useLiveQuery(async () => (projectId ? ((await db.projects.get(projectId)) ?? null) : null), [projectId])
   const recent = useLiveQuery(() => db.projects.orderBy('updatedAt').reverse().limit(8).toArray(), [])
 
@@ -38,15 +46,42 @@ export function GeneratorPage() {
     )
   }
 
+  const add = async (r: ImportResult) => {
+    setBusy(true)
+    try {
+      const { project: next, notes } = applyImport(project, r)
+      await saveProject(next)
+      setNotice({ tone: 'success', text: `Added ${r.components.length} component${r.components.length === 1 ? '' : 's'}.${notes.length ? ' ' + notes.map((n) => n.message).join(' ') : ''}` })
+    } catch {
+      setNotice({ tone: 'error', text: 'Could not save to this browser. Nothing was added. Check that site storage is allowed and try again.' })
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
     <PageFrame title={project.name} lede={project.description || 'No description yet.'}>
       <dl className="mb-8 grid max-w-xl grid-cols-[10rem_1fr] gap-y-2 text-[14px]">
         <dt className="font-bold text-ink-strong">AEM component</dt><dd>{project.aemComponentName || 'Not set'}</dd>
-        <dt className="font-bold text-ink-strong">Input</dt><dd>{project.inputSource.kind === 'none' ? 'None yet' : project.inputSource.kind}</dd>
+        <dt className="font-bold text-ink-strong">Input</dt><dd>{project.inputSource.kind === 'none' ? 'None yet' : `${project.inputSource.kind}${project.inputSource.label ? ` · ${project.inputSource.label}` : ''}`}</dd>
         <dt className="font-bold text-ink-strong">Components</dt><dd className="tabular">{project.components.length}</dd>
         <dt className="font-bold text-ink-strong">Last saved</dt><dd><time dateTime={project.updatedAt}>{relativeTime(project.updatedAt)}</time></dd>
       </dl>
-      <Upcoming chunk="chunks 2 to 7" items={['Bring in component information (Figma, JSON, screenshot, clipboard)', 'Review properties, map to AEM fields, shape the dialog', 'Preview and generate XML']} />
+
+      <section aria-labelledby="input-h" className="mb-10">
+        <h2 id="input-h" className="mb-3 text-xl">Bring in a design</h2>
+        <InputPanel onAdd={add} busy={busy} />
+      </section>
+
+      <section aria-labelledby="comp-h" className="mb-10">
+        <h2 id="comp-h" className="mb-3 text-xl">Components in this project</h2>
+        {notice && (
+          <p role={notice.tone === 'error' ? 'alert' : 'status'} className={`mb-3 rounded-lg p-3 text-[13px] font-semibold ${notice.tone === 'error' ? 'bg-danger-soft text-danger' : 'bg-success-soft text-success'}`}>{notice.text}</p>
+        )}
+        <ComponentList components={project.components} />
+      </section>
+
+      <Upcoming chunk="chunks 3 to 7" items={['Edit properties in the inspector', 'Map to AEM fields, shape the dialog, preview and generate XML']} />
     </PageFrame>
   )
 }

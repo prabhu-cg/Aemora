@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { AssetSchema, ComponentSchema } from '../components/schema'
 
 /** Bump when the stored/exported project shape changes; add a migration in migrate.ts. */
 export const SCHEMA_VERSION = 1
@@ -11,8 +12,8 @@ export const InputSourceSchema = z.object({
   importedAt: z.string().optional(),
 })
 
-// Collections below are tightened in later chunks (components: chunk 2, mappings: chunk 4,
-// dialog: chunk 5, generatedXml and validation: chunk 7). Until then they are carried through intact.
+// components and assets are typed (chunk 2). The rest are tightened in later chunks
+// (mappings: chunk 4, dialog: chunk 5, generatedXml and validation: chunk 7) and carried through intact until then.
 const loose = z.record(z.string(), z.unknown())
 
 export const ProjectSchema = z.object({
@@ -22,7 +23,8 @@ export const ProjectSchema = z.object({
   description: z.string().max(2000).default(''),
   aemComponentName: z.string().max(120).default(''),
   inputSource: InputSourceSchema.default({ kind: 'none' }),
-  components: z.array(loose).default([]),
+  components: z.array(ComponentSchema).default([]),
+  assets: z.array(AssetSchema).max(20).default([]),
   mappings: z.array(loose).default([]),
   dialog: loose.default({}),
   generatedXml: z

@@ -1,0 +1,19 @@
+{
+  "schema": "aemora.components/v1",
+  "components": [
+    {
+      "name": "Button",
+      "description": "Primary call to action.",
+      "properties": [
+        { "name": "Label", "type": "string", "required": true, "default": "Learn more", "description": "Visible button text." },
+        { "name": "Size", "type": "enum", "values": ["small", "medium", "large"], "default": "medium" },
+        { "name": "Variant", "type": "enum", "values": ["primary", "secondary", "tertiary"], "default": "primary" },
+        { "name": "State", "type": "enum", "values": ["default", "disabled"], "default": "default" },
+        { "name": "Icon position", "type": "enum", "values": ["none", "left", "right"], "default": "none" },
+        { "name": "Icon reference", "type": "image" },
+        { "name": "Accessibility label", "type": "string", "description": "Overrides the label for screen readers." },
+        { "name": "Link", "type": "link", "group": "Link" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,145 @@
+{
+  "$id": "https://aemora/schemas/aemora-components-v1.json",
+  "title": "Aemora component JSON v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "type": "string",
+      "const": "aemora.components/v1"
+    },
+    "components": {
+      "minItems": 1,
+      "maxItems": 100,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "type": {
+            "description": "button, card, text, image, container or custom. Detected from the name when omitted.",
+            "type": "string",
+            "maxLength": 40
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "properties": {
+            "default": [],
+            "maxItems": 300,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120,
+                  "description": "Display name of the property, e.g. \"Icon position\"."
+                },
+                "type": {
+                  "description": "string, text, richtext, number, boolean, enum, image, link, color, date, list, tags or hidden. Inferred from the name when omitted.",
+                  "type": "string",
+                  "maxLength": 40
+                },
+                "label": {
+                  "description": "Authoring label. Defaults to name.",
+                  "type": "string",
+                  "maxLength": 120
+                },
+                "required": {
+                  "type": "boolean"
+                },
+                "default": {
+                  "type": [
+                    "string",
+                    "number",
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "values": {
+                  "description": "Allowed values for enum properties.",
+                  "maxItems": 200,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "maxLength": 200
+                  }
+                },
+                "description": {
+                  "type": "string",
+                  "maxLength": 1000
+                },
+                "group": {
+                  "description": "Tab or section to place the field in.",
+                  "type": "string",
+                  "maxLength": 80
+                }
+              },
+              "required": [
+                "name"
+              ],
+              "additionalProperties": {}
+            }
+          },
+          "children": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120
+                },
+                "approach": {
+                  "type": "string",
+                  "enum": [
+                    "expose-properties",
+                    "reference-component"
+                  ]
+                },
+                "expose": {
+                  "description": "Child property keys exposed in the parent dialog.",
+                  "maxItems": 100,
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "name"
+              ],
+              "additionalProperties": {}
+            }
+          },
+          "meta": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          }
+        },
+        "required": [
+          "name",
+          "properties"
+        ],
+        "additionalProperties": {}
+      }
+    }
+  },
+  "required": [
+    "schema",
+    "components"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,13 @@
+{
+  "schema": "aemora.components/v1",
+  "components": [
+    {
+      "name": "Text",
+      "properties": [
+        { "name": "Text", "type": "richtext", "required": true },
+        { "name": "Heading level", "type": "enum", "values": ["h1", "h2", "h3", "h4", "p"], "default": "p" },
+        { "name": "Alignment", "type": "enum", "values": ["left", "center", "right"], "default": "left" }
+      ]
+    }
+  ]
+}

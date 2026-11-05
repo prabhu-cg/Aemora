@@ -5,6 +5,7 @@ import {
   importFromText, listProjects, recoverProjects, renameProject, saveProject, MAX_IMPORT_BYTES,
 } from './repo'
 import { ProjectSchema, SCHEMA_VERSION } from './schema'
+import { makeComponent } from '../components/factory'
 
 beforeEach(async () => {
   await Promise.all([db.projects.clear(), db.previous.clear(), db.quarantine.clear()])
@@ -37,11 +38,11 @@ describe('project CRUD', () => {
     expect((await getProject(p.id))?.name).toBe('Two')
   })
   it('duplicates with a new id and independent data', async () => {
-    const p = await saveProject({ ...(await createProject({ name: 'Base' })), components: [{ id: 'c1' }] })
+    const p = await saveProject({ ...(await createProject({ name: 'Base' })), components: [makeComponent({ name: 'Btn' })] })
     const d = await duplicateProject(p.id)
     expect(d.id).not.toBe(p.id)
     expect(d.name).toBe('Base (copy)')
-    expect(d.components).toEqual([{ id: 'c1' }])
+    expect(d.components.map((c) => c.name)).toEqual(['Btn'])
     await saveProject({ ...d, components: [] })
     expect((await getProject(p.id))?.components).toHaveLength(1)
   })
@@ -65,13 +66,13 @@ describe('persistence', () => {
 
 describe('export and import', () => {
   it('round-trips a single project', async () => {
-    const p = await saveProject({ ...(await createProject({ name: 'RT', description: 'd' })), components: [{ id: 'c1', n: 1 }] })
+    const p = await saveProject({ ...(await createProject({ name: 'RT', description: 'd' })), components: [makeComponent({ name: 'RTBtn' })] })
     const json = exportProjectJson(p)
     await deleteProject(p.id)
     const res = await importFromText(json)
     expect(res.imported).toHaveLength(1)
     expect(res.imported[0].id).toBe(p.id)
-    expect(res.imported[0].components).toEqual([{ id: 'c1', n: 1 }])
+    expect(res.imported[0].components.map((c) => c.name)).toEqual(['RTBtn'])
   })
   it('gives a colliding import a new id and never overwrites', async () => {
     const p = await createProject({ name: 'Orig' })
