@@ -1,4 +1,26 @@
 @import "tailwindcss";
 @import "@fontsource-variable/manrope";
+@import "./styles/tokens.css";
 
-body { font-family: "Manrope Variable", ui-sans-serif, system-ui, sans-serif; color: #444444; }
+@layer base {
+  html { font-size: 14px; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { color: var(--ink-strong); font-weight: 800; letter-spacing: -0.025em; text-wrap: balance; }
+  ::selection { background: var(--accent); color: var(--on-accent); }
+  :focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; border-radius: 4px; }
+  input, textarea, select { caret-color: var(--accent); }
+  .tabular { font-variant-numeric: tabular-nums; }
+  * { scrollbar-width: thin; scrollbar-color: var(--hairline-strong) transparent; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .rise { animation: rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+}

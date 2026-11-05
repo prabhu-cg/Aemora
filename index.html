@@ -4,8 +4,15 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>scaffold</title>
-  </head>
+    <title>Aemora: AEM dialog generator</title>
+    <script>
+    try {
+      var p = localStorage.getItem('aemora.theme') || 'system';
+      var d = p === 'dark' || (p === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (d) document.documentElement.classList.add('dark');
+    } catch (e) {}
+  </script>
+</head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>

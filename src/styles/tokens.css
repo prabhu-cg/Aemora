@@ -1,0 +1,84 @@
+/*
+ * Aemora design tokens. Inherited from the Yedara system (DESIGN.md):
+ * warm white/sand grounds, hairline borders, one burnt-orange voice, Manrope.
+ * Tool surfaces use app density (14px base) with #444444 body text.
+ */
+:root {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --sand: #f4f2ea;
+  --hairline: #e8ddc8;
+  --hairline-strong: #d6c7ab;
+  --ink: #444444;
+  --ink-strong: #2b2926;
+  --ink-muted: #5f5a54;
+  --accent: #c74504;
+  --accent-hover: #a93a03;
+  --accent-text: #a93a03;
+  --accent-tint: #fdefe7;
+  --on-accent: #ffffff;
+  --success: #146c43;
+  --success-soft: #e6f4ec;
+  --warning: #8a5a00;
+  --warning-soft: #fdf3e0;
+  --danger: #b3261e;
+  --danger-soft: #fdeceb;
+  --info: #1f5f9e;
+  --info-soft: #ebf3fb;
+  color-scheme: light;
+}
+
+:root.dark {
+  --bg: #12100e;
+  --surface: #1c1916;
+  --sand: #1f1b18;
+  --hairline: #302a25;
+  --hairline-strong: #453d35;
+  --ink: #e7e2da;
+  --ink-strong: #faf7f2;
+  --ink-muted: #b3aba1;
+  --accent: #c74504;
+  --accent-hover: #dd5211;
+  --accent-text: #ff8a5c;
+  --accent-tint: #2c1a10;
+  --on-accent: #ffffff;
+  --success: #5fc08d;
+  --success-soft: #14261c;
+  --warning: #e0b04a;
+  --warning-soft: #2a2110;
+  --danger: #ff7a70;
+  --danger-soft: #2e1513;
+  --info: #7fb4ea;
+  --info-soft: #12202e;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: "Manrope Variable", ui-sans-serif, system-ui, sans-serif;
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-sand: var(--sand);
+  --color-hairline: var(--hairline);
+  --color-hairline-strong: var(--hairline-strong);
+  --color-ink: var(--ink);
+  --color-ink-strong: var(--ink-strong);
+  --color-ink-muted: var(--ink-muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-text: var(--accent-text);
+  --color-accent-tint: var(--accent-tint);
+  --color-on-accent: var(--on-accent);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-panel: 16px;
+}
