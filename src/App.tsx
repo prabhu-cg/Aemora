@@ -12,7 +12,7 @@ export function AppRoutes() {
       <Route path="/" element={<Landing />} />
       <Route path="/app" element={<AppShell />}>
         <Route index element={<ProjectsPage />} />
-        <Route path="generator" element={<GeneratorPage />} />
+        <Route path="generator/:projectId?" element={<GeneratorPage />} />
         <Route path="components" element={<ComponentsPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
