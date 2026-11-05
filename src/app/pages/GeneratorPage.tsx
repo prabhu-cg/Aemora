@@ -81,7 +81,7 @@ export function GeneratorPage() {
         <ComponentWorkspace project={project} />
       </section>
 
-      <Upcoming chunk="chunks 4 to 7" items={['Map properties to AEM fields', 'Shape the dialog, preview it and generate XML']} />
+      <Upcoming chunk="chunks 5 to 7" items={['Shape the dialog: tabs, sections and field order', 'Preview it, then generate and validate the XML']} />
     </PageFrame>
   )
 }

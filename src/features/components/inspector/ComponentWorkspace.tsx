@@ -9,6 +9,12 @@ import {
   patchProperty, promoteUnsupported, removeProperty, removeSuggested, restoreUnsupported, type PropertyPatch,
 } from '../ops'
 import { validateComponent } from '../validate'
+import { resolveComponent } from '../../mapping/engine'
+import { pruneMappings, resetMapping, setConstraint, setFieldType, setMultifield, setOverrides, addSubfield, patchSubfield, removeSubfield } from '../../mapping/ops'
+import { validateFields } from '../../mapping/validate'
+import { FieldPanel, type FieldActions } from '../../mapping/ui/FieldPanel'
+import { MappingView } from '../../mapping/ui/MappingView'
+import type { Mapping } from '../../mapping/schema'
 import { PropertyList } from './PropertyList'
 import { PropertyPanel } from './PropertyPanel'
 import { ChildrenEditor, StandardSuggestions, UnsupportedList } from './Extras'
@@ -21,23 +27,57 @@ export function ComponentWorkspace({ project }: { project: Project }) {
   const [error, setError] = useState('')
   const [undo, setUndo] = useState<Undo | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [view, setView] = useState<'properties' | 'fields'>('properties')
+  const [fieldPropId, setFieldPropId] = useState('')
+  const [lastFieldProp, setLastFieldProp] = useState<Property | undefined>(undefined)
   const [lastProperty, setLastProperty] = useState<Property | undefined>(undefined)
 
   const components = project.components
   const component = components.find((c) => c.id === selectedId) ?? components[0]
   const issues = useMemo(() => (component ? validateComponent(component) : []), [component])
+  const fields = useMemo(() => (component ? resolveComponent(component, project.mappings) : []), [component, project.mappings])
+  const fieldIssues = useMemo(() => validateFields(fields), [fields])
 
   if (!component) return <p className="text-ink-muted">No components yet. Bring in a design above.</p>
   const property = component.properties.find((p) => p.id === propId)
   // Keep showing the last property while the panel slides out.
   if (property && property !== lastProperty) setLastProperty(property)
   const shownProperty = property ?? lastProperty
+  const fieldProperty = component.properties.find((p) => p.id === fieldPropId)
+  if (fieldProperty && fieldProperty !== lastFieldProp) setLastFieldProp(fieldProperty)
+  const shownFieldProperty = fieldProperty ?? lastFieldProp
 
   const edit = (fn: (c: ComponentDef) => ComponentDef) =>
-    mutateProject(project.id, (p) => ({ ...p, components: p.components.map((c) => (c.id === component.id ? fn(c) : c)) }))
+    mutateProject(project.id, (p) => {
+      const components = p.components.map((c) => (c.id === component.id ? fn(c) : c))
+      return { ...p, components, mappings: pruneMappings(p.mappings, components) }
+    })
       .then(() => setError(''))
       .catch(() => setError('Could not save that change to this browser. It was not applied.'))
 
+  const editMappings = (fn: (ms: Mapping[], c: ComponentDef, p: Property) => Mapping[], propertyId: string) =>
+    mutateProject(project.id, (pr) => {
+      const c = pr.components.find((x) => x.id === component.id)
+      const prop = c?.properties.find((x) => x.id === propertyId)
+      return c && prop ? { ...pr, mappings: fn(pr.mappings, c, prop) } : pr
+    }).then(() => setError('')).catch(() => setError('Could not save that change to this browser. It was not applied.'))
+
+  const actionsFor = (propertyId: string): FieldActions => ({
+    setFieldType: async (t) => {
+      // Computed against the freshly stored mapping, inside the save, so it can never be stale.
+      const result = { dropped: [] as string[] }
+      await editMappings((ms, c, p) => { const r = setFieldType(ms, c, p, t); result.dropped = r.dropped; return r.mappings }, propertyId)
+      return result.dropped
+    },
+    setOverrides: (patch) => { editMappings((ms, c, p) => setOverrides(ms, c, p, patch), propertyId) },
+    setConstraint: (key, value) => { editMappings((ms, c, p) => setConstraint(ms, c, p, key, value), propertyId) },
+    setMultifield: (patch) => { editMappings((ms, c, p) => setMultifield(ms, c, p, patch), propertyId) },
+    addSubfield: () => { editMappings((ms, c, p) => addSubfield(ms, c, p), propertyId) },
+    patchSubfield: (id, patch) => { editMappings((ms, c, p) => patchSubfield(ms, c, p, id, patch), propertyId) },
+    removeSubfield: (id) => { editMappings((ms, c, p) => removeSubfield(ms, c, p, id), propertyId) },
+    reset: () => { editMappings((ms) => resetMapping(ms, propertyId), propertyId) },
+  })
+  const fieldErrors = fieldIssues.filter((i) => i.level === 'error').length
   const errors = issues.filter((i) => i.level === 'error').length
   const warnings = issues.length - errors
   const suggestedCount = component.properties.filter((p) => p.origin.suggested).length
@@ -79,7 +119,7 @@ export function ComponentWorkspace({ project }: { project: Project }) {
           {confirmDelete ? (
             <span role="alert" className="flex items-center gap-2 text-[13px]">
               Delete “{component.name}” and its properties?
-              <Button size="sm" variant="outline" className="!border-danger !text-danger" onClick={() => { setConfirmDelete(false); setPropId(''); mutateProject(project.id, (p) => ({ ...p, components: p.components.filter((c) => c.id !== component.id) })).catch(() => setError('Could not delete the component.')) }}>Delete</Button>
+              <Button size="sm" variant="outline" className="!border-danger !text-danger" onClick={() => { setConfirmDelete(false); setPropId(''); mutateProject(project.id, (p) => { const components = p.components.filter((c) => c.id !== component.id); return { ...p, components, mappings: pruneMappings(p.mappings, components) } }).catch(() => setError('Could not delete the component.')) }}>Delete</Button>
               <Button size="sm" variant="ghost" onClick={() => setConfirmDelete(false)}>Cancel</Button>
             </span>
           ) : (
@@ -93,7 +133,26 @@ export function ComponentWorkspace({ project }: { project: Project }) {
 
         {error && <p role="alert" className="mt-3 rounded-lg bg-danger-soft p-3 text-[13px] font-semibold text-danger">{error}</p>}
 
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-2">
+        <div role="tablist" aria-label="Component view" className="mt-6 flex gap-1 border-b border-hairline">
+          {([['properties', 'Properties'], ['fields', 'AEM fields']] as const).map(([id, label]) => (
+            <button key={id} role="tab" type="button" aria-selected={view === id} onClick={() => { setView(id); setPropId(''); setFieldPropId('') }}
+              className={`-mb-px h-9 cursor-pointer border-b-2 px-3 text-[14px] font-bold ${view === id ? 'border-accent text-accent-text' : 'border-transparent text-ink hover:text-ink-strong'}`}>
+              {label}{id === 'fields' && fieldErrors > 0 && <span className="ml-2 text-[12px] font-semibold text-danger">{fieldErrors} to fix</span>}
+            </button>
+          ))}
+        </div>
+
+        {view === 'fields' ? (
+          <div role="tabpanel" className="mt-4">
+            <MappingView
+              component={component} fields={fields} issues={fieldIssues} selectedId={fieldPropId} onSelect={setFieldPropId}
+              onFieldType={(pid, t) => { void actionsFor(pid).setFieldType(t) }}
+              onResetAll={() => { mutateProject(project.id, (pr) => ({ ...pr, mappings: pr.mappings.filter((m) => m.componentId !== component.id) })) }}
+            />
+          </div>
+        ) : (
+        <div role="tabpanel">
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-base">Properties <span className="tabular text-ink-muted">({component.properties.length})</span></h3>
           <div className="flex items-center gap-3">
             {issues.length > 0 && (
@@ -145,9 +204,23 @@ export function ComponentWorkspace({ project }: { project: Project }) {
           onDismiss={(id) => { const item = component.unsupported.find((u) => u.id === id); if (item) { setUndo({ kind: 'unsupported', item }); edit((c) => dismissUnsupported(c, id)) } }}
         />
         <ChildrenEditor component={component} siblings={components} onChange={(i, patch) => edit((c) => patchChild(c, i, patch))} />
+        </div>
+        )}
       </div>
 
-      {shownProperty && (
+      {shownFieldProperty && view === 'fields' && (
+        <FieldPanel
+          open={!!fieldProperty}
+          property={shownFieldProperty}
+          field={fields.find((f) => f.propertyId === shownFieldProperty.id) ?? resolveComponent({ ...component, properties: [shownFieldProperty] }, project.mappings)[0]}
+          issues={fieldIssues.filter((i) => i.propertyId === shownFieldProperty.id)}
+          groups={groups}
+          actions={actionsFor(shownFieldProperty.id)}
+          onClose={() => setFieldPropId('')}
+        />
+      )}
+
+      {shownProperty && view === 'properties' && (
         <PropertyPanel
           open={!!property}
           component={component}

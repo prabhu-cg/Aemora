@@ -74,7 +74,7 @@ describe('property inspector', () => {
     const p = await open()
     await user.click(screen.getByRole('button', { name: 'Move Label down' }))
     await waitFor(async () => expect((await first(p.id)).properties.slice(0, 2).map((x) => x.key)).toEqual(['size', 'label']))
-    expect((screen.getByRole('button', { name: 'Move Size up' }) as HTMLButtonElement).disabled).toBe(true)
+    await waitFor(() => expect((screen.getByRole('button', { name: 'Move Size up' }) as HTMLButtonElement).disabled).toBe(true))
     // Keyboard dragging needs real layout, which jsdom lacks; the handle exposes its instructions instead.
     expect(screen.getByRole('button', { name: /Reorder Label\. Press space/ })).toBeTruthy()
   })
