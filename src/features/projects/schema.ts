@@ -37,7 +37,7 @@ export const ProjectSchema = z.object({
   aemComponentName: z.string().max(120).default(''),
   inputSource: InputSourceSchema.default({ kind: 'none' }),
   components: z.array(ComponentSchema).default([]),
-  assets: z.array(AssetSchema).max(20).default([]),
+  assets: z.array(AssetSchema).max(40).default([]),
   mappings: z.array(MappingSchema).default([]),
   dialog: DialogStoreSchema.default({ components: {} }),
   /** One entry per component, written only when someone edits the XML by hand. Otherwise the XML is derived. */

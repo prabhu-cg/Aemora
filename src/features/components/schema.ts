@@ -68,6 +68,8 @@ export const ComponentSchema = z.object({
   unsupported: z.array(UnsupportedSchema).max(300).default([]),
   children: z.array(ChildLinkSchema).max(100).default([]),
   meta: z.record(z.string(), z.unknown()).default({}),
+  /** A picture of the design (a Figma render, or the screenshot that was annotated). Points at an asset in the project. */
+  previewAssetId: z.string().max(100).optional(),
   origin: OriginSchema,
 })
 export type ComponentDef = z.infer<typeof ComponentSchema>

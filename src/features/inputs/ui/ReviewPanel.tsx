@@ -76,6 +76,7 @@ export function ReviewPanel({ result, onChange, onAdd, onDiscard, busy }: {
               <div className="flex flex-wrap items-center gap-2">
                 <strong className="text-[15px] font-extrabold tracking-tight text-ink-strong">{c.name}</strong>
                 <span className={badge}>{c.type}</span>
+                {(() => { const a = result.assets.find((x) => x.id === c.previewAssetId); return a ? <img src={a.dataUrl} alt={`Preview of ${c.name}`} className="ml-auto h-12 w-auto max-w-32 rounded border border-hairline object-contain" /> : null })()}
                 <span className="text-[13px] text-ink-muted tabular">{c.properties.length} properties{c.unsupported.length ? `, ${c.unsupported.length} unsupported` : ''}</span>
               </div>
               {c.properties.length > 0 && (

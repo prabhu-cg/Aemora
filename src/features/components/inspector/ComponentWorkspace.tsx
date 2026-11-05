@@ -20,6 +20,7 @@ import type { ComponentDialog } from '../../dialog/schema'
 import { DialogEditor, type Target } from '../../dialog/ui/DialogEditor'
 import { DialogPreview } from '../../preview/ui/DialogPreview'
 import { XmlPanel } from '../../xml/ui/XmlPanel'
+import { DesignPreview } from '../DesignPreview'
 import { PropertyList } from './PropertyList'
 import { PropertyPanel } from './PropertyPanel'
 import { ChildrenEditor, StandardSuggestions, UnsupportedList } from './Extras'
@@ -170,6 +171,15 @@ export function ComponentWorkspace({ project, readOnly = false }: { project: Pro
           <input className="mt-1 h-9 w-full rounded-lg border border-hairline-strong bg-surface px-3 text-sm font-normal" defaultValue={component.description} readOnly={readOnly} placeholder="What this component is for"
             onChange={(e) => { const description = e.target.value; edit((c) => patchComponent(c, { description })) }} />
         </label>
+
+        <DesignPreview
+          component={component} assets={project.assets} readOnly={readOnly}
+          onRemove={() => mutate(project.id, (pr) => {
+            const components = pr.components.map((c) => (c.id === component.id ? { ...c, previewAssetId: undefined } : c))
+            const used = new Set([...components.map((c) => c.previewAssetId), ...components.flatMap((c) => c.properties.map((p) => p.origin.assetId))])
+            return { ...pr, components, assets: pr.assets.filter((a) => used.has(a.id)) }
+          }).catch(() => setError('Could not remove the preview.'))}
+        />
 
         {error && <p role="alert" className="mt-3 rounded-lg bg-danger-soft p-3 text-[13px] font-semibold text-danger">{error}</p>}
 

@@ -55,7 +55,7 @@ export function buildScreenshotResult(draft: Draft, regions: Region[], asset: As
     ? draft.type : classifyComponent(name, properties.map((p) => p.label))
   const component: ComponentDef = {
     id: newId(), name, type, description: '', properties, unsupported: [], children: [],
-    meta: asset ? { screenshot: asset.name } : {}, origin: { kind: 'screenshot', assetId: asset?.id, suggested: false },
+    meta: asset ? { screenshot: asset.name } : {}, previewAssetId: asset?.id, origin: { kind: 'screenshot', assetId: asset?.id, suggested: false },
   }
   return {
     components: [component],

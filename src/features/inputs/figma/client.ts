@@ -31,15 +31,9 @@ export interface FetchFigmaOptions {
   signal?: AbortSignal
 }
 
-/**
- * Reads the file, or only the selected node when the URL had a node-id.
- * Uses the REST API directly from the browser; the token is sent only to api.figma.com.
- */
-export async function fetchFigma({ ref, token, fetchImpl = fetch, signal }: FetchFigmaOptions): Promise<unknown> {
+/** One authenticated GET to api.figma.com, with every failure turned into a plain-language FigmaError. */
+export async function figmaGetJson(url: string, token: string, fetchImpl: typeof fetch = fetch, signal?: AbortSignal): Promise<unknown> {
   if (!token.trim()) throw new FigmaError('missing-token', 'Add a Figma personal access token first. It is kept in memory for this session only.')
-  const base = `https://api.figma.com/v1/files/${encodeURIComponent(ref.fileKey)}`
-  const url = ref.nodeId ? `${base}/nodes?ids=${encodeURIComponent(ref.nodeId)}&geometry=omit` : `${base}?geometry=omit`
-
   let res: Response
   try {
     res = await fetchImpl(url, { headers: { 'X-Figma-Token': token.trim() }, signal })
@@ -63,4 +57,14 @@ export async function fetchFigma({ ref, token, fetchImpl = fetch, signal }: Fetc
   } catch {
     throw new FigmaError('bad-response', 'Figma returned a response that is not valid JSON.')
   }
+}
+
+/**
+ * Reads the file, or only the selected node when the URL had a node-id.
+ * Uses the REST API directly from the browser; the token is sent only to api.figma.com.
+ */
+export async function fetchFigma({ ref, token, fetchImpl = fetch, signal }: FetchFigmaOptions): Promise<unknown> {
+  const base = `https://api.figma.com/v1/files/${encodeURIComponent(ref.fileKey)}`
+  const url = ref.nodeId ? `${base}/nodes?ids=${encodeURIComponent(ref.nodeId)}&geometry=omit` : `${base}?geometry=omit`
+  return figmaGetJson(url, token, fetchImpl, signal)
 }
