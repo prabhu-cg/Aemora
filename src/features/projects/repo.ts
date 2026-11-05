@@ -146,12 +146,13 @@ function describeIssues(err: { issues: { path: PropertyKey[]; message: string }[
     .join('; ')
 }
 
-/**
- * Parse and validate everything first, then write in a single transaction.
- * A failed import never touches existing projects. Imported projects always get a
- * fresh id when it collides, so nothing is overwritten.
- */
-export async function importFromText(text: string): Promise<ImportResult> {
+export interface ParsedImport {
+  projects: Project[]
+  skipped: { index: number; reason: string }[]
+}
+
+/** Read and validate an export or backup file without touching storage. Throws a readable error if nothing usable is in it. */
+export function parseImport(text: string): ParsedImport {
   if (text.length > MAX_IMPORT_BYTES) {
     throw new ProjectError(`That file is larger than ${MAX_IMPORT_BYTES / 1024 / 1024} MB. Aemora imports project JSON up to that size.`)
   }
@@ -175,21 +176,30 @@ export async function importFromText(text: string): Promise<ImportResult> {
     throw new ProjectError('This is not an Aemora project or backup file. Expected format "aemora.project" or "aemora.backup".')
   }
 
-  const valid: Project[] = []
-  const skipped: ImportResult['skipped'] = []
+  const projects: Project[] = []
+  const skipped: ParsedImport['skipped'] = []
   rawProjects.forEach((raw, index) => {
     const parsed = ProjectSchema.safeParse(raw)
-    if (parsed.success) valid.push(parsed.data)
+    if (parsed.success) projects.push(parsed.data)
     else skipped.push({ index, reason: describeIssues(parsed.error) })
   })
-  if (!valid.length) {
+  if (!projects.length) {
     throw new ProjectError(
       skipped.length
         ? `No project in the file could be imported. First problem: ${skipped[0].reason}`
         : 'The file contains no projects.',
     )
   }
+  return { projects, skipped }
+}
 
+/**
+ * Parse and validate everything first, then write in a single transaction.
+ * A failed import never touches existing projects. Imported projects always get a
+ * fresh id when it collides, so nothing is overwritten.
+ */
+export async function importFromText(text: string): Promise<ImportResult> {
+  const { projects: valid, skipped } = parseImport(text)
   const imported = await db.transaction('rw', db.projects, async () => {
     const out: Project[] = []
     for (const p of valid) {

@@ -1,5 +1,6 @@
 import { PageFrame } from './PageFrame'
 import { useTheme, type ThemePref } from '../../lib/theme'
+import { BackupSection } from '../../features/backup/ui/BackupSection'
 
 const options: { value: ThemePref; label: string }[] = [
   { value: 'system', label: 'System' },
@@ -27,6 +28,7 @@ export function SettingsPage() {
           ))}
         </div>
       </fieldset>
+      <BackupSection />
     </PageFrame>
   )
 }

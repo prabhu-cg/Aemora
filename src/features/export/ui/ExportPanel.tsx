@@ -1,0 +1,88 @@
+import { useMemo, useState } from 'react'
+import { AlertTriangle, CheckCircle2, CircleAlert, Download, FileArchive, FileJson } from 'lucide-react'
+import { Button } from '../../../components/ui/Button'
+import { downloadBytes, downloadText, slug } from '../../../lib/download'
+import { exportProjectJson } from '../../projects/repo'
+import type { Project } from '../../projects/schema'
+import { buildBundle, bundleName, componentExports, hasProblems, type ComponentExport } from '../bundle'
+
+const pill = 'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold'
+
+function Checks({ e }: { e: ComponentExport }) {
+  const c = e.counts
+  const gen = c.generatorErrors ? `${c.generatorErrors} to fix` : c.generatorWarnings ? `${c.generatorWarnings} to review` : 'ok'
+  const aem = c.aemErrors === null ? 'not checked' : c.aemErrors ? `${c.aemErrors} to fix` : c.aemWarnings ? `${c.aemWarnings} to review` : 'ok'
+  const tone = (bad: boolean, warn = false) => (bad ? 'bg-danger-soft text-danger' : warn ? 'bg-warning-soft text-warning' : 'bg-success-soft text-success')
+  return (
+    <span className="flex flex-wrap gap-1.5">
+      <span className={`${pill} ${tone(!c.syntaxOk)}`}>{c.syntaxOk ? <CheckCircle2 size={11} aria-hidden="true" /> : <CircleAlert size={11} aria-hidden="true" />}XML syntax: {c.syntaxOk ? 'ok' : 'broken'}</span>
+      <span className={`${pill} ${tone(c.generatorErrors > 0, c.generatorWarnings > 0)}`}>{c.generatorErrors ? <CircleAlert size={11} aria-hidden="true" /> : c.generatorWarnings ? <AlertTriangle size={11} aria-hidden="true" /> : <CheckCircle2 size={11} aria-hidden="true" />}Generator: {gen}</span>
+      <span className={`${pill} ${tone(c.aemErrors === null || c.aemErrors > 0, c.aemWarnings !== null && c.aemWarnings > 0)}`}>{c.aemErrors === null || c.aemErrors > 0 ? <CircleAlert size={11} aria-hidden="true" /> : <CheckCircle2 size={11} aria-hidden="true" />}AEM structure: {aem}</span>
+    </span>
+  )
+}
+
+/** Everything that leaves the app from a project: dialog XML (one file or a ready-to-merge ZIP) and the project itself. */
+export function ExportPanel({ project }: { project: Project }) {
+  const items = useMemo(() => componentExports(project), [project])
+  const [notice, setNotice] = useState('')
+  const flash = (m: string) => { setNotice(m); setTimeout(() => setNotice(''), 3500) }
+  const bad = items.filter(hasProblems)
+
+  if (!items.length) {
+    return (
+      <section aria-label="Export" className="mb-10">
+        <h2 className="mb-2 text-xl">Export</h2>
+        <p className="text-ink-muted">Nothing to export yet. Add a component first, and its dialog XML will be listed here.</p>
+        <div className="mt-3"><Button variant="outline" onClick={() => downloadText(`${slug(project.name)}.aemora.json`, exportProjectJson(project))}><FileJson size={16} aria-hidden="true" />Download project JSON</Button></div>
+      </section>
+    )
+  }
+
+  const zip = () => {
+    try { downloadBytes(bundleName(project), buildBundle(project).zip, 'application/zip'); flash(`Downloaded ${bundleName(project)}.`) }
+    catch (e) { flash(e instanceof Error ? e.message : 'Could not build the ZIP.') }
+  }
+
+  return (
+    <section aria-label="Export" className="mb-10">
+      <h2 className="text-xl">Export</h2>
+      <p className="mt-1 max-w-[70ch] text-[13px] text-ink-muted">
+        Each dialog is exported as it appears in the XML tab, including any hand edits. The ZIP follows an AEM project’s folder layout, so you can merge <code className="rounded bg-sand px-1 font-mono text-[12px]">jcr_root</code> into <code className="rounded bg-sand px-1 font-mono text-[12px]">ui.apps/src/main/content</code>.
+      </p>
+
+      {bad.length > 0 && (
+        <p role="status" className="mt-3 flex items-start gap-2 rounded-lg bg-warning-soft p-3 text-[13px] text-warning">
+          <AlertTriangle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
+          <span><strong>{bad.length} of {items.length} {items.length === 1 ? 'dialog' : 'dialogs'} {bad.length === 1 ? 'has' : 'have'} problems</strong> ({bad.map((b) => b.component.name || 'Untitled').join(', ')}). You can still export them, and the ZIP’s README lists what is wrong.</span>
+        </p>
+      )}
+
+      <ul aria-label="Dialogs to export" className="mt-4 divide-y divide-hairline border-y border-hairline">
+        {items.map((e) => (
+          <li key={e.component.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3">
+            <div className="min-w-0 flex-1 basis-72">
+              <p className="flex flex-wrap items-center gap-2">
+                <strong className="text-[15px] font-extrabold tracking-tight text-ink-strong">{e.component.name || 'Untitled component'}</strong>
+                {e.edited && <span className="rounded-md bg-accent-tint px-1.5 py-0.5 text-[11px] font-bold text-accent-text">hand-edited XML</span>}
+                {e.format === 'inline' && <span className="rounded-md bg-sand px-1.5 py-0.5 text-[11px] font-bold text-ink">inline cq:dialog</span>}
+              </p>
+              <code className="mt-0.5 block truncate text-[12px] text-ink-muted" title={e.aemPath}>{e.aemPath}</code>
+              <div className="mt-1.5"><Checks e={e} /></div>
+            </div>
+            <Button size="sm" variant="outline" onClick={() => { downloadText(e.filename, e.xml, 'application/xml'); flash(`Downloaded ${e.filename}.`) }} aria-label={`Download XML for ${e.component.name || 'component'}`}>
+              <Download size={14} aria-hidden="true" />Download XML
+            </Button>
+          </li>
+        ))}
+      </ul>
+
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <Button onClick={zip}><FileArchive size={16} aria-hidden="true" />Download all as ZIP</Button>
+        <Button variant="outline" onClick={() => { downloadText(`${slug(project.name)}.aemora.json`, exportProjectJson(project)); flash('Downloaded the project JSON.') }}><FileJson size={16} aria-hidden="true" />Download project JSON</Button>
+        <span role="status" className="text-[13px] font-semibold text-ink-muted">{notice}</span>
+      </div>
+      <p className="mt-3 max-w-[70ch] text-[12px] text-ink-muted">The project JSON is the complete project: components, mappings, dialog layout, XML edits and screenshots. Import it on the Projects page to carry on editing. It never contains a Figma token.</p>
+    </section>
+  )
+}

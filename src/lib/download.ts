@@ -13,3 +13,14 @@ export function downloadText(filename: string, text: string, mime = 'application
   a.remove()
   setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
+
+export function downloadBytes(filename: string, bytes: Uint8Array, mime = 'application/octet-stream') {
+  const url = URL.createObjectURL(new Blob([bytes as BlobPart], { type: mime }))
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}

@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Copy, Lock } from 'lucide-react'
-import { PageFrame, Upcoming } from './PageFrame'
+import { PageFrame } from './PageFrame'
 import { Button } from '../../components/ui/Button'
 import { InputPanel } from '../../features/inputs/ui/InputPanel'
+import { ExportPanel } from '../../features/export/ui/ExportPanel'
 import { ComponentWorkspace } from '../../features/components/inspector/ComponentWorkspace'
 import { applyImport } from '../../features/inputs/apply'
 import { copyProject, saveProject } from '../../features/projects/repo'
@@ -76,7 +77,7 @@ export function ProjectView({ project, readOnly = false }: { project: Project; r
         <ComponentWorkspace project={project} readOnly={readOnly} />
       </section>
 
-      {!readOnly && <Upcoming chunk="chunk 8" items={['Export a project, a backup, or the XML for every component in one go']} />}
+      <ExportPanel project={project} />
     </PageFrame>
   )
 }

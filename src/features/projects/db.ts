@@ -9,11 +9,24 @@ export interface QuarantinedRow {
   raw: unknown
 }
 
+export interface Snapshot {
+  id?: number
+  createdAt: string
+  kind: 'manual' | 'auto' | 'before-restore'
+  label: string
+  projectCount: number
+  bytes: number
+  /** A complete aemora.backup file. */
+  json: string
+}
+
 export class AemoraDB extends Dexie {
   projects!: EntityTable<Project, 'id'>
   /** Last known-good copy of each project, written in the same transaction as every save. */
   previous!: EntityTable<Project, 'id'>
   quarantine!: EntityTable<QuarantinedRow, 'qid'>
+  /** Restore points: whole-library backups kept in this browser. */
+  snapshots!: EntityTable<Snapshot, 'id'>
 
   constructor(name = 'aemora') {
     super(name)
@@ -50,6 +63,8 @@ export class AemoraDB extends Dexie {
         })
       }
     })
+    // v5 (chunk 8): restore points.
+    this.version(5).stores({ snapshots: '++id, createdAt' })
   }
 }
 

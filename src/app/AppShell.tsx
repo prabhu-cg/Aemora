@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, Outlet } from 'react-router-dom'
 import { Menu } from 'lucide-react'
 import { Logo } from '../components/ui/Logo'
@@ -6,9 +6,12 @@ import { ThemeToggle } from '../components/ui/ThemeToggle'
 import { Drawer } from '../components/ui/Drawer'
 import { Frame } from '../components/ui/Frame'
 import { SidebarNav } from './SidebarNav'
+import { maybeAutoSnapshot } from '../features/backup/service'
 
 export function AppShell() {
   const [menu, setMenu] = useState(false)
+  // A quiet automatic restore point, at most every few hours and only when something changed.
+  useEffect(() => { void maybeAutoSnapshot().catch(() => undefined) }, [])
   return (
     <div className="min-h-dvh bg-bg">
       <a href="#main-content" className="sr-only z-50 rounded-md bg-bg px-4 py-2 text-sm font-semibold focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:outline-2 focus:outline-accent-text">

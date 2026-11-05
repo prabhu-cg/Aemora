@@ -25,6 +25,7 @@ async function open(opts: { enumNoValues?: boolean } = {}) {
   return p
 }
 const editor = () => screen.getByRole('textbox', { name: /dialog XML/i }) as HTMLTextAreaElement
+const xmlRegion = () => within(screen.getByRole('region', { name: 'Dialog XML' }))
 const stored = async (id: string) => Object.values((await db.projects.get(id))!.generatedXml)[0]
 
 describe('XML tab', () => {
@@ -35,7 +36,7 @@ describe('XML tab', () => {
     expect(editor().getAttribute('aria-label')).toBe('Dialog XML (read-only)')
     expect(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true)
     for (const part of ['jcr:root', 'cq/gui/components/authoring/dialog', 'sling:resourceType="granite/ui/components/coral/foundation/tabs"', 'layouts/fixedcolumns', 'fieldLabel="Title"', 'name="./size"']) expect(xml).toContain(part)
-    expect(screen.getByText('/apps/my-site/components/card/_cq_dialog/.content.xml')).toBeTruthy()
+    expect(xmlRegion().getByText('/apps/my-site/components/card/_cq_dialog/.content.xml')).toBeTruthy()
     expect((await db.projects.toArray())[0].generatedXml).toEqual({}) // nothing stored for untouched output
   })
 
@@ -166,7 +167,7 @@ describe('XML tab', () => {
     URL.createObjectURL = vi.fn((b: Blob) => { blob = b; return 'blob:x' }) as never
     URL.revokeObjectURL = vi.fn() as never
     const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) { expect(this.download).toBe('card.cq_dialog.content.xml') })
-    await user.click(screen.getByRole('button', { name: /Download/ }))
+    await user.click(xmlRegion().getByRole('button', { name: /Download/ }))
     expect(click).toHaveBeenCalled()
     expect(blob?.type).toMatch(/application\/xml/)
     expect(await blob!.text()).toBe(editor().value)
