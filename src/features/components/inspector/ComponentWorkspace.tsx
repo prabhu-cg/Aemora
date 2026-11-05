@@ -21,6 +21,7 @@ export function ComponentWorkspace({ project }: { project: Project }) {
   const [error, setError] = useState('')
   const [undo, setUndo] = useState<Undo | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [lastProperty, setLastProperty] = useState<Property | undefined>(undefined)
 
   const components = project.components
   const component = components.find((c) => c.id === selectedId) ?? components[0]
@@ -28,6 +29,9 @@ export function ComponentWorkspace({ project }: { project: Project }) {
 
   if (!component) return <p className="text-ink-muted">No components yet. Bring in a design above.</p>
   const property = component.properties.find((p) => p.id === propId)
+  // Keep showing the last property while the panel slides out.
+  if (property && property !== lastProperty) setLastProperty(property)
+  const shownProperty = property ?? lastProperty
 
   const edit = (fn: (c: ComponentDef) => ComponentDef) =>
     mutateProject(project.id, (p) => ({ ...p, components: p.components.map((c) => (c.id === component.id ? fn(c) : c)) }))
@@ -143,15 +147,15 @@ export function ComponentWorkspace({ project }: { project: Project }) {
         <ChildrenEditor component={component} siblings={components} onChange={(i, patch) => edit((c) => patchChild(c, i, patch))} />
       </div>
 
-      {property && (
+      {shownProperty && (
         <PropertyPanel
-          key={property.id}
+          open={!!property}
           component={component}
-          property={property}
-          issues={issues.filter((i) => i.propertyId === property.id)}
-          onChange={(patch: PropertyPatch) => edit((c) => patchProperty(c, property.id, patch))}
+          property={shownProperty}
+          issues={issues.filter((i) => i.propertyId === shownProperty.id)}
+          onChange={(patch: PropertyPatch) => edit((c) => patchProperty(c, shownProperty.id, patch))}
           onRemove={() => {
-            const r = removeProperty(component, property.id)
+            const r = removeProperty(component, shownProperty.id)
             if (r) { setUndo({ kind: 'property', property: r.removed, index: r.index }); setPropId(''); edit(() => r.component) }
           }}
           onClose={() => setPropId('')}

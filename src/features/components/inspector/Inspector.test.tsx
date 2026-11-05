@@ -63,7 +63,7 @@ describe('property inspector', () => {
     const desc = within(panel).getByLabelText('Description')
     await user.clear(desc); await user.type(desc, 'Read by screen readers')
     await waitFor(async () => expect((await first(p.id)).properties[6]).toMatchObject({ required: true, group: 'Accessibility', description: 'Read by screen readers' }))
-    expect(screen.getByText(/Groups: .*Accessibility/)).toBeTruthy()
+    expect(await screen.findByText(/Groups: .*Accessibility/)).toBeTruthy()
     await user.selectOptions(within(panel).getByLabelText('Type'), 'number')
     await user.type(within(panel).getByLabelText('Default value'), '3')
     await waitFor(async () => expect((await first(p.id)).properties[6].defaultValue).toBe(3))
@@ -85,7 +85,7 @@ describe('property inspector', () => {
     await user.click(screen.getByRole('button', { name: 'Edit Size' }))
     await user.click(within(await panelOf()).getByRole('button', { name: /Remove property/ }))
     await waitFor(async () => expect((await first(p.id)).properties.map((x) => x.key)).not.toContain('size'))
-    expect(screen.queryByRole('complementary', { name: /^Property:/ })).toBeNull()
+    await waitFor(() => expect(screen.queryByRole('complementary', { name: /^Property:/ })).toBeNull())
     await user.click(await screen.findByRole('button', { name: /Undo/ }))
     await waitFor(async () => expect((await first(p.id)).properties.map((x) => x.key).slice(0, 3)).toEqual(['label', 'size', 'variant']))
   })
@@ -119,7 +119,7 @@ describe('property inspector', () => {
     await waitFor(() => expect(screen.queryByRole('complementary', { name: /^Property:/ })).toBeNull())
     await user.click(screen.getByRole('button', { name: 'Edit Label' }))
     await user.click(within(await panelOf()).getByRole('button', { name: 'Close panel' }))
-    expect(screen.queryByRole('complementary', { name: /^Property:/ })).toBeNull()
+    await waitFor(() => expect(screen.queryByRole('complementary', { name: /^Property:/ })).toBeNull())
   })
 
   it('offers standard properties for the type and adds only the chosen ones', async () => {
@@ -195,6 +195,39 @@ describe('property inspector', () => {
     await user.clear(label)
     expect(await within(screen.getByRole('complementary', { name: /^Property:/ })).findByText('Add a label authors will see.')).toBeTruthy()
     expect(screen.queryByText(/Could not save/)).toBeNull()
+  })
+})
+
+describe('panel motion', () => {
+  it('slides in (closed first, then open), leaves with a closed state, is inert while leaving, and keeps one shell across rows', async () => {
+    const user = userEvent.setup()
+    await open()
+    await user.click(screen.getByRole('button', { name: 'Edit Label' }))
+    const panel = await panelOf()
+    await waitFor(() => expect(panel.getAttribute('data-state')).toBe('open'))
+    expect(panel.className).toContain('slide-panel')
+    expect(document.body.getAttribute('data-side-panel')).toBe('open')
+
+    await user.click(screen.getByRole('button', { name: 'Edit Size' })) // switching rows must not remount the shell
+    expect(await screen.findByRole('complementary', { name: 'Property: Size' })).toBe(panel)
+    expect(panel.getAttribute('data-state')).toBe('open')
+
+    await user.keyboard('{Escape}')
+    await waitFor(() => expect(panel.getAttribute('data-state')).toBe('closed'))
+    expect(panel.hasAttribute('inert')).toBe(true)
+    expect(document.body.hasAttribute('data-side-panel')).toBe(false) // page starts reclaiming its space
+    await waitFor(() => expect(panel.isConnected).toBe(false))
+  })
+  it('can be reopened while it is still leaving', async () => {
+    const user = userEvent.setup()
+    await open()
+    await user.click(screen.getByRole('button', { name: 'Edit Label' }))
+    const panel = await panelOf()
+    await user.keyboard('{Escape}')
+    await user.click(screen.getByRole('button', { name: 'Edit Link' }))
+    await waitFor(() => expect(panel.getAttribute('data-state')).toBe('open'))
+    expect(panel.hasAttribute('inert')).toBe(false)
+    expect(panel.isConnected).toBe(true)
   })
 })
 

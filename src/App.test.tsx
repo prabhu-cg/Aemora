@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { AppRoutes } from './App'
@@ -39,7 +39,8 @@ describe('routing and shell', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Open navigation' }))
     const dialog = await screen.findByRole('dialog', { name: 'Navigation' })
     await userEvent.click(within(dialog).getByRole('link', { name: 'Settings' }))
-    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(dialog.getAttribute('data-state')).toBe('closed') // starts sliding out at once
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
   })
   it('redirects unknown routes to the landing page', () => {
     at('/nope')

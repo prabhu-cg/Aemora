@@ -1,27 +1,35 @@
 import { useEffect, useRef, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
+import { PANEL_EXIT_MS, usePresence } from '../../lib/presence'
 
 /**
- * Non-modal right-hand panel for contextual configuration. The page behind stays usable
- * (you can pick another row, reorder, scroll). Escape closes it from inside.
+ * Non-modal right-hand panel for contextual configuration. It slides in from the right and
+ * out again; the page behind stays usable (pick another row, reorder, scroll). Escape closes it.
+ * Keep it mounted and toggle `open` so the exit can play.
  */
-export function SidePanel({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
+export function SidePanel({ open, title, onClose, children }: { open: boolean; title: string; onClose: () => void; children: ReactNode }) {
+  const { mounted, state } = usePresence(open, PANEL_EXIT_MS)
   const ref = useRef<HTMLElement>(null)
+
   useEffect(() => {
-    ref.current?.querySelector<HTMLElement>('input,textarea,select')?.focus({ preventScroll: true })
     // Lets the page make room for the panel instead of sitting under it (see index.css).
-    document.body.setAttribute('data-side-panel', 'open')
+    // Tied to the panel's own open state so the page and the panel start moving on the same frame.
+    if (state === 'open') document.body.setAttribute('data-side-panel', 'open')
     return () => document.body.removeAttribute('data-side-panel')
-  }, [])
+  }, [state])
+
+  if (!mounted) return null
   // Portal to <body>: an animated ancestor would otherwise become the containing block for `fixed`.
   return createPortal(
     <aside
       ref={ref}
       role="complementary"
       aria-label={title}
+      data-state={state}
+      inert={!open}
       onKeyDown={(e) => e.key === 'Escape' && onClose()}
-      className="fixed inset-y-0 right-0 z-30 flex w-full max-w-[26rem] flex-col border-l border-hairline-strong bg-surface shadow-[0_18px_40px_-14px_#10101433]"
+      className="slide-panel fixed inset-y-0 right-0 z-30 flex w-full max-w-[26rem] flex-col border-l border-hairline-strong bg-surface shadow-[0_18px_40px_-14px_#10101433]"
     >
       <div className="flex shrink-0 items-start justify-between gap-3 border-b border-hairline px-5 py-4">
         <h2 className="text-base">{title}</h2>

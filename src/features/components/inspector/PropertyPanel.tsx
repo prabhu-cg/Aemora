@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import { SidePanel } from '../../../components/ui/SidePanel'
 import { Button } from '../../../components/ui/Button'
@@ -24,14 +24,30 @@ function Field({ label, error, hint, children }: { label: string; error?: string
   )
 }
 
-export function PropertyPanel({ component, property, issues, onChange, onRemove, onClose }: {
+type PanelProps = {
   component: ComponentDef
   property: Property
   issues: Issue[]
   onChange: (patch: PropertyPatch) => void
   onRemove: () => void
   onClose: () => void
-}) {
+}
+
+/**
+ * The shell stays mounted so it can slide out. Only the form is keyed to the property,
+ * so switching rows swaps the content without replaying the slide.
+ */
+export function PropertyPanel({ open, ...p }: PanelProps & { open: boolean }) {
+  return (
+    <SidePanel open={open} title={`Property: ${p.property.label || p.property.key}`} onClose={p.onClose}>
+      <PropertyForm key={p.property.id} {...p} />
+    </SidePanel>
+  )
+}
+
+function PropertyForm({ component, property, issues, onChange, onRemove }: PanelProps) {
+  const formRef = useRef<HTMLFormElement>(null)
+  useEffect(() => { formRef.current?.querySelector<HTMLElement>('input,textarea,select')?.focus({ preventScroll: true }) }, [])
   // Local copy keeps typing smooth; each change is also saved straight away.
   const [d, setD] = useState(property)
   const [valuesText, setValuesText] = useState(property.allowedValues.join('\n'))
@@ -60,8 +76,7 @@ export function PropertyPanel({ component, property, issues, onChange, onRemove,
   const groups = [...new Set(component.properties.map((p) => p.group).filter(Boolean))]
 
   return (
-    <SidePanel title={`Property: ${property.label || property.key}`} onClose={onClose}>
-      <form className="flex flex-col gap-4" onSubmit={(e) => e.preventDefault()}>
+      <form ref={formRef} className="flex flex-col gap-4" onSubmit={(e) => e.preventDefault()}>
         <Field label="Label" error={err('empty-label')} hint="What authors see above the field.">
           {(id, by) => <input id={id} aria-describedby={by} aria-invalid={!!err('empty-label')} className={input} value={d.label} onChange={(e) => edit({ label: e.target.value })} />}
         </Field>
@@ -130,6 +145,5 @@ export function PropertyPanel({ component, property, issues, onChange, onRemove,
           <Button type="button" variant="outline" className="!border-danger !text-danger" onClick={onRemove}><Trash2 size={15} aria-hidden="true" />Remove property</Button>
         </div>
       </form>
-    </SidePanel>
   )
 }

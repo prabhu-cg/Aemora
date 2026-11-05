@@ -21,13 +21,53 @@
   * { scrollbar-width: thin; scrollbar-color: var(--hairline-strong) transparent; }
 }
 
+/*
+ * Dropdowns: one chevron, same inset and size everywhere. Native arrows sit at different
+ * offsets per browser and size. Unlayered on purpose so the padding wins over utility classes.
+ */
+select:not([multiple]) {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236f6963' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+  padding-right: 2.25rem;
+  text-overflow: ellipsis;
+}
+:root.dark select:not([multiple]) {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a8a097' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+select:not([multiple]):disabled { opacity: 0.6; }
+
+/*
+ * Panels slide in from the right and leave faster than they arrived. The same curve and
+ * duration drive the backdrop and the page content that makes room, so they move as one.
+ */
+:root { --ease-out: cubic-bezier(0.16, 1, 0.3, 1); }
+.slide-panel {
+  transform: translateX(100%);
+  transition: transform 200ms cubic-bezier(0.4, 0, 1, 1);
+}
+.slide-panel[data-side='left'] { transform: translateX(-100%); }
+.slide-panel[data-state='open'] { transform: none; transition: transform 320ms var(--ease-out); }
+.slide-backdrop { opacity: 0; transition: opacity 200ms linear; }
+.slide-backdrop[data-state='open'] { opacity: 1; transition: opacity 280ms var(--ease-out); }
+
 /* Wide screens: the page makes room for the non-modal side panel rather than sitting under it. */
 @media (min-width: 1024px) {
-  #main-content { transition: padding-right 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
-  body[data-side-panel] #main-content { padding-right: 26rem; }
+  #main-content { transition: padding-right 200ms cubic-bezier(0.4, 0, 1, 1); }
+  body[data-side-panel] #main-content { padding-right: 26rem; transition: padding-right 320ms var(--ease-out); }
 }
 
 @media (prefers-reduced-motion: no-preference) {
   .rise { animation: rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
   @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+}
+
+/* Reduced motion: no travel. The panel and backdrop fade, and the page does not shift. */
+@media (prefers-reduced-motion: reduce) {
+  .slide-panel, .slide-panel[data-side='left'] { transform: none; opacity: 0; transition: opacity 120ms linear; }
+  .slide-panel[data-state='open'] { opacity: 1; transition: opacity 160ms linear; }
+  #main-content, body[data-side-panel] #main-content { transition: none; }
 }
