@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react'
-import { AlertTriangle, CheckCircle2, CircleAlert, Download, FileArchive, FileJson } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, CircleAlert, Download, FileArchive, FileJson, Wand2 } from 'lucide-react'
 import { Button } from '../../../components/ui/Button'
 import { downloadBytes, downloadText, slug } from '../../../lib/download'
 import { exportProjectJson, mutateProject } from '../../projects/repo'
 import type { Project } from '../../projects/schema'
+import { autoFixComponent, autoFixProject, type Fix } from '../../autofix/autofix'
+import { createSnapshot } from '../../backup/service'
 import { buildBundle, bundleName, componentExports, hasProblems, problemsOf, type ComponentExport } from '../bundle'
 import type { WorkspaceView } from '../../components/inspector/ComponentWorkspace'
 
@@ -38,6 +40,18 @@ export function ExportPanel({ project, onGoTo, readOnly = false }: { project: Pr
   const [openId, setOpenId] = useState<string | null>(null)
   const flash = (m: string) => { setNotice(m); setTimeout(() => setNotice(''), 3500) }
   const bad = items.filter(hasProblems)
+  // Hand-edited XML is exported as written, so changing the design would not change it. Those get the reset button instead.
+  const fixesFor = (e: ComponentExport): Fix[] => (e.edited || readOnly ? [] : autoFixComponent(project, e.component.id).fixes)
+  const fixable = items.filter((e) => fixesFor(e).length)
+  const [applied, setApplied] = useState<Fix[] | null>(null)
+  const applyFixes = async (only?: string) => {
+    const before = only ? autoFixComponent(project, only).fixes : autoFixProject(project).fixes
+    try {
+      await createSnapshot('manual', 'Before automatic fixes').catch(() => null)
+      await mutateProject(project.id, (pr) => (only ? autoFixComponent(pr, only).project : autoFixProject(pr).project))
+      setApplied(before)
+    } catch { flash('Could not apply the fixes.') }
+  }
 
   if (!items.length) {
     return (
@@ -68,8 +82,17 @@ export function ExportPanel({ project, onGoTo, readOnly = false }: { project: Pr
             <strong>{bad.length} of {items.length} {items.length === 1 ? 'dialog' : 'dialogs'} {bad.length === 1 ? 'has' : 'have'} problems</strong> ({bad.map((b) => b.component.name || 'Untitled').join(', ')}). The details are listed under {bad.length === 1 ? 'that dialog' : 'each dialog'} below, each with a button that opens the place to fix it.
             {' '}<button type="button" className="cursor-pointer font-bold underline" onClick={() => { setOpenId(bad[0].component.id); setTimeout(() => document.getElementById(`export-${bad[0].component.id}`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 0) }}>Show the problems</button>.
             You can still export them anyway; the ZIP’s README lists what is wrong.
+            {fixable.length > 0 && <span className="mt-2 block"><Button size="sm" variant="outline" onClick={() => void applyFixes()}><Wand2 size={14} aria-hidden="true" />Fix what can be fixed automatically ({fixable.reduce((n, e) => n + fixesFor(e).length, 0)})</Button></span>}
           </span>
         </p>
+      )}
+
+      {applied && (
+        <div role="status" className="mt-3 rounded-lg bg-success-soft p-3 text-[13px] text-success">
+          <p className="flex items-center justify-between gap-2"><strong>{applied.length === 0 ? 'Nothing needed fixing.' : `Fixed ${applied.length} ${applied.length === 1 ? 'thing' : 'things'}. A restore point was saved first.`}</strong>
+            <button type="button" className="cursor-pointer font-bold underline" onClick={() => setApplied(null)}>Dismiss</button></p>
+          <ul className="mt-1 list-disc pl-5">{applied.map((f, i) => <li key={i}><strong>{f.componentName || 'Untitled'}:</strong> {f.message}</li>)}</ul>
+        </div>
       )}
 
       <ul aria-label="Dialogs to export" className="mt-4 divide-y divide-hairline border-y border-hairline">
@@ -99,6 +122,13 @@ export function ExportPanel({ project, onGoTo, readOnly = false }: { project: Pr
                         </li>
                       ))}
                     </ul>
+                    {fixesFor(e).length > 0 && (
+                      <div className="mt-2 rounded-lg border border-hairline p-3">
+                        <p className="font-bold text-ink-strong">These can be fixed automatically</p>
+                        <ul className="mt-1 list-disc pl-5 text-ink">{fixesFor(e).map((f, i) => <li key={i}>{f.message}</li>)}</ul>
+                        <Button size="sm" variant="outline" className="mt-2" onClick={() => void applyFixes(e.component.id)}><Wand2 size={14} aria-hidden="true" />Fix {e.component.name || 'this component'} automatically</Button>
+                      </div>
+                    )}
                     {e.edited && !readOnly && (confirmId === e.component.id ? (
                       <p role="alert" className="mt-2 flex flex-wrap items-center gap-2">Discard the hand edits to {e.component.name || 'this component'}’s XML?
                         <Button size="sm" variant="outline" className="!border-danger !text-danger" onClick={() => resetXml(e.component.id)}>Discard and regenerate</Button>

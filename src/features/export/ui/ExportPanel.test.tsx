@@ -140,6 +140,28 @@ describe('Export section in your own projects', () => {
     expect(within(r).queryByRole('button', { name: 'Reset to generated XML' })).toBeNull()
   })
 
+  it('fixes the obvious problems with one button, saves a restore point first, lists what it did, and leaves choices to you', async () => {
+    const user = userEvent.setup()
+    const p = await createProject({ name: 'Site' })
+    const c = makeComponent({ name: 'Card', properties: [
+      makeProperty({ key: 'bad key', label: 'Title' }),
+      makeProperty({ key: 'tone', label: 'Tone', type: 'enum', allowedValues: [] }),
+    ] })
+    await mutateProject(p.id, (x) => ({ ...x, components: [c] }))
+    render(<MemoryRouter initialEntries={[`/app/generator/${p.id}`]}><AppRoutes /></MemoryRouter>)
+    const r = await region()
+    await user.click(await within(r).findByRole('button', { name: /Fix what can be fixed automatically \(1\)/ }))
+    const done = await within(r).findByText(/Fixed 1 thing/)
+    expect(done.textContent).toMatch(/restore point was saved first/)
+    expect(within(r).getByText(/Changed the invalid field name “bad key” to badKey/)).toBeTruthy()
+    const saved = (await db.projects.get(p.id))!
+    expect(saved.components[0].properties.map((q) => q.key)).toEqual(['badKey', 'tone'])
+    expect(await db.snapshots.count()).toBeGreaterThan(0)
+    // The empty select needs the author's choices, so it is still listed and there is nothing more to auto-fix.
+    expect(within(r).queryByRole('button', { name: /Fix what can be fixed automatically/ })).toBeNull()
+    expect(r.textContent).toMatch(/needs at least one choice/)
+  })
+
   it('with no components, says so and still offers the project JSON', async () => {
     const p = await createProject({ name: 'Empty' })
     render(<MemoryRouter initialEntries={[`/app/generator/${p.id}`]}><AppRoutes /></MemoryRouter>)
