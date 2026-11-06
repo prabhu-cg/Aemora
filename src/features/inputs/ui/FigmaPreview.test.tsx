@@ -38,7 +38,8 @@ function stubFigma(opts: { imageDownloadFails?: boolean } = {}) {
 async function readFigma(user: ReturnType<typeof userEvent.setup>, { previews = true }: { previews?: boolean } = {}) {
   const p = await createProject({ name: 'Design system' })
   render(<MemoryRouter initialEntries={[`/app/generator/${p.id}`]}><AppRoutes /></MemoryRouter>)
-  await screen.findByRole('heading', { name: 'Bring in a design' })
+  await userEvent.setup().click(await screen.findByRole('button', { name: 'Bring in a design' }))
+  await screen.findByRole('dialog', { name: 'Bring in a design' })
   await user.click(screen.getByRole('tab', { name: 'Figma API' }))
   await user.type(screen.getByLabelText('Figma file URL or file key'), `https://www.figma.com/design/${KEY}/Design-System`)
   await user.type(screen.getByLabelText('Personal access token'), TOKEN)

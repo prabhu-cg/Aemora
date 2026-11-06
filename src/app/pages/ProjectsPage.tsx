@@ -8,7 +8,7 @@ import { Button } from '../../components/ui/Button'
 import { db } from '../../features/projects/db'
 import {
   ProjectError, deleteProject, duplicateProject, exportBackupJson, exportProjectJson,
-  importFromText, recoverProjects, renameProject, MAX_IMPORT_BYTES,
+  importFromText, recoverProjects, MAX_IMPORT_BYTES,
 } from '../../features/projects/repo'
 import { NewProjectDrawer } from '../../features/projects/NewProjectDrawer'
 import { ProjectRow } from '../../features/projects/ProjectRow'
@@ -101,7 +101,6 @@ export function ProjectsPage() {
               key={p.id}
               project={p}
               onOpen={() => open(p)}
-              onRename={async (name) => { await renameProject(p.id, name) }}
               onDuplicate={() => guard(async () => { await duplicateProject(p.id); setNotice({ tone: 'success', text: `Duplicated “${p.name}”.` }) }, 'Could not duplicate the project.')}
               onExport={() => downloadText(`${slug(p.aemComponentName || p.name)}.aemora.json`, exportProjectJson(p))}
               onDelete={() => guard(() => deleteProject(p.id), 'Could not delete the project.')}

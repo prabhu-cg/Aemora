@@ -110,7 +110,7 @@ describe('AEM fields view', () => {
     const p = await open()
     await user.selectOptions(typeSelect('Label'), 'select')
     expect((await screen.findAllByText(/A select needs at least one choice/)).length).toBeGreaterThan(0) // on the row, and in the Export list below
-    expect(screen.getByText(/to fix/, { selector: '[role="tab"] span' })).toBeTruthy()
+    expect(screen.getByRole('tab', { name: /AEM fields.*to fix/ })).toBeTruthy()
     await user.click(screen.getByRole('button', { name: 'Configure Label' }))
     const panel = await panelOf()
     await user.type(within(panel).getByLabelText('Allowed values'), 'one{Enter}two')

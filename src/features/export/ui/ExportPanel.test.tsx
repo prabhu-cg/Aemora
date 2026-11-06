@@ -20,7 +20,7 @@ function captureDownloads() {
   vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) { names.push(this.download) })
   return { blobs, names }
 }
-const region = () => screen.findByRole('region', { name: 'Export' })
+const region = async () => { await userEvent.setup().click(await screen.findByRole('tab', { name: /^Export/ })); return screen.findByRole('region', { name: 'Export' }) }
 
 describe('Export section on the sample project', () => {
   const open = async () => {

@@ -7,7 +7,7 @@ import { PANEL_EXIT_MS, usePresence } from '../../lib/presence'
  * Modal drawer for focused tasks (new project, mobile navigation). Slides in from its edge over a
  * fading backdrop. Escape closes; focus moves in and is restored on close.
  */
-export function Drawer({ open, title, onClose, children, side = 'right' }: { open: boolean; title: string; onClose: () => void; children: ReactNode; side?: 'left' | 'right' }) {
+export function Drawer({ open, title, onClose, children, side = 'right', size = 'md' }: { open: boolean; title: string; onClose: () => void; children: ReactNode; side?: 'left' | 'right'; /** wide suits a drawer that holds a whole workflow, such as bringing in a design. */ size?: 'md' | 'wide' }) {
   const { mounted, state } = usePresence(open, PANEL_EXIT_MS)
   const ref = useRef<HTMLDivElement>(null)
   // Keep the latest onClose without re-running the focus effect on every parent render.
@@ -55,7 +55,7 @@ export function Drawer({ open, title, onClose, children, side = 'right' }: { ope
         aria-label={title}
         data-state={state}
         data-side={side}
-        className={`slide-panel h-full w-full overflow-auto bg-surface p-6 shadow-[0_18px_40px_-14px_#10101433] ${side === 'left' ? 'max-w-72 border-r border-hairline-strong' : 'max-w-md border-l border-hairline-strong'}`}
+        className={`slide-panel h-full w-full overflow-auto bg-surface p-6 shadow-[0_18px_40px_-14px_#10101433] ${side === 'left' ? 'max-w-72 border-r border-hairline-strong' : `${size === 'wide' ? 'max-w-2xl' : 'max-w-md'} border-l border-hairline-strong`}`}
       >
         <div className="flex items-start justify-between">
           <h2 className="text-lg">{title}</h2>

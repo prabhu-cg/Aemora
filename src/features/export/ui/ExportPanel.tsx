@@ -56,7 +56,7 @@ export function ExportPanel({ project, onGoTo, readOnly = false }: { project: Pr
   if (!items.length) {
     return (
       <section aria-label="Export" className="mb-10">
-        <h2 className="mb-2 text-xl">Export</h2>
+        <h2 className="sr-only">Export</h2>
         <p className="text-ink-muted">Nothing to export yet. Add a component first, and its dialog XML will be listed here.</p>
         <div className="mt-3"><Button variant="outline" onClick={() => downloadText(`${slug(project.name)}.aemora.json`, exportProjectJson(project))}><FileJson size={16} aria-hidden="true" />Download project JSON</Button></div>
       </section>
@@ -70,7 +70,7 @@ export function ExportPanel({ project, onGoTo, readOnly = false }: { project: Pr
 
   return (
     <section aria-label="Export" className="mb-10">
-      <h2 className="text-xl">Export</h2>
+      <h2 className="sr-only">Export</h2>
       <p className="mt-1 max-w-[70ch] text-[13px] text-ink-muted">
         Each dialog is exported as it appears in the XML tab, including any hand edits. The ZIP follows an AEM project’s folder layout, so you can merge <code className="rounded bg-sand px-1 font-mono text-[12px]">jcr_root</code> into <code className="rounded bg-sand px-1 font-mono text-[12px]">ui.apps/src/main/content</code>.
       </p>

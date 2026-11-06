@@ -12,7 +12,8 @@ beforeEach(async () => { await Promise.all([db.projects.clear(), db.previous.cle
 async function open() {
   const p = await createProject({ name: 'Teaser' })
   render(<MemoryRouter initialEntries={[`/app/generator/${p.id}`]}><AppRoutes /></MemoryRouter>)
-  await screen.findByRole('heading', { name: 'Bring in a design' })
+  await userEvent.setup().click(await screen.findByRole('button', { name: 'Bring in a design' }))
+  await screen.findByRole('dialog', { name: 'Bring in a design' })
   return p
 }
 const paste = (user: ReturnType<typeof userEvent.setup>, text: string) => {
@@ -108,7 +109,7 @@ describe('input panel', () => {
 describe('input methods', () => {
   it('hides the Figma plugin tab for now and keeps the other four', async () => {
     await open()
-    const names = screen.getAllByRole('tab').map((t) => t.textContent)
+    const names = within(screen.getByRole('tablist', { name: 'Input method' })).getAllByRole('tab').map((t) => t.textContent)
     expect(names).toEqual(['JSON', 'Clipboard', 'Figma API', 'Screenshot'])
   })
 })

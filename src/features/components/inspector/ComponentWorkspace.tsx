@@ -201,7 +201,7 @@ export function ComponentWorkspace({ project, readOnly = false, focus }: { proje
 
         {error && <p role="alert" className="mt-3 rounded-lg bg-danger-soft p-3 text-[13px] font-semibold text-danger">{error}</p>}
 
-        <div role="tablist" aria-label="Component view" className="mt-6 flex gap-1 border-b border-hairline">
+        <div role="tablist" aria-label="Component view" className="mt-6 flex gap-1 overflow-x-auto border-b border-hairline">
           {([['properties', 'Properties'], ['fields', 'AEM fields'], ['dialog', 'Dialog'], ['preview', 'Preview'], ['xml', 'XML']] as const).map(([id, label]) => (
             <button key={id} id={`wtab-${id}`} role="tab" type="button" aria-selected={view === id} onClick={() => { setView(id); setPropId(''); setFieldPropId(''); setDialogSelected('') }}
               className={`-mb-px h-9 cursor-pointer border-b-2 px-3 text-[14px] font-bold ${view === id ? 'border-accent text-accent-text' : 'border-transparent text-ink hover:text-ink-strong'}`}>

@@ -52,13 +52,19 @@ describe('accessibility (automated)', () => {
       await mutateProject(p.id, (x) => ['card', 'container'].reduce((acc, n) => applyImport(acc, parseComponentJson(samples[`./features/inputs/samples/${n}.json`])).project, x))
       at(`/app/generator/${p.id}`); await screen.findByRole('list', { name: /Properties of/ })
     }
-    it('input panel and properties', async () => { await open(); await clean('properties view') })
+    const openInput = async () => { await userEvent.setup().click(screen.getByRole('button', { name: 'Bring in a design' })); await screen.findByRole('dialog', { name: 'Bring in a design' }) }
+    it('properties view', async () => { await open(); await clean('properties view') })
+    it('project actions menu, and the edit drawer', async () => {
+      await open(); const user = userEvent.setup()
+      await user.click(screen.getByRole('button', { name: 'Project actions' })); await screen.findByRole('menu'); await clean('actions menu')
+      await user.click(screen.getByRole('menuitem', { name: 'Edit project' })); await screen.findByRole('dialog', { name: 'Edit project' }); await clean('edit drawer')
+    })
     it('every input method', async () => {
-      await open()
+      await open(); await openInput()
       for (const name of ['Clipboard', 'Figma API', 'Screenshot']) { await tab(name); await clean(`input: ${name}`) }
     })
     it('import review', async () => {
-      await open(); await userEvent.setup().click(screen.getByRole('button', { name: 'Image' })); await screen.findByRole('region', { name: 'Import review' }); await clean('import review')
+      await open(); await openInput(); await userEvent.setup().click(screen.getByRole('button', { name: 'Image' })); await screen.findByRole('region', { name: 'Import review' }); await clean('import review')
     })
     it('property panel', async () => {
       await open(); await userEvent.setup().click(screen.getByRole('button', { name: 'Edit Heading' }))
@@ -79,6 +85,7 @@ describe('accessibility (automated)', () => {
     })
     it('XML tab, and the export section', async () => {
       await open(); await tab('XML'); await screen.findByRole('region', { name: 'Dialog XML' }); await clean('xml')
+      await tab(/^Export/)
       expect(await screen.findByRole('region', { name: 'Export' })).toBeTruthy(); await clean('export')
     })
   })

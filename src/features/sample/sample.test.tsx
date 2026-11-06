@@ -67,7 +67,7 @@ describe('sample project page', () => {
   it('says it is read-only, hides the import area and lists the five components', async () => {
     await open()
     expect(screen.getByRole('note').textContent).toMatch(/Read-only sample/)
-    expect(screen.queryByRole('heading', { name: 'Bring in a design' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Bring in a design' })).toBeNull()
     const nav = screen.getByRole('navigation', { name: 'Components' })
     expect(within(nav).getAllByRole('button').map((b) => b.textContent!.replace(/\d+$/, ''))).toEqual(['Button', 'Card', 'Image', 'Text', 'Container'])
   })
@@ -156,7 +156,7 @@ describe('sample project page', () => {
     expect(copy.id).not.toBe('sample')
     expect(copy.name).toBe('Component library (from the sample)')
     expect(copy.components).toHaveLength(5)
-    expect(await screen.findByRole('heading', { name: 'Bring in a design' })).toBeTruthy()
+    expect(await screen.findByRole('button', { name: 'Bring in a design' })).toBeTruthy()
     expect((screen.getByRole('button', { name: 'Add property' }) as HTMLButtonElement).disabled).toBe(false)
     expect(screen.queryByRole('note')).toBeNull()
   })
