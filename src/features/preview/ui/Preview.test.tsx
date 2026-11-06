@@ -198,7 +198,10 @@ describe('simulated dialog preview', () => {
     await user.click(screen.getByRole('tab', { name: 'Preview' }))
     expect(await screen.findByRole('tab', { name: 'Basics' })).toBeTruthy()
     expect(screen.queryByLabelText(/^Body/)).toBeNull()
-    expect(screen.getByText(/1 property is left out of the dialog/)).toBeTruthy()
+    const note = screen.getByRole('note', { name: 'Properties left out of the dialog' })
+    expect(note.textContent).toMatch(/1 property is not in this dialog/)
+    expect(within(note).getByText('Body')).toBeTruthy() // it names the property, not just a count
+    expect(note.textContent).toMatch(/authors will not see them in AEM/)
   })
 
   it('explains what authors will see in AEM', async () => {

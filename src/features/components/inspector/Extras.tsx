@@ -83,31 +83,35 @@ export function ChildrenEditor({ component, siblings, onChange, readOnly = false
               <fieldset className="mt-1">
                 <legend className="sr-only">How {ch.name} appears</legend>
                 {(['expose-properties', 'reference-component'] as const).map((a) => (
-                  <label key={a} className="flex cursor-pointer items-start gap-2 py-1 text-[13px]">
-                    <input type="radio" name={name} className="mt-0.5" checked={ch.approach === a} onChange={() => onChange(i, { approach: a })} />
-                    <span><strong className="text-ink-strong">{a === 'expose-properties' ? 'Expose selected properties' : 'Reference a component'}</strong><br /><span className="text-ink-muted">{APPROACH_HELP[a]}</span></span>
-                  </label>
+                  <div key={a}>
+                    <label className="flex cursor-pointer items-start gap-2 py-1 text-[13px]">
+                      <input type="radio" name={name} className="mt-0.5" checked={ch.approach === a} onChange={() => onChange(i, { approach: a })} />
+                      <span><strong className="text-ink-strong">{a === 'expose-properties' ? 'Expose selected properties' : 'Reference a component'}</strong><br /><span className="text-ink-muted">{APPROACH_HELP[a]}</span></span>
+                    </label>
+                    {/* The settings for an option appear right under that option, only while it is the chosen one. */}
+                    {a === 'expose-properties' && ch.approach === a && (
+                      match ? (
+                        <fieldset className="mb-2 ml-6 mt-1">
+                          <legend className="text-[12px] font-bold text-ink-strong">Properties of {match.name} to show</legend>
+                          <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
+                            {match.properties.map((p) => (
+                              <label key={p.id} className="flex items-center gap-1.5 text-[13px]">
+                                <input type="checkbox" checked={ch.exposedKeys.includes(p.key)} onChange={(e) => onChange(i, { exposedKeys: e.target.checked ? [...ch.exposedKeys, p.key] : ch.exposedKeys.filter((k) => k !== p.key) })} />{p.label}
+                              </label>
+                            ))}
+                          </div>
+                        </fieldset>
+                      ) : (
+                        <label className="mb-2 ml-6 mt-1 block text-[12px] font-bold text-ink-strong">Property names to show (comma separated)
+                          <input className="mt-1 block h-8 w-full max-w-sm rounded-lg border border-hairline-strong bg-surface px-2 text-[13px] font-normal" defaultValue={ch.exposedKeys.join(', ')}
+                            onBlur={(e) => onChange(i, { exposedKeys: e.target.value.split(',').map((k) => k.trim()).filter(Boolean) })} />
+                          <span className="mt-1 block text-[12px] font-normal text-ink-muted">No component named “{ch.name}” in this project, so type the property names.</span>
+                        </label>
+                      )
+                    )}
+                  </div>
                 ))}
               </fieldset>
-              {ch.approach === 'expose-properties' && (
-                match ? (
-                  <fieldset className="mt-1 pl-6">
-                    <legend className="text-[12px] font-bold text-ink-strong">Properties of {match.name} to show</legend>
-                    <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
-                      {match.properties.map((p) => (
-                        <label key={p.id} className="flex items-center gap-1.5 text-[13px]">
-                          <input type="checkbox" checked={ch.exposedKeys.includes(p.key)} onChange={(e) => onChange(i, { exposedKeys: e.target.checked ? [...ch.exposedKeys, p.key] : ch.exposedKeys.filter((k) => k !== p.key) })} />{p.label}
-                        </label>
-                      ))}
-                    </div>
-                  </fieldset>
-                ) : (
-                  <label className="mt-1 block pl-6 text-[12px] font-bold text-ink-strong">Property names to show (comma separated)
-                    <input className="mt-1 block h-8 w-full max-w-sm rounded-lg border border-hairline-strong bg-surface px-2 text-[13px] font-normal" defaultValue={ch.exposedKeys.join(', ')}
-                      onBlur={(e) => onChange(i, { exposedKeys: e.target.value.split(',').map((k) => k.trim()).filter(Boolean) })} />
-                  </label>
-                )
-              )}
             </li>
           )
         })}

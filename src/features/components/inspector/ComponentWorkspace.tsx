@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Plus, Trash2, Undo2 } from 'lucide-react'
 import { Button } from '../../../components/ui/Button'
 import type { Project } from '../../projects/schema'
@@ -27,7 +27,11 @@ import { ChildrenEditor, StandardSuggestions, UnsupportedList } from './Extras'
 
 type Undo = { kind: 'property'; property: Property; index: number } | { kind: 'unsupported'; item: Unsupported }
 
-export function ComponentWorkspace({ project, readOnly = false }: { project: Project; readOnly?: boolean }) {
+export type WorkspaceView = 'properties' | 'fields' | 'dialog' | 'preview' | 'xml'
+/** Ask the workspace to show a component's tab. A new nonce each time, so asking again for the same place still works. */
+export interface WorkspaceFocus { componentId: string; view: WorkspaceView; nonce: number }
+
+export function ComponentWorkspace({ project, readOnly = false, focus }: { project: Project; readOnly?: boolean; focus?: WorkspaceFocus | null }) {
   // In a read-only project every write is a no-op, whatever calls it. The controls are disabled as well.
   const mutate: typeof mutateProject = readOnly ? async () => project : mutateProject
   const [selectedId, setSelectedId] = useState('')
@@ -35,11 +39,24 @@ export function ComponentWorkspace({ project, readOnly = false }: { project: Pro
   const [error, setError] = useState('')
   const [undo, setUndo] = useState<Undo | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
-  const [view, setView] = useState<'properties' | 'fields' | 'dialog' | 'preview' | 'xml'>('properties')
+  const [view, setView] = useState<WorkspaceView>('properties')
   const [fieldPropId, setFieldPropId] = useState('')
   const [dialogSelected, setDialogSelected] = useState('')
   const [lastFieldProp, setLastFieldProp] = useState<Property | undefined>(undefined)
   const [lastProperty, setLastProperty] = useState<Property | undefined>(undefined)
+
+  const [seenFocus, setSeenFocus] = useState(0)
+  // Another part of the page (the export list, say) asked to show a particular tab of a particular component.
+  if (focus && focus.nonce !== seenFocus) {
+    setSeenFocus(focus.nonce); setSelectedId(focus.componentId); setView(focus.view)
+    setPropId(''); setFieldPropId(''); setDialogSelected(''); setUndo(null); setConfirmDelete(false)
+  }
+  useEffect(() => {
+    if (!focus) return
+    const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches
+    document.getElementById('comp-h')?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+    document.getElementById(`wtab-${focus.view}`)?.focus({ preventScroll: true })
+  }, [focus])
 
   const components = project.components
   const component = components.find((c) => c.id === selectedId) ?? components[0]
@@ -185,7 +202,7 @@ export function ComponentWorkspace({ project, readOnly = false }: { project: Pro
 
         <div role="tablist" aria-label="Component view" className="mt-6 flex gap-1 border-b border-hairline">
           {([['properties', 'Properties'], ['fields', 'AEM fields'], ['dialog', 'Dialog'], ['preview', 'Preview'], ['xml', 'XML']] as const).map(([id, label]) => (
-            <button key={id} role="tab" type="button" aria-selected={view === id} onClick={() => { setView(id); setPropId(''); setFieldPropId(''); setDialogSelected('') }}
+            <button key={id} id={`wtab-${id}`} role="tab" type="button" aria-selected={view === id} onClick={() => { setView(id); setPropId(''); setFieldPropId(''); setDialogSelected('') }}
               className={`-mb-px h-9 cursor-pointer border-b-2 px-3 text-[14px] font-bold ${view === id ? 'border-accent text-accent-text' : 'border-transparent text-ink hover:text-ink-strong'}`}>
               {label}{id === 'fields' && fieldErrors > 0 && <span className="ml-2 text-[12px] font-semibold text-danger">{fieldErrors} to fix</span>}{id === 'dialog' && dialogErrors > 0 && <span className="ml-2 text-[12px] font-semibold text-danger">{dialogErrors} to fix</span>}
             </button>
@@ -207,7 +224,7 @@ export function ComponentWorkspace({ project, readOnly = false }: { project: Pro
           </div>
         ) : view === 'preview' ? (
           <div role="tabpanel" className="mt-4">
-            <DialogPreview key={component.id} component={component} dialog={dialog} fields={fields} />
+            <DialogPreview key={component.id} component={component} dialog={dialog} fields={fields} onShowDialog={() => { setView('dialog'); setPropId(''); setFieldPropId('') }} />
           </div>
         ) : view === 'dialog' ? (
           <div role="tabpanel" className="mt-4">

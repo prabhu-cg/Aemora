@@ -6,9 +6,9 @@ import type { ResolvedField } from '../../mapping/engine'
 import { coerceValue, toSaved, validateValue, type Value } from '../values'
 import { PreviewField } from './widgets'
 
-interface Props { component: ComponentDef; dialog: ComponentDialog; fields: ResolvedField[] }
+interface Props { component: ComponentDef; dialog: ComponentDialog; fields: ResolvedField[]; /** Opens the Dialog tab, where left-out properties can be added back. */ onShowDialog?: () => void }
 
-export function DialogPreview({ component, dialog, fields }: Props) {
+export function DialogPreview({ component, dialog, fields, onShowDialog }: Props) {
   const [values, setValues] = useState<Map<string, Value>>(new Map())
   const [touched, setTouched] = useState<Set<string>>(new Set())
   const [submitted, setSubmitted] = useState(false)
@@ -61,7 +61,8 @@ export function DialogPreview({ component, dialog, fields }: Props) {
     return <PreviewField key={id} field={f} value={valueOf(f)} onChange={(v) => set(f, v)} error={shown(id)} onBlur={() => touch(id)} />
   }
 
-  const excludedCount = dialog.excluded.length
+  const leftOut = dialog.excluded.map((id) => component.properties.find((p) => p.id === id)).filter((p): p is NonNullable<typeof p> => !!p)
+  const excludedCount = leftOut.length
 
   return (
     <section aria-label="Simulated dialog preview">
@@ -117,11 +118,22 @@ export function DialogPreview({ component, dialog, fields }: Props) {
       </div>
 
       <div className="mx-auto mt-4 max-w-3xl space-y-3 text-[13px]">
-        {(hidden.length > 0 || excludedCount > 0) && (
+        {hidden.length > 0 && (
           <p className="text-ink-muted">
-            {hidden.length > 0 && <>{hidden.length} hidden {hidden.length === 1 ? 'field is' : 'fields are'} not shown to authors{hidden.some((h) => h.defaultValue !== null) ? ': ' + hidden.map((h) => `${h.name} = ${String(h.defaultValue)}`).join(', ') : ''}. </>}
-            {excludedCount > 0 && <>{excludedCount} {excludedCount === 1 ? 'property is' : 'properties are'} left out of the dialog.</>}
+            {hidden.length} hidden {hidden.length === 1 ? 'field is' : 'fields are'} not shown to authors{hidden.some((h) => h.defaultValue !== null) ? ': ' + hidden.map((h) => `${h.name} = ${String(h.defaultValue)}`).join(', ') : ''}.
           </p>
+        )}
+        {excludedCount > 0 && (
+          <div role="note" aria-label="Properties left out of the dialog" className="rounded-lg border border-hairline bg-sand p-3">
+            <p className="font-bold text-ink-strong">{excludedCount} {excludedCount === 1 ? 'property is' : 'properties are'} not in this dialog</p>
+            <ul className="mt-1.5 flex flex-wrap gap-1.5">
+              {leftOut.map((p) => <li key={p.id} className="rounded-md border border-hairline-strong bg-surface px-2 py-0.5 text-[12px] font-semibold text-ink-strong">{p.label || p.key}</li>)}
+            </ul>
+            <p className="mt-2 text-ink-muted">
+              They stay in your project, but authors will not see them in AEM, and they are not in the generated XML.
+              {onShowDialog && <> <button type="button" onClick={onShowDialog} className="cursor-pointer font-bold text-accent-text underline">Add them back in the Dialog tab</button>.</>}
+            </p>
+          </div>
         )}
         {saved && (
           <details open className="rounded-lg border border-hairline p-3">

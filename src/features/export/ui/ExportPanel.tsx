@@ -4,7 +4,10 @@ import { Button } from '../../../components/ui/Button'
 import { downloadBytes, downloadText, slug } from '../../../lib/download'
 import { exportProjectJson } from '../../projects/repo'
 import type { Project } from '../../projects/schema'
-import { buildBundle, bundleName, componentExports, hasProblems, type ComponentExport } from '../bundle'
+import { buildBundle, bundleName, componentExports, hasProblems, problemsOf, type ComponentExport } from '../bundle'
+import type { WorkspaceView } from '../../components/inspector/ComponentWorkspace'
+
+const VIEW_LABEL: Record<WorkspaceView, string> = { properties: 'Properties', fields: 'AEM fields', dialog: 'Dialog', preview: 'Preview', xml: 'XML' }
 
 const pill = 'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold'
 
@@ -23,9 +26,10 @@ function Checks({ e }: { e: ComponentExport }) {
 }
 
 /** Everything that leaves the app from a project: dialog XML (one file or a ready-to-merge ZIP) and the project itself. */
-export function ExportPanel({ project }: { project: Project }) {
+export function ExportPanel({ project, onGoTo }: { project: Project; onGoTo?: (componentId: string, view: WorkspaceView) => void }) {
   const items = useMemo(() => componentExports(project), [project])
   const [notice, setNotice] = useState('')
+  const [openId, setOpenId] = useState<string | null>(null)
   const flash = (m: string) => { setNotice(m); setTimeout(() => setNotice(''), 3500) }
   const bad = items.filter(hasProblems)
 
@@ -54,13 +58,17 @@ export function ExportPanel({ project }: { project: Project }) {
       {bad.length > 0 && (
         <p role="status" className="mt-3 flex items-start gap-2 rounded-lg bg-warning-soft p-3 text-[13px] text-warning">
           <AlertTriangle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
-          <span><strong>{bad.length} of {items.length} {items.length === 1 ? 'dialog' : 'dialogs'} {bad.length === 1 ? 'has' : 'have'} problems</strong> ({bad.map((b) => b.component.name || 'Untitled').join(', ')}). You can still export them, and the ZIP’s README lists what is wrong.</span>
+          <span>
+            <strong>{bad.length} of {items.length} {items.length === 1 ? 'dialog' : 'dialogs'} {bad.length === 1 ? 'has' : 'have'} problems</strong> ({bad.map((b) => b.component.name || 'Untitled').join(', ')}). The details are listed under {bad.length === 1 ? 'that dialog' : 'each dialog'} below, each with a button that opens the place to fix it.
+            {' '}<button type="button" className="cursor-pointer font-bold underline" onClick={() => { setOpenId(bad[0].component.id); setTimeout(() => document.getElementById(`export-${bad[0].component.id}`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 0) }}>Show the problems</button>.
+            You can still export them anyway; the ZIP’s README lists what is wrong.
+          </span>
         </p>
       )}
 
       <ul aria-label="Dialogs to export" className="mt-4 divide-y divide-hairline border-y border-hairline">
         {items.map((e) => (
-          <li key={e.component.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3">
+          <li key={e.component.id} id={`export-${e.component.id}`} className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3">
             <div className="min-w-0 flex-1 basis-72">
               <p className="flex flex-wrap items-center gap-2">
                 <strong className="text-[15px] font-extrabold tracking-tight text-ink-strong">{e.component.name || 'Untitled component'}</strong>
@@ -69,6 +77,25 @@ export function ExportPanel({ project }: { project: Project }) {
               </p>
               <code className="mt-0.5 block truncate text-[12px] text-ink-muted" title={e.aemPath}>{e.aemPath}</code>
               <div className="mt-1.5"><Checks e={e} /></div>
+              {(() => {
+                const list = problemsOf(e)
+                if (!list.length) return null
+                const errors = list.filter((p) => p.level === 'error').length
+                return (
+                  <details className="mt-2 text-[13px]" open={openId === e.component.id} onToggle={(ev) => { const o = (ev.currentTarget as HTMLDetailsElement).open; setOpenId((cur) => (o ? e.component.id : cur === e.component.id ? null : cur)) }}>
+                    <summary className={`cursor-pointer font-bold ${errors ? 'text-danger' : 'text-warning'}`}>{errors ? `${errors} ${errors === 1 ? 'problem' : 'problems'} to fix` : `${list.length} to review`}{errors && list.length > errors ? `, ${list.length - errors} to review` : ''}</summary>
+                    <ul className="mt-1.5 space-y-1.5">
+                      {list.map((p, i) => (
+                        <li key={i} className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                          <span className={`text-[11px] font-bold ${p.level === 'error' ? 'text-danger' : 'text-warning'}`}><span className="sr-only">{p.level}: </span>{p.where}</span>
+                          <span className="min-w-0 flex-1 basis-60 text-ink">{p.message}{p.detail && <> <code className="text-[11px] text-ink-muted">{p.detail}</code></>}</span>
+                          {onGoTo && <button type="button" className="cursor-pointer text-[12px] font-bold text-accent-text underline" onClick={() => onGoTo(e.component.id, p.view)} aria-label={`Fix in ${VIEW_LABEL[p.view]}: ${p.message}`}>Fix in {VIEW_LABEL[p.view]}</button>}
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                )
+              })()}
             </div>
             <Button size="sm" variant="outline" onClick={() => { downloadText(e.filename, e.xml, 'application/xml'); flash(`Downloaded ${e.filename}.`) }} aria-label={`Download XML for ${e.component.name || 'component'}`}>
               <Download size={14} aria-hidden="true" />Download XML

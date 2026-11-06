@@ -1,4 +1,5 @@
 import { kebab } from '../../lib/kebab'
+import type { WorkspaceView } from '../components/inspector/ComponentWorkspace'
 import { createZip, type ZipFile } from '../../lib/zip'
 import type { ComponentDef } from '../components/schema'
 import { resolveDialog } from '../dialog/ops'
@@ -68,6 +69,19 @@ export function componentExports(project: Project): ComponentExport[] {
       },
     }
   })
+}
+
+interface Problem { level: 'error' | 'warning'; where: string; message: string; detail?: string; view: WorkspaceView }
+
+/** Every problem found for one dialog, in plain words, with the tab where it can be fixed. */
+export function problemsOf(e: ComponentExport): Problem[] {
+  const v = e.validation
+  const out: Problem[] = []
+  if (!v.syntax.ok) out.push({ level: 'error', where: 'XML syntax', message: `${v.syntax.line ? `Line ${v.syntax.line}${v.syntax.column ? `, column ${v.syntax.column}` : ''}: ` : ''}${v.syntax.message ?? 'The XML is not well-formed.'}`, view: 'xml' })
+  const genView = { property: 'properties', field: 'fields', dialog: 'dialog', component: 'properties' } as const
+  for (const g of v.generator) out.push({ level: g.level, where: 'Generator', message: g.message, view: genView[g.source] })
+  for (const a of v.aem ?? []) out.push({ level: a.level, where: 'AEM structure', message: a.message, detail: a.path, view: 'xml' })
+  return out.sort((a, b) => (a.level === b.level ? 0 : a.level === 'error' ? -1 : 1))
 }
 
 export const hasProblems = (e: ComponentExport) => !e.counts.syntaxOk || e.counts.generatorErrors > 0 || (e.counts.aemErrors ?? 1) > 0

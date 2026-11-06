@@ -60,6 +60,7 @@ export function TextImportPanel({ label, hint, placeholder, parse, onResult, ext
         spellCheck={false}
         className="w-full rounded-lg border border-hairline-strong bg-surface p-3 font-mono text-[12.5px] leading-relaxed text-ink-strong focus-visible:outline-2 focus-visible:outline-accent-text"
       />
+      {!text.trim() && !error && <p id="import-empty-hint" className="mt-2 text-[12px] text-ink-muted">Paste something, choose a file, or try a sample to review it here.</p>}
       {error && (
         <div role="alert" className="mt-2 rounded-lg bg-danger-soft p-3 text-[13px] text-danger">
           <p className="font-bold">{error.message}</p>
@@ -67,7 +68,7 @@ export function TextImportPanel({ label, hint, placeholder, parse, onResult, ext
         </div>
       )}
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        <Button onClick={() => run()}>{submitLabel}</Button>
+        <Button onClick={() => run()} disabled={!text.trim()} aria-describedby={text.trim() ? undefined : 'import-empty-hint'}>{submitLabel}</Button>
         <Button variant="outline" onClick={() => fileRef.current?.click()}><FileUp size={16} aria-hidden="true" />Choose file</Button>
         {allowClipboardRead && <Button variant="outline" onClick={paste}><ClipboardPaste size={16} aria-hidden="true" />Read clipboard</Button>}
         {extra}

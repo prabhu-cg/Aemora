@@ -103,7 +103,8 @@ describe('Export section in your own projects', () => {
     render(<MemoryRouter initialEntries={[`/app/generator/${p.id}`]}><AppRoutes /></MemoryRouter>)
     const r = await region()
     expect(within(r).getAllByRole('status')[0].textContent).toMatch(/1 of 2 dialogs has problems \(Menu\)/)
-    const rows = within(r).getAllByRole('listitem')
+    const rows = [...within(r).getByRole('list', { name: 'Dialogs to export' }).children] as HTMLElement[]
+    expect(rows).toHaveLength(2)
     expect(rows[0].textContent).toMatch(/Generator: 1 to fix/)
     expect(rows[1].textContent).toMatch(/Generator: ok/)
     await user.click(within(r).getByRole('button', { name: /Download all as ZIP/ }))

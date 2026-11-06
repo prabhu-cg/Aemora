@@ -5,7 +5,7 @@ import { PageFrame } from './PageFrame'
 import { Button } from '../../components/ui/Button'
 import { InputPanel } from '../../features/inputs/ui/InputPanel'
 import { ExportPanel } from '../../features/export/ui/ExportPanel'
-import { ComponentWorkspace } from '../../features/components/inspector/ComponentWorkspace'
+import { ComponentWorkspace, type WorkspaceFocus } from '../../features/components/inspector/ComponentWorkspace'
 import { applyImport } from '../../features/inputs/apply'
 import { copyProject, saveProject } from '../../features/projects/repo'
 import type { ImportResult } from '../../features/inputs/types'
@@ -17,6 +17,7 @@ export function ProjectView({ project, readOnly = false }: { project: Project; r
   const navigate = useNavigate()
   const [notice, setNotice] = useState<{ tone: 'success' | 'error'; text: string } | null>(null)
   const [busy, setBusy] = useState(false)
+  const [focus, setFocus] = useState<WorkspaceFocus | null>(null)
 
   const add = async (r: ImportResult) => {
     setBusy(true)
@@ -74,10 +75,10 @@ export function ProjectView({ project, readOnly = false }: { project: Project; r
         {notice && !readOnly && (
           <p role={notice.tone === 'error' ? 'alert' : 'status'} className={`mb-3 rounded-lg p-3 text-[13px] font-semibold ${notice.tone === 'error' ? 'bg-danger-soft text-danger' : 'bg-success-soft text-success'}`}>{notice.text}</p>
         )}
-        <ComponentWorkspace project={project} readOnly={readOnly} />
+        <ComponentWorkspace project={project} readOnly={readOnly} focus={focus} />
       </section>
 
-      <ExportPanel project={project} />
+      <ExportPanel project={project} onGoTo={(componentId, view) => setFocus({ componentId, view, nonce: Date.now() + Math.random() })} />
     </PageFrame>
   )
 }
