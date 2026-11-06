@@ -64,6 +64,8 @@ export interface ResolvedField {
   constraints: Record<string, Scalar>
   /** Dialog grouping: a tab name, or "Tab › Section". */
   group: string
+  /** Only shown when another field is checked, or has this value. */
+  showWhen?: { propertyId: string; value?: string }
   multifield?: MultifieldConfig
   /** The user chose this field type. */
   manual: boolean
@@ -105,6 +107,7 @@ export function resolveField(component: Pick<ComponentDef, 'id'>, p: Property, m
     allowedValues: o.allowedValues ?? p.allowedValues,
     constraints: { ...defaultConstraints(p, fieldType), ...(m?.constraints ?? {}) },
     group: o.group ?? p.group,
+    showWhen: o.showWhen,
     multifield,
     manual: m?.manual ?? false,
     edited: !!m && (m.manual || Object.keys(o).length > 0 || Object.keys(m.constraints).length > 0 || !!m.multifield),

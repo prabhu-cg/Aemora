@@ -8,6 +8,7 @@ export interface FieldIssue {
     | 'label-empty' | 'name-invalid' | 'name-duplicate' | 'select-no-items' | 'default-not-allowed' | 'default-type'
     | 'required-hidden' | 'composite-no-subfields' | 'subfield-key' | 'subfield-duplicate' | 'subfield-select-no-items'
     | 'constraint-range' | 'constraint-unknown' | 'date-format' | 'note'
+    | 'show-when-missing' | 'show-when-type' | 'show-when-self' | 'show-when-value' | 'show-when-cycle'
   message: string
   propertyId: string
 }
@@ -63,6 +64,34 @@ export function validateField(r: ResolvedField): FieldIssue[] {
   return out
 }
 
+/** Which field types can drive another field's visibility. */
+export const SHOW_WHEN_CONTROLLERS = ['checkbox', 'switch', 'select'] as const
+
+function validateShowWhen(fields: ResolvedField[]): FieldIssue[] {
+  const out: FieldIssue[] = []
+  const byId = new Map(fields.map((f) => [f.propertyId, f]))
+  const add = (f: ResolvedField, code: FieldIssue['code'], message: string) => out.push({ level: 'error', code, message, propertyId: f.propertyId })
+  for (const f of fields) {
+    const w = f.showWhen
+    if (!w) continue
+    const c = byId.get(w.propertyId)
+    if (w.propertyId === f.propertyId) { add(f, 'show-when-self', 'A field cannot decide whether it is shown itself. Pick another field.'); continue }
+    if (!c) { add(f, 'show-when-missing', 'The field this one depends on no longer exists. Pick another, or remove the condition.'); continue }
+    if (!(SHOW_WHEN_CONTROLLERS as readonly string[]).includes(c.fieldType)) { add(f, 'show-when-type', `“${c.label}” is a ${FIELD_TYPES[c.fieldType].label}. Only a checkbox, switch or select can decide whether another field is shown.`); continue }
+    if (c.fieldType === 'select' && (!w.value || !c.allowedValues.includes(w.value))) {
+      add(f, 'show-when-value', w.value ? `“${w.value}” is not one of the choices of “${c.label}”.` : `Choose which value of “${c.label}” shows this field.`)
+    }
+    // A chain that comes back to itself would leave every field in it hidden for good.
+    const seen = new Set([f.propertyId])
+    for (let cur: ResolvedField | undefined = c; cur?.showWhen; cur = byId.get(cur.showWhen.propertyId)) {
+      if (seen.has(cur.propertyId)) break
+      seen.add(cur.propertyId)
+      if (cur.showWhen.propertyId === f.propertyId) { add(f, 'show-when-cycle', `“${f.label}” and “${c.label}” each wait for the other to be shown, so neither would ever appear.`); break }
+    }
+  }
+  return out
+}
+
 /** All fields of a component, plus checks that span fields (names must be unique). */
 export function validateFields(fields: ResolvedField[]): FieldIssue[] {
   const out = fields.flatMap(validateField)
@@ -71,5 +100,6 @@ export function validateFields(fields: ResolvedField[]): FieldIssue[] {
   for (const [name, group] of byName) {
     if (group.length > 1) for (const f of group) out.push({ level: 'error', code: 'name-duplicate', message: `Another field also saves to ${name}. Field names must be unique.`, propertyId: f.propertyId })
   }
+  out.push(...validateShowWhen(fields))
   return out
 }

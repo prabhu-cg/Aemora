@@ -44,6 +44,11 @@ export const MappingSchema = z.object({
     description: z.string().max(1000).optional(),
     allowedValues: z.array(z.string().max(200)).max(200).optional(),
     group: z.string().max(80).optional(),
+    /**
+     * Show this field only when another one is checked (a checkbox or switch), or has a given value (a select).
+     * Written as Granite UI's show/hide convention; a script in the AEM project does the showing and hiding.
+     */
+    showWhen: z.object({ propertyId: z.string().min(1), value: z.string().max(200).optional() }).optional(),
   }).default({}),
   constraints: z.record(z.string(), scalar).default({}),
   multifield: MultifieldSchema.optional(),

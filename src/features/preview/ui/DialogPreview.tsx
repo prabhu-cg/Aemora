@@ -24,8 +24,20 @@ export function DialogPreview({ component, dialog, fields, onShowDialog }: Props
   const placed = dialog.tabs.flatMap(idsOfTab).map((id) => byId.get(id)).filter((f): f is ResolvedField => !!f)
   const hidden = placed.filter((f) => f.fieldType === 'hidden')
 
+  // Conditional fields: shown while their controller is checked, or set to the chosen value. A condition that cannot work
+  // (the controller is missing, or is not a checkbox, switch or select) never hides anything.
+  const isShown = (f: ResolvedField): boolean => {
+    const w = f.showWhen
+    const c = w ? byId.get(w.propertyId) : undefined
+    if (!w || !c || c.propertyId === f.propertyId) return true
+    if (c.fieldType === 'checkbox' || c.fieldType === 'switch') return valueOf(c) === true
+    if (c.fieldType === 'select') return !!w.value && String(valueOf(c)) === w.value
+    return true
+  }
+  const conditional = placed.filter((f) => f.showWhen).length
+
   const errors = new Map<string, string>()
-  for (const f of placed) { const e = validateValue(f, valueOf(f)); if (e) errors.set(f.propertyId, e) }
+  for (const f of placed) { if (!isShown(f)) continue; const e = validateValue(f, valueOf(f)); if (e) errors.set(f.propertyId, e) }
   const shown = (id: string) => (submitted || touched.has(id) ? errors.get(id) ?? null : null)
   const tabErrors = (t: ComponentDialog['tabs'][number]) => idsOfTab(t).filter((id) => shown(id)).length
 
@@ -57,7 +69,7 @@ export function DialogPreview({ component, dialog, fields, onShowDialog }: Props
 
   const renderField = (id: string) => {
     const f = byId.get(id)
-    if (!f || f.fieldType === 'hidden') return null
+    if (!f || f.fieldType === 'hidden' || !isShown(f)) return null
     return <PreviewField key={id} field={f} value={valueOf(f)} onChange={(v) => set(f, v)} error={shown(id)} onBlur={() => touch(id)} />
   }
 
@@ -68,7 +80,7 @@ export function DialogPreview({ component, dialog, fields, onShowDialog }: Props
     <section aria-label="Simulated dialog preview">
       <p role="note" className="mb-4 flex items-start gap-2 rounded-lg bg-info-soft p-3 text-[13px] text-info">
         <Info size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
-        <span><strong>Simulated authoring preview.</strong> This is not a running AEM instance. Spacing, styling and some behaviour will differ in AEM. Nothing you enter here is saved.</span>
+        <span><strong>Simulated authoring preview.</strong> This is not a running AEM instance. Spacing, styling and some behaviour will differ in AEM. Nothing you enter here is saved.{conditional > 0 && ' Fields with a “show only when” rule appear as their controlling field changes, the way the show/hide script would do it in AEM.'}</span>
       </p>
 
       {/* The stage imitates an author editing a page: a dimmed page with the component selected, and the dialog open over it. */}

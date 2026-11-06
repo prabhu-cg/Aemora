@@ -6,6 +6,7 @@ import type { ComponentDef } from '../components/schema'
 import type { ComponentDialog, Section, Tab } from '../dialog/schema'
 import type { ResolvedField } from '../mapping/engine'
 import { fieldToNodes, nodeName } from '../mapping/nodes'
+import { applyShowHide, planShowHide, type ShowHidePlan } from '../mapping/showhide'
 import { serializeDocument } from './serialize'
 
 const PRIMARY = 'nt:unstructured'
@@ -21,31 +22,31 @@ function unique(taken: Set<string>, base: string): string {
   return name
 }
 
-function fieldNodes(ids: string[], byId: Map<string, ResolvedField>, taken: Set<string>): AemNode[] {
+function fieldNodes(ids: string[], byId: Map<string, ResolvedField>, taken: Set<string>, plan: ShowHidePlan): AemNode[] {
   const out: AemNode[] = []
   for (const id of ids) {
     const f = byId.get(id)
     if (!f) continue
     const nodes = fieldToNodes(f)
     // The main node and its @TypeHint sibling must keep their relative names unique among everything here.
-    for (const n of nodes) out.push({ ...n, name: unique(taken, n.name) })
+    nodes.forEach((n, i) => { const named = { ...n, name: unique(taken, n.name) }; out.push(i === 0 ? applyShowHide(named, id, plan) : named) })
   }
   return out
 }
 
-function section(sec: Section, byId: Map<string, ResolvedField>, taken: Set<string>): AemNode {
+function section(sec: Section, byId: Map<string, ResolvedField>, taken: Set<string>, plan: ShowHidePlan): AemNode {
   const inner = new Set<string>()
   return node(unique(taken, nodeName(toKey(sec.title) ? `section${toKey(sec.title)[0].toUpperCase()}${toKey(sec.title).slice(1)}` : 'section')),
     typed(RESOURCE_TYPES.fieldset, { 'jcr:title': s(sec.title) }),
-    [items(fieldNodes(sec.fieldIds, byId, inner))])
+    [items(fieldNodes(sec.fieldIds, byId, inner, plan))])
 }
 
-function tabNode(tab: Tab, index: number, byId: Map<string, ResolvedField>, taken: Set<string>): AemNode {
+function tabNode(tab: Tab, index: number, byId: Map<string, ResolvedField>, taken: Set<string>, plan: ShowHidePlan): AemNode {
   const column = new Set<string>()
   const children: AemNode[] = []
   for (const it of tab.items) {
-    if (it.kind === 'field') children.push(...fieldNodes([it.id], byId, column))
-    else children.push(section(it, byId, column))
+    if (it.kind === 'field') children.push(...fieldNodes([it.id], byId, column, plan))
+    else children.push(section(it, byId, column, plan))
   }
   const name = unique(taken, nodeName(toKey(tab.title) || `tab${index + 1}`))
   return node(name, typed(RESOURCE_TYPES.container, { 'jcr:title': s(tab.title), margin: b(true) }), [
@@ -58,7 +59,9 @@ function tabNode(tab: Tab, index: number, byId: Map<string, ResolvedField>, take
 export function buildDialogNode(dialog: ComponentDialog, fields: ResolvedField[], name = 'jcr:root'): AemNode {
   const byId = new Map(fields.map((f) => [f.propertyId, f]))
   const taken = new Set<string>()
-  const tabs = dialog.tabs.map((t, i) => tabNode(t, i, byId, taken))
+  const placed = dialog.tabs.flatMap((t) => t.items.flatMap((i) => (i.kind === 'field' ? [i.id] : i.fieldIds))).map((id) => byId.get(id)).filter((f): f is ResolvedField => !!f)
+  const plan = planShowHide(placed)
+  const tabs = dialog.tabs.map((t, i) => tabNode(t, i, byId, taken, plan))
   return node(name, typed(RESOURCE_TYPES.dialog, { 'jcr:title': s(dialog.title) }), [
     node('content', typed(RESOURCE_TYPES.container), [
       items([node('tabs', typed(RESOURCE_TYPES.tabs, { maximized: b(true) }), [items(tabs)])]),
@@ -96,6 +99,7 @@ export function generateXml({ component, dialog, fields, projectName, componentF
     `Aemora: AEM Cloud Service Touch UI dialog for "${component.name}".`,
     `Place this at: /apps/${kebab(projectName ?? '', '<project>')}/components/${componentFolder || kebab(component.name, '<component>')}/${where}`,
     'Granite UI / Coral only. No clientlibs, custom widgets or scripts.',
+    ...(fields.some((f) => f.showWhen) ? ['Conditional fields use Granite UI\'s show/hide markers (cq-dialog-*-showhide). Your AEM project must load the script that reads them; Aemora does not generate it.'] : []),
     'Generated deterministically from the dialog layout. Not yet tested on a running AEM instance.',
     ...approachNotes(component),
   ]

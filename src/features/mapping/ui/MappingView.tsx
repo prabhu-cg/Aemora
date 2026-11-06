@@ -38,6 +38,7 @@ export function MappingView({ component, fields, issues, selectedId, onSelect, o
                 <span className="text-[12px] text-ink-muted">{p.type}</span>
                 {f.edited && <span className="rounded-md bg-accent-tint px-1.5 py-0.5 text-[11px] font-bold text-accent-text">edited</span>}
                 {f.group && <span className="truncate rounded-md border border-hairline px-1.5 py-0.5 text-[11px] text-ink-muted">{f.group}</span>}
+                {f.showWhen && (() => { const c = fields.find((x) => x.propertyId === f.showWhen!.propertyId); return <span className="truncate rounded-md border border-hairline px-1.5 py-0.5 text-[11px] text-ink-muted">{c ? (c.fieldType === 'select' ? `Shown when ${c.label} is ${f.showWhen!.value ?? '…'}` : `Shown when ${c.label} is checked`) : 'Shown when a missing field…'}</span> })()}
                 {errors.length > 0 ? (
                   <span className="flex items-center gap-1 text-[12px] font-semibold text-danger"><CircleAlert size={13} aria-hidden="true" />{errors[0].message}</span>
                 ) : (mine.length > 0 || warn) ? (

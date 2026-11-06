@@ -6,7 +6,7 @@ import { AppRoutes } from '../../../App'
 import { db } from '../../projects/db'
 import { createProject, mutateProject } from '../../projects/repo'
 import { makeComponent, makeProperty } from '../../components/factory'
-import { patchSubfield, setConstraint, setFieldType, setMultifield } from '../../mapping/ops'
+import { patchSubfield, setConstraint, setFieldType, setMultifield, setOverrides } from '../../mapping/ops'
 import type { Mapping } from '../../mapping/schema'
 
 beforeEach(async () => { await Promise.all([db.projects.clear(), db.previous.clear(), db.quarantine.clear()]) })
@@ -207,5 +207,40 @@ describe('simulated dialog preview', () => {
   it('explains what authors will see in AEM', async () => {
     await open()
     expect(screen.getByText('What authors will see in AEM')).toBeTruthy()
+  })
+})
+
+describe('conditional fields in the preview', () => {
+  it('shows a field only while its checkbox is checked, or its select has the chosen value, and never asks for a hidden required field', async () => {
+    const user = userEvent.setup()
+    const c = makeComponent({ name: 'Button', properties: [
+      makeProperty({ key: 'iconLeft', label: 'Icon left', type: 'boolean' }),
+      makeProperty({ key: 'leftIcon', label: 'Left icon', type: 'string', required: true }),
+      makeProperty({ key: 'kind', label: 'Kind', type: 'enum', allowedValues: ['plain', 'icon'] }),
+      makeProperty({ key: 'iconSize', label: 'Icon size', type: 'string' }),
+    ] })
+    const [icon, left, kind, size] = c.properties
+    let ms: Mapping[] = []
+    ms = setOverrides(ms, c, left, { showWhen: { propertyId: icon.id } })
+    ms = setOverrides(ms, c, size, { showWhen: { propertyId: kind.id, value: 'icon' } })
+    const p = await createProject({ name: 'Teaser' })
+    await mutateProject(p.id, (x) => ({ ...x, components: [c], mappings: ms }))
+    render(<MemoryRouter initialEntries={[`/app/generator/${p.id}`]}><AppRoutes /></MemoryRouter>)
+    await user.click(await screen.findByRole('tab', { name: 'Preview' }))
+    await screen.findByRole('region', { name: 'Simulated dialog preview' })
+    expect(screen.queryByLabelText(/^Left icon/)).toBeNull()
+    expect(screen.queryByLabelText(/^Icon size/)).toBeNull()
+    expect(screen.getByRole('note').textContent).toMatch(/show only when/)
+    // Done with the hidden required field empty raises no error for it.
+    await user.click(screen.getByRole('button', { name: 'Done' }))
+    expect(screen.queryByText('This field is required.')).toBeNull()
+    await user.click(screen.getByLabelText('Icon left'))
+    expect(await screen.findByLabelText(/^Left icon/)).toBeTruthy()
+    await user.click(screen.getByRole('button', { name: 'Done' }))
+    expect(await screen.findByText('This field is required.')).toBeTruthy() // now that it is shown, it is checked
+    await user.selectOptions(screen.getByLabelText('Kind') as HTMLSelectElement, 'icon')
+    expect(await screen.findByLabelText(/^Icon size/)).toBeTruthy()
+    await user.click(screen.getByLabelText('Icon left'))
+    await waitFor(() => expect(screen.queryByLabelText(/^Left icon/)).toBeNull())
   })
 })

@@ -90,6 +90,8 @@ export function ComponentWorkspace({ project, readOnly = false, focus }: { proje
     }).then(() => setError('')).catch(() => setError('Could not save that change to this browser. It was not applied.'))
 
   const actionsFor = (propertyId: string): FieldActions => ({
+    candidates: fields.filter((f) => f.propertyId !== propertyId && (f.fieldType === 'checkbox' || f.fieldType === 'switch' || f.fieldType === 'select'))
+      .map((f) => ({ propertyId: f.propertyId, label: f.label, fieldType: f.fieldType, allowedValues: f.allowedValues })),
     setFieldType: async (t) => {
       // Computed against the freshly stored mapping, inside the save, so it can never be stale.
       const result = { dropped: [] as string[] }

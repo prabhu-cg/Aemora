@@ -23,7 +23,12 @@ function Field({ label, error, hint, children }: { label: string; error?: string
   )
 }
 
+/** Another field in the same component that can decide whether this one is shown. */
+export interface ShowWhenCandidate { propertyId: string; label: string; fieldType: FieldTypeId; allowedValues: string[] }
+
 export interface FieldActions {
+  /** Fields (checkbox, switch, select) that this one could depend on. Never includes the field itself. */
+  candidates: ShowWhenCandidate[]
   /** Resolves with the names of settings that no longer applied and were removed. */
   setFieldType: (t: FieldTypeId) => Promise<string[]>
   setOverrides: (patch: Partial<{ [K in keyof MappingOverrides]: MappingOverrides[K] | undefined }>) => void
@@ -121,6 +126,8 @@ export function FieldForm({ property, field, issues, groups, actions, inline = f
         </Field>
       )}
       {defaultless && <p className="text-[12px] text-ink-muted">A {def.label} has no default value.</p>}
+
+      <ShowWhen field={field} actions={actions} error={err('show-when-missing', 'show-when-type', 'show-when-self', 'show-when-value', 'show-when-cycle')} />
 
       <label className="flex items-center gap-2 text-[14px] font-semibold text-ink-strong">
         <input type="checkbox" checked={field.required} onChange={(e) => actions.setOverrides({ required: e.target.checked })} />Required
@@ -249,5 +256,41 @@ function Constraint({ spec, value, error, onChange }: { spec: ConstraintSpec; va
       )}
       {(error || spec.hint) && <p role={error ? 'alert' : undefined} className={`mt-1 text-[12px] ${error ? 'text-danger' : 'text-ink-muted'}`}>{error ?? spec.hint}</p>}
     </div>
+  )
+}
+
+/** "Show only when …": makes this field appear only while another field is checked, or has a chosen value. */
+function ShowWhen({ field, actions, error }: { field: ResolvedField; actions: FieldActions; error?: string }) {
+  const id = useId()
+  const w = field.showWhen
+  const current = actions.candidates.find((c) => c.propertyId === w?.propertyId)
+  const pick = (propertyId: string) => {
+    if (!propertyId) return actions.setOverrides({ showWhen: undefined })
+    const c = actions.candidates.find((x) => x.propertyId === propertyId)
+    actions.setOverrides({ showWhen: c?.fieldType === 'select' ? { propertyId, value: c.allowedValues[0] } : { propertyId } })
+  }
+  return (
+    <fieldset className="rounded-lg border border-hairline p-3" aria-describedby={`${id}-d`}>
+      <legend className="px-1 text-[13px] font-bold text-ink-strong">Show only when</legend>
+      <div className="flex flex-col gap-2">
+        <select aria-label="Show this field only when" className={input} value={w?.propertyId ?? ''} aria-invalid={!!error} onChange={(e) => pick(e.target.value)}>
+          <option value="">Always shown</option>
+          {w && !current && <option value={w.propertyId}>A field that is no longer available</option>}
+          {actions.candidates.map((c) => <option key={c.propertyId} value={c.propertyId}>{c.label || 'Untitled'}</option>)}
+        </select>
+        {current?.fieldType === 'select' && (
+          <label className="flex items-center gap-2 text-[13px] text-ink-strong">is set to
+            <select aria-label="has the value" className={`${input} w-auto min-w-32`} value={w?.value ?? ''} onChange={(e) => actions.setOverrides({ showWhen: { propertyId: current.propertyId, value: e.target.value || undefined } })}>
+              <option value="">Choose a value</option>
+              {current.allowedValues.map((v) => <option key={v} value={v}>{v}</option>)}
+            </select>
+          </label>
+        )}
+        {current && current.fieldType !== 'select' && <p className="text-[13px] text-ink-strong">This field appears while “{current.label}” is checked, and is hidden when it is not.</p>}
+      </div>
+      <p id={`${id}-d`} role={error ? 'alert' : undefined} className={`mt-2 text-[12px] ${error ? 'text-danger' : 'text-ink-muted'}`}>
+        {error ?? 'Aemora writes the standard Granite show/hide markers, nothing more. The script that acts on them must already be loaded by your AEM project; Aemora does not generate it.'}
+      </p>
+    </fieldset>
   )
 }

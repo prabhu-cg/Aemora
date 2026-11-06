@@ -121,6 +121,23 @@ describe('AEM fields view', () => {
     await waitFor(async () => expect((await stored(p.id)).mappings[0].overrides.defaultValue).toBe('two'))
   })
 
+  it('makes a field conditional from the panel: pick the controlling field, and a value for a select', async () => {
+    const user = userEvent.setup()
+    const p = await open()
+    await user.click(screen.getByRole('button', { name: 'Configure Label' }))
+    const panel = await panelOf()
+    const when = within(panel).getByLabelText('Show this field only when') as HTMLSelectElement
+    expect(within(panel).getByText(/must already be loaded by your AEM project/)).toBeTruthy()
+    expect([...when.options].map((o) => o.textContent)).toEqual(['Always shown', 'Size', 'Variant', 'State', 'Icon position']) // selects only: Button has no checkbox
+    await user.selectOptions(when, 'Variant')
+    await waitFor(async () => expect((await stored(p.id)).mappings[0].overrides.showWhen).toMatchObject({ value: expect.any(String) }))
+    await user.selectOptions(within(panel).getByLabelText('has the value'), 'secondary')
+    await waitFor(async () => expect((await stored(p.id)).mappings[0].overrides.showWhen?.value).toBe('secondary'))
+    expect(await screen.findByText('Shown when Variant is secondary')).toBeTruthy()
+    await user.selectOptions(within(panel).getByLabelText('Show this field only when'), '')
+    await waitFor(async () => expect((await stored(p.id)).mappings).toEqual([]))
+  })
+
   it('builds a composite multifield for repeated links with named item fields', async () => {
     const user = userEvent.setup()
     const p = await open(['container'])

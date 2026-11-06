@@ -40,6 +40,13 @@ export function checkGenerator(component: ComponentDef, dialog: ComponentDialog,
   const out: GeneratorIssue[] = []
   for (const i of validateComponent(component)) out.push({ level: i.level, message: i.message, propertyId: i.propertyId, source: 'property' })
   for (const i of validateFields(fields)) out.push({ level: i.level, message: i.message, propertyId: i.propertyId, source: 'field' })
+  // A condition on a field that is not in the dialog can never fire.
+  const inDialog = new Set(dialog.tabs.flatMap((t) => t.items.flatMap((i) => (i.kind === 'field' ? [i.id] : i.fieldIds))))
+  for (const f of fields) {
+    if (f.showWhen && inDialog.has(f.propertyId) && !inDialog.has(f.showWhen.propertyId) && fields.some((x) => x.propertyId === f.showWhen!.propertyId)) {
+      out.push({ level: 'error', message: `“${f.label}” is only shown when another field has a value, but that field is not in the dialog.`, propertyId: f.propertyId, source: 'dialog' })
+    }
+  }
   for (const i of validateDialog(dialog)) out.push({ level: i.level, message: i.message, source: 'dialog' })
   if (!hasComponentName) out.push({ level: 'warning', message: 'The project has no AEM component name, so the target path in the file header uses a placeholder.', source: 'component' })
   return out
