@@ -101,8 +101,35 @@ describe('input panel', () => {
     await open()
     await user.click(screen.getByRole('tab', { name: 'Figma API' }))
     expect((screen.getByLabelText('Personal access token') as HTMLInputElement).type).toBe('password')
-    await user.click(screen.getByRole('button', { name: 'Read components' }))
-    expect(await screen.findByText(/Enter a Figma file URL/)).toBeTruthy()
+    // Nothing to read yet, so the button is off and says why.
+    const read = screen.getByRole('button', { name: 'Read components' }) as HTMLButtonElement
+    expect(read.disabled).toBe(true)
+    expect(screen.getByText(/Enter the Figma file link and your access token/)).toBeTruthy()
+    await user.type(screen.getByLabelText('Figma file URL or file key'), 'not a figma link')
+    expect(read.disabled).toBe(true) // the token is still missing
+    await user.type(screen.getByLabelText('Personal access token'), 'figd_test')
+    expect(read.disabled).toBe(false)
+    await user.click(read)
+    expect(await screen.findByText(/Figma/, { selector: '[role="alert"], p.text-danger, p[role="alert"]' })).toBeTruthy()
+  })
+
+  it('keeps Review component off until the screenshot, a name and a property are all there, and says what is missing', async () => {
+    const user = userEvent.setup()
+    await open()
+    await user.click(screen.getByRole('tab', { name: 'Screenshot' }))
+    const review = screen.getByRole('button', { name: 'Review component' }) as HTMLButtonElement
+    expect(review.disabled).toBe(true)
+    expect(screen.getByText(/Still needed: a screenshot, a component name, at least one named property/)).toBeTruthy()
+    expect((screen.getByRole('button', { name: 'Add region' }) as HTMLButtonElement).disabled).toBe(true)
+    expect(screen.getByText(/Choose a screenshot first/)).toBeTruthy()
+    await user.type(screen.getByLabelText('Component name'), 'Card')
+    expect(screen.getByText(/Still needed: a screenshot, at least one named property/)).toBeTruthy()
+    await user.click(screen.getByRole('button', { name: 'Add property' }))
+    await user.type(screen.getByLabelText('Property 1 name'), 'Title')
+    await user.upload(screen.getByLabelText('Choose a screenshot', { selector: 'input' }), new File([PNG], 'c.png', { type: 'image/png' }))
+    await screen.findByAltText('Uploaded screenshot to annotate')
+    expect(review.disabled).toBe(false)
+    expect(screen.getByText(/A region is a box you draw on the screenshot/)).toBeTruthy()
   })
 })
 

@@ -26,4 +26,4 @@ export function usePresence(open: boolean, exitMs: number): { mounted: boolean; 
   return { mounted: open || mounted, state: open && shown ? 'open' : 'closed' }
 }
 
-export const PANEL_EXIT_MS = 200
+export const PANEL_EXIT_MS = 260 // a little longer than the 220ms slide, so the panel is fully off-screen before it unmounts

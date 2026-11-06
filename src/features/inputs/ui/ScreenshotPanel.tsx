@@ -59,6 +59,9 @@ export function ScreenshotPanel({ onResult }: { onResult: (r: ImportResult) => v
   const setProp = (id: string, patch: Partial<Draft['properties'][number]>) =>
     setDraft((d) => ({ ...d, properties: d.properties.map((p) => (p.id === id ? { ...p, ...patch } : p)) }))
 
+  const missing = [!asset && 'a screenshot', !draft.name.trim() && 'a component name', !draft.properties.some((p) => p.name.trim()) && 'at least one named property'].filter((x): x is string => !!x)
+  const ready = missing.length === 0
+
   const review = () => {
     try { onResult(buildScreenshotResult(draft, regions, asset)); setErrors([]) }
     catch (e) { setErrors(e instanceof InputError ? e.issues : ['Could not build the component.']) }
@@ -69,7 +72,7 @@ export function ScreenshotPanel({ onResult }: { onResult: (r: ImportResult) => v
       <p className="mb-3 max-w-[70ch] text-[13px] text-ink-muted">
         Upload a screenshot, mark the parts of it that authors will control, and describe each property yourself. Aemora does not read text or Figma data from images, so everything here is entered by hand.
       </p>
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,26rem)]">
+      <div className="flex flex-col gap-8">
         <div>
           {asset ? (
             <>
@@ -93,7 +96,7 @@ export function ScreenshotPanel({ onResult }: { onResult: (r: ImportResult) => v
               <p className="mt-1 text-[12px] text-ink-muted">Drag on the image to mark a region. You can also add regions and set their position with the numbers on the right.</p>
             </>
           ) : (
-            <button type="button" onClick={() => fileRef.current?.click()} className="flex h-64 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-hairline-strong text-ink hover:bg-sand">
+            <button type="button" onClick={() => fileRef.current?.click()} className="flex h-44 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-hairline-strong text-ink hover:bg-sand">
               <Upload size={22} aria-hidden="true" />
               <span className="font-bold text-ink-strong">Choose a screenshot</span>
               <span className="text-[13px] text-ink-muted">PNG, JPG or WebP, up to 8 MB</span>
@@ -118,8 +121,13 @@ export function ScreenshotPanel({ onResult }: { onResult: (r: ImportResult) => v
               ))}
             </ul>
           )}
-          <div className="mt-2">
-            <Button size="sm" variant="outline" disabled={!asset} onClick={() => { const r = { id: newId(), x: 10, y: 10, w: 30, h: 20 }; setRegions((rs) => [...rs, r]); setSelected(r.id) }}><Plus size={14} aria-hidden="true" />Add region</Button>
+          <div className="mt-3 flex flex-wrap items-start gap-x-4 gap-y-1">
+            <Button size="sm" variant="outline" disabled={!asset} aria-describedby="region-help" onClick={() => { const r = { id: newId(), x: 10, y: 10, w: 30, h: 20 }; setRegions((rs) => [...rs, r]); setSelected(r.id) }}><Plus size={14} aria-hidden="true" />Add region</Button>
+            <p id="region-help" className="min-w-0 max-w-[52ch] flex-1 basis-60 text-[12px] text-ink-muted">
+              {asset
+                ? 'A region is a box you draw on the screenshot around something authors will edit, such as a title or a button label. Link a property to it with the Region menu below, and the box is kept with that property as a visual reference. It does not change the XML.'
+                : 'Choose a screenshot first. Regions are boxes you draw on it around the parts authors will edit.'}
+            </p>
           </div>
         </div>
 
@@ -163,7 +171,10 @@ export function ScreenshotPanel({ onResult }: { onResult: (r: ImportResult) => v
           {errors.length > 0 && (
             <ul role="alert" className="mt-4 list-disc space-y-0.5 rounded-lg bg-danger-soft p-3 pl-7 text-[13px] text-danger">{errors.map((e, i) => <li key={i}>{e}</li>)}</ul>
           )}
-          <div className="mt-4"><Button onClick={review}>Review component</Button></div>
+          <div className="mt-4">
+            <Button onClick={review} disabled={!ready} aria-describedby={ready ? undefined : 'screenshot-missing-hint'}>Review component</Button>
+            {!ready && <p id="screenshot-missing-hint" className="mt-2 text-[12px] text-ink-muted">Still needed: {missing.join(', ')}.</p>}
+          </div>
         </div>
       </div>
     </div>

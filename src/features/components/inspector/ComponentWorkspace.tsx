@@ -21,8 +21,6 @@ import { DialogEditor, type Target } from '../../dialog/ui/DialogEditor'
 import { DialogPreview } from '../../preview/ui/DialogPreview'
 import { XmlPanel } from '../../xml/ui/XmlPanel'
 import { DesignPreview } from '../DesignPreview'
-import { readScreenshot } from '../../inputs/screenshot'
-import { InputError } from '../../inputs/types'
 import { PropertyList } from './PropertyList'
 import { PropertyPanel } from './PropertyPanel'
 import { ChildrenEditor, StandardSuggestions, UnsupportedList } from './Extras'
@@ -39,13 +37,6 @@ export function ComponentWorkspace({ project, readOnly = false, focus }: { proje
   const [selectedId, setSelectedId] = useState('')
   const [propId, setPropId] = useState('')
   const [error, setError] = useState('')
-  const addDesign = (file: File) => {
-    readScreenshot(file).then((asset) => mutate(project.id, (pr) => {
-      const components = pr.components.map((c) => (c.id === component.id ? { ...c, previewAssetId: asset.id } : c))
-      const used = new Set([...components.map((c) => c.previewAssetId), ...components.flatMap((c) => c.properties.map((p) => p.origin.assetId))])
-      return { ...pr, components, assets: [...pr.assets.filter((a) => used.has(a.id)), asset] }
-    })).then(() => setError('')).catch((e) => setError(e instanceof InputError ? e.message : 'Could not save the design image to this browser.'))
-  }
   const [undo, setUndo] = useState<Undo | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [view, setView] = useState<WorkspaceView>('properties')
@@ -157,15 +148,25 @@ export function ComponentWorkspace({ project, readOnly = false, focus }: { proje
           {components.map((c) => {
             const n = validateComponent(c).filter((i) => i.level === 'error').length
             return (
-              <li key={c.id}>
+              <li key={c.id} className="group relative">
                 <button
                   type="button" aria-current={c.id === component.id ? 'true' : undefined}
                   onClick={() => { setSelectedId(c.id); setPropId(''); setUndo(null); setConfirmDelete(false) }}
-                  className={`flex w-full cursor-pointer items-center justify-between gap-2 rounded-md px-3 py-2 text-left text-sm font-medium ${c.id === component.id ? 'bg-ink-strong/5 font-semibold text-ink-strong' : 'text-ink-muted hover:bg-ink-strong/5 hover:text-ink-strong'}`}
+                  className={`flex w-full cursor-pointer items-center justify-between gap-2 rounded-md py-2 pl-3 text-left text-sm font-medium ${readOnly ? 'pr-3' : 'pr-10'} ${c.id === component.id ? 'bg-ink-strong/5 font-semibold text-ink-strong' : 'text-ink-muted hover:bg-ink-strong/5 hover:text-ink-strong'}`}
                 >
                   <span className="truncate">{c.name}</span>
                   <span className={`tabular text-[12px] ${n ? 'text-danger' : 'text-ink-muted'}`}>{n ? `${n} to fix` : c.properties.length}</span>
                 </button>
+                {/* Appears beside the row on hover or keyboard focus; always shown where there is no hover (touch). */}
+                {!readOnly && (
+                  <button
+                    type="button" aria-label={`Delete component ${c.name}`} title="Delete component"
+                    onClick={() => { setSelectedId(c.id); setPropId(''); setUndo(null); setConfirmDelete(true) }}
+                    className="absolute right-1 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-md text-ink-muted opacity-0 hover:bg-danger-soft hover:text-danger focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-100"
+                  >
+                    <Trash2 size={15} aria-hidden="true" />
+                  </button>
+                )}
               </li>
             )
           })}
@@ -189,15 +190,22 @@ export function ComponentWorkspace({ project, readOnly = false, focus }: { proje
               <Button size="sm" variant="outline" className="!border-danger !text-danger" onClick={() => { setConfirmDelete(false); setPropId(''); mutate(project.id, (p) => { const components = p.components.filter((c) => c.id !== component.id); return { ...p, components, mappings: pruneMappings(p.mappings, components), dialog: pruneDialogs(p.dialog, components), generatedXml: Object.fromEntries(Object.entries(p.generatedXml ?? {}).filter(([id]) => components.some((c) => c.id === id))) } }).catch(() => setError('Could not delete the component.')) }}>Delete</Button>
               <Button size="sm" variant="ghost" onClick={() => setConfirmDelete(false)}>Cancel</Button>
             </span>
-          ) : (
-            <Button variant="ghost" size="sm" disabled={readOnly} onClick={() => setConfirmDelete(true)} aria-label={`Delete component ${component.name}`}><Trash2 size={15} aria-hidden="true" />Delete</Button>
-          )}
+          ) : null}
         </div>
         <label className="mt-3 block text-[13px] font-bold text-ink-strong">Description
           <input className="mt-1 h-9 w-full rounded-lg border border-hairline-strong bg-surface px-3 text-sm font-normal" defaultValue={component.description} readOnly={readOnly} placeholder="What this component is for"
             onChange={(e) => { const description = e.target.value; edit((c) => patchComponent(c, { description })) }} />
         </label>
 
+
+        <DesignPreview
+          component={component} assets={project.assets} readOnly={readOnly}
+          onRemove={() => mutate(project.id, (pr) => {
+            const components = pr.components.map((c) => (c.id === component.id ? { ...c, previewAssetId: undefined } : c))
+            const used = new Set([...components.map((c) => c.previewAssetId), ...components.flatMap((c) => c.properties.map((p) => p.origin.assetId))])
+            return { ...pr, components, assets: pr.assets.filter((a) => used.has(a.id)) }
+          }).catch(() => setError('Could not remove the preview.'))}
+        />
 
         {error && <p role="alert" className="mt-3 rounded-lg bg-danger-soft p-3 text-[13px] font-semibold text-danger">{error}</p>}
 
@@ -225,18 +233,7 @@ export function ComponentWorkspace({ project, readOnly = false, focus }: { proje
           </div>
         ) : view === 'preview' ? (
           <div role="tabpanel" className="mt-4">
-            <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-              <DesignPreview
-          component={component} assets={project.assets} readOnly={readOnly}
-            onAdd={addDesign}
-          onRemove={() => mutate(project.id, (pr) => {
-            const components = pr.components.map((c) => (c.id === component.id ? { ...c, previewAssetId: undefined } : c))
-            const used = new Set([...components.map((c) => c.previewAssetId), ...components.flatMap((c) => c.properties.map((p) => p.origin.assetId))])
-            return { ...pr, components, assets: pr.assets.filter((a) => used.has(a.id)) }
-          }).catch(() => setError('Could not remove the preview.'))}
-        />
-              <DialogPreview key={component.id} component={component} dialog={dialog} fields={fields} onShowDialog={() => { setView('dialog'); setPropId(''); setFieldPropId('') }} />
-            </div>
+            <DialogPreview key={component.id} component={component} dialog={dialog} fields={fields} onShowDialog={() => { setView('dialog'); setPropId(''); setFieldPropId('') }} />
           </div>
         ) : view === 'dialog' ? (
           <div role="tabpanel" className="mt-4">

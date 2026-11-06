@@ -57,10 +57,11 @@ export function FigmaPanel({ onResult }: { onResult: (r: ImportResult) => void }
       </label>
       {error && <p role="alert" className="mt-3 rounded-lg bg-danger-soft p-3 text-[13px] font-semibold text-danger">{error}</p>}
       <div className="mt-4 flex gap-2">
-        <Button onClick={run} disabled={loading}>{loading ? phase || 'Reading Figma…' : 'Read components'}</Button>
+        <Button onClick={run} disabled={loading || !url.trim() || !token.trim()} aria-describedby={!url.trim() || !token.trim() ? 'figma-missing-hint' : undefined}>{loading ? phase || 'Reading Figma…' : 'Read components'}</Button>
         {loading && <Button variant="ghost" onClick={() => abort.current?.abort()}>Cancel</Button>}
         <Button variant="ghost" onClick={() => { figmaSession.clear(); setToken('') }} disabled={!token}>Forget token</Button>
       </div>
+      {(!url.trim() || !token.trim()) && !loading && <p id="figma-missing-hint" className="mt-2 text-[12px] text-ink-muted">Enter the Figma file link and your access token to read components.</p>}
     </div>
   )
 }

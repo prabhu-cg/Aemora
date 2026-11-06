@@ -77,7 +77,7 @@ describe('sample project page', () => {
     expect((screen.getByLabelText('Component name') as HTMLInputElement).readOnly).toBe(true)
     expect((screen.getByLabelText('Type') as HTMLSelectElement).disabled).toBe(true)
     expect((screen.getByRole('button', { name: 'Add property' }) as HTMLButtonElement).disabled).toBe(true)
-    expect((screen.getByRole('button', { name: /Delete component/ }) as HTMLButtonElement).disabled).toBe(true)
+    expect(screen.queryByRole('button', { name: /Delete component/ })).toBeNull() // no delete icons at all in the read-only sample
     expect((screen.getByRole('button', { name: 'Move Label down' }) as HTMLButtonElement).disabled).toBe(true)
     expect((screen.getByRole('button', { name: /Reorder Label/ }) as HTMLButtonElement).disabled).toBe(true)
     expect(screen.queryByRole('button', { name: /Standard button properties/ })).toBeNull()
