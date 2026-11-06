@@ -6,6 +6,7 @@ import { checkAem, checkGenerator, parseXml } from '../xml/validate'
 import { setOverrides } from './ops'
 import { resolveComponent } from './engine'
 import { validateFields } from './validate'
+import { suggestShowWhen } from './showhide'
 import type { Mapping } from './schema'
 
 const make = () => makeComponent({ name: 'Button', properties: [
@@ -75,5 +76,30 @@ describe('conditional show and hide', () => {
     const d = buildDialog(c)
     const out = { ...d, excluded: [c.properties[0].id], tabs: d.tabs.map((t) => ({ ...t, items: t.items.filter((i) => i.id !== c.properties[0].id) })) }
     expect(checkGenerator(c, out, resolveComponent(c, ms2), true).some((i) => /not in the dialog/.test(i.message))).toBe(true)
+  })
+})
+
+describe('suggested conditions', () => {
+  const pair = () => makeComponent({ name: 'Button', properties: [
+    makeProperty({ key: 'iconLeft', label: 'show icon left', type: 'boolean' }),
+    makeProperty({ key: 'leftIcon', label: 'left icon', type: 'enum', allowedValues: ['1'] }),
+    makeProperty({ key: 'iconRight', label: 'Show icon right', type: 'boolean' }),
+    makeProperty({ key: 'rightIcon', label: 'Right icon', type: 'enum', allowedValues: ['1'] }),
+    makeProperty({ key: 'newTab', label: 'Open in new tab', type: 'boolean' }),
+    makeProperty({ key: 'caption', label: 'Caption' }),
+  ] })
+
+  it('offers only the obvious pairs: a "Show X" checkbox and a field with the same words in any order', () => {
+    const c = pair()
+    const s = suggestShowWhen(resolveComponent(c, []))
+    expect(s.map((x) => [x.controllerLabel, x.targetLabel])).toEqual([['show icon left', 'left icon'], ['Show icon right', 'Right icon']])
+  })
+
+  it('stops suggesting once a field has a condition, and never pairs a checkbox with another checkbox', () => {
+    const c = pair()
+    const ms = setOverrides([], c, c.properties[1], { showWhen: { propertyId: c.properties[0].id } })
+    expect(suggestShowWhen(resolveComponent(c, ms)).map((x) => x.targetLabel)).toEqual(['Right icon'])
+    const two = makeComponent({ name: 'X', properties: [makeProperty({ key: 'a', label: 'Show tab', type: 'boolean' }), makeProperty({ key: 'b', label: 'Tab', type: 'boolean' })] })
+    expect(suggestShowWhen(resolveComponent(two, []))).toEqual([])
   })
 })

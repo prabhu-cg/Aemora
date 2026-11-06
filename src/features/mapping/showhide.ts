@@ -56,3 +56,33 @@ export function applyShowHide(n: AemNode, propertyId: string, plan: ShowHidePlan
   })
   return { ...n, props: { ...n.props, 'granite:class': s(classes) }, children: [...n.children, data] }
 }
+
+export interface ShowWhenSuggestion { targetId: string; controllerId: string; targetLabel: string; controllerLabel: string }
+
+const LEAD = /^(?:show|display|enable|use|has|with|include)\s+/i
+const words = (t: string) => t.replace(/([a-z0-9])([A-Z])/g, '$1 $2').toLowerCase().split(/[^a-z0-9]+/).filter(Boolean)
+
+/**
+ * Obvious pairs only: a checkbox or switch labelled "Show icon left" and another field labelled "Left icon" (same words, any order).
+ * These are offered, never applied by themselves, and skipped once a field already has a condition.
+ */
+export function suggestShowWhen(fields: ResolvedField[]): ShowWhenSuggestion[] {
+  const out: ShowWhenSuggestion[] = []
+  const used = new Set<string>()
+  for (const c of fields) {
+    if (c.fieldType !== 'checkbox' && c.fieldType !== 'switch') continue
+    if (!LEAD.test(c.label.trim())) continue
+    const rest = words(c.label.trim().replace(LEAD, ''))
+    if (!rest.length) continue
+    const key = [...rest].sort().join(' ')
+    for (const t of fields) {
+      if (t.propertyId === c.propertyId || t.showWhen || used.has(t.propertyId)) continue
+      if (t.fieldType === 'checkbox' || t.fieldType === 'switch' || t.fieldType === 'hidden') continue
+      if ([...words(t.label)].sort().join(' ') !== key) continue
+      used.add(t.propertyId)
+      out.push({ targetId: t.propertyId, controllerId: c.propertyId, targetLabel: t.label, controllerLabel: c.label })
+      break
+    }
+  }
+  return out
+}

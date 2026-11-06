@@ -255,6 +255,7 @@ export function ComponentWorkspace({ project, readOnly = false, focus }: { proje
               readOnly={readOnly}
               component={component} fields={fields} issues={fieldIssues} selectedId={fieldPropId} onSelect={setFieldPropId}
               onFieldType={(pid, t) => { void actionsFor(pid).setFieldType(t) }}
+              onShowWhen={(targetId, controllerId) => { actionsFor(targetId).setOverrides({ showWhen: { propertyId: controllerId } }) }}
               onResetAll={() => { mutate(project.id, (pr) => ({ ...pr, mappings: pr.mappings.filter((m) => m.componentId !== component.id) })) }}
             />
           </div>

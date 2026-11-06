@@ -1,4 +1,6 @@
-import { AlertTriangle, CircleAlert, RotateCcw } from 'lucide-react'
+import { useState } from 'react'
+import { AlertTriangle, CircleAlert, Lightbulb, RotateCcw } from 'lucide-react'
+import { suggestShowWhen } from '../showhide'
 import { Button } from '../../../components/ui/Button'
 import type { ComponentDef } from '../../components/schema'
 import { fieldTypeWarning, suggestFieldType, type ResolvedField } from '../engine'
@@ -6,7 +8,7 @@ import { FIELD_TYPES, fieldTypeList } from '../fieldTypes'
 import type { FieldTypeId } from '../schema'
 import type { FieldIssue } from '../validate'
 
-export function MappingView({ component, fields, issues, selectedId, onSelect, onFieldType, onResetAll, readOnly = false }: {
+export function MappingView({ component, fields, issues, selectedId, onSelect, onFieldType, onResetAll, onShowWhen, readOnly = false }: {
   readOnly?: boolean
   component: ComponentDef
   fields: ResolvedField[]
@@ -15,15 +17,37 @@ export function MappingView({ component, fields, issues, selectedId, onSelect, o
   onSelect: (propertyId: string) => void
   onFieldType: (propertyId: string, t: FieldTypeId) => void
   onResetAll: () => void
+  /** Make `targetId` shown only when `controllerId` is checked. */
+  onShowWhen: (targetId: string, controllerId: string) => void
 }) {
+  const [dismissed, setDismissed] = useState(false)
   if (!fields.length) return <p className="rounded-lg border border-dashed border-hairline-strong p-4 text-ink-muted">Add properties first. Each one becomes an AEM field.</p>
   const edited = fields.filter((f) => f.edited).length
+  const suggestions = readOnly || dismissed ? [] : suggestShowWhen(fields)
   return (
     <div>
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <p className="text-[13px] text-ink-muted">Every property gets a suggested Granite field. Change any of them; the choice is yours.</p>
         <Button size="sm" variant="outline" disabled={readOnly || !edited} onClick={onResetAll}><RotateCcw size={14} aria-hidden="true" />Reset all to suggestions{edited ? ` (${edited})` : ''}</Button>
       </div>
+      {suggestions.length > 0 && (
+        <div role="region" aria-label="Suggested show-only-when rules" className="mb-3 rounded-lg border border-hairline bg-info-soft p-3 text-[13px] text-ink-strong">
+          <p className="flex items-center gap-2 font-bold"><Lightbulb size={15} aria-hidden="true" />These look like they belong together</p>
+          <p className="mt-1 text-ink-muted">Right now each of these fields is always visible. Make them appear only while their checkbox is checked?</p>
+          <ul className="mt-2 space-y-1.5">
+            {suggestions.map((s) => (
+              <li key={s.targetId} className="flex flex-wrap items-center gap-2">
+                <span className="min-w-0 flex-1 basis-56">Show <strong>{s.targetLabel}</strong> only when <strong>{s.controllerLabel}</strong> is checked</span>
+                <Button size="sm" variant="outline" onClick={() => onShowWhen(s.targetId, s.controllerId)} aria-label={`Show ${s.targetLabel} only when ${s.controllerLabel} is checked`}>Apply</Button>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-2 flex gap-2">
+            {suggestions.length > 1 && <Button size="sm" onClick={() => suggestions.forEach((s) => onShowWhen(s.targetId, s.controllerId))}>Apply all</Button>}
+            <Button size="sm" variant="ghost" onClick={() => setDismissed(true)}>Not now</Button>
+          </div>
+        </div>
+      )}
       <ul aria-label={`AEM fields for ${component.name}`} className="border-y border-hairline">
         {fields.map((f) => {
           const p = component.properties.find((x) => x.id === f.propertyId)!

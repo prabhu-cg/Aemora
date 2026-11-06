@@ -131,11 +131,26 @@ describe('AEM fields view', () => {
     expect([...when.options].map((o) => o.textContent)).toEqual(['Always shown', 'Size', 'Variant', 'State', 'Icon position']) // selects only: Button has no checkbox
     await user.selectOptions(when, 'Variant')
     await waitFor(async () => expect((await stored(p.id)).mappings[0].overrides.showWhen).toMatchObject({ value: expect.any(String) }))
-    await user.selectOptions(within(panel).getByLabelText('has the value'), 'secondary')
+    await user.selectOptions(await within(panel).findByLabelText('has the value'), 'secondary')
     await waitFor(async () => expect((await stored(p.id)).mappings[0].overrides.showWhen?.value).toBe('secondary'))
     expect(await screen.findByText('Shown when Variant is secondary')).toBeTruthy()
     await user.selectOptions(within(panel).getByLabelText('Show this field only when'), '')
     await waitFor(async () => expect((await stored(p.id)).mappings).toEqual([]))
+  })
+
+  it('offers to make "left icon" appear only with "show icon left", and applies it on request', async () => {
+    const user = userEvent.setup()
+    const p = await createProject({ name: 'Teaser' })
+    await mutateProject(p.id, (x) => applyImport(x, parseComponentJson(JSON.stringify({ schema: 'aemora.components/v1', components: [{ name: 'Btn', properties: [
+      { name: 'show icon left', type: 'boolean' }, { name: 'left icon', type: 'enum', values: ['1', '2'] }, { name: 'Label' }] }] }))).project)
+    render(<MemoryRouter initialEntries={[`/app/generator/${p.id}`]}><AppRoutes /></MemoryRouter>)
+    await user.click(await screen.findByRole('tab', { name: /AEM fields/ }))
+    const box = await screen.findByRole('region', { name: 'Suggested show-only-when rules' })
+    expect(box.textContent).toMatch(/always visible/)
+    await user.click(within(box).getByRole('button', { name: 'Show left icon only when show icon left is checked' }))
+    await waitFor(async () => expect((await stored(p.id)).mappings[0].overrides.showWhen).toBeTruthy())
+    await waitFor(() => expect(screen.queryByRole('region', { name: 'Suggested show-only-when rules' })).toBeNull())
+    expect(await screen.findByText('Shown when show icon left is checked')).toBeTruthy()
   })
 
   it('builds a composite multifield for repeated links with named item fields', async () => {
