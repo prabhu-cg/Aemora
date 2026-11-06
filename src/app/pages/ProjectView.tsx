@@ -78,7 +78,7 @@ export function ProjectView({ project, readOnly = false }: { project: Project; r
         <ComponentWorkspace project={project} readOnly={readOnly} focus={focus} />
       </section>
 
-      <ExportPanel project={project} onGoTo={(componentId, view) => setFocus({ componentId, view, nonce: Date.now() + Math.random() })} />
+      <ExportPanel project={project} readOnly={readOnly} onGoTo={(componentId, view) => setFocus({ componentId, view, nonce: Date.now() + Math.random() })} />
     </PageFrame>
   )
 }

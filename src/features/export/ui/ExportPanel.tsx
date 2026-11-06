@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { AlertTriangle, CheckCircle2, CircleAlert, Download, FileArchive, FileJson } from 'lucide-react'
 import { Button } from '../../../components/ui/Button'
 import { downloadBytes, downloadText, slug } from '../../../lib/download'
-import { exportProjectJson } from '../../projects/repo'
+import { exportProjectJson, mutateProject } from '../../projects/repo'
 import type { Project } from '../../projects/schema'
 import { buildBundle, bundleName, componentExports, hasProblems, problemsOf, type ComponentExport } from '../bundle'
 import type { WorkspaceView } from '../../components/inspector/ComponentWorkspace'
@@ -26,7 +26,13 @@ function Checks({ e }: { e: ComponentExport }) {
 }
 
 /** Everything that leaves the app from a project: dialog XML (one file or a ready-to-merge ZIP) and the project itself. */
-export function ExportPanel({ project, onGoTo }: { project: Project; onGoTo?: (componentId: string, view: WorkspaceView) => void }) {
+export function ExportPanel({ project, onGoTo, readOnly = false }: { project: Project; onGoTo?: (componentId: string, view: WorkspaceView) => void; readOnly?: boolean }) {
+  const [confirmId, setConfirmId] = useState<string | null>(null)
+  const resetXml = (id: string) => {
+    setConfirmId(null)
+    mutateProject(project.id, (pr) => { const rest = { ...(pr.generatedXml ?? {}) }; delete rest[id]; return { ...pr, generatedXml: rest } })
+      .then(() => flash('Reset to the generated XML.')).catch(() => flash('Could not reset the XML.'))
+  }
   const items = useMemo(() => componentExports(project), [project])
   const [notice, setNotice] = useState('')
   const [openId, setOpenId] = useState<string | null>(null)
@@ -93,6 +99,17 @@ export function ExportPanel({ project, onGoTo }: { project: Project; onGoTo?: (c
                         </li>
                       ))}
                     </ul>
+                    {e.edited && !readOnly && (confirmId === e.component.id ? (
+                      <p role="alert" className="mt-2 flex flex-wrap items-center gap-2">Discard the hand edits to {e.component.name || 'this component'}’s XML?
+                        <Button size="sm" variant="outline" className="!border-danger !text-danger" onClick={() => resetXml(e.component.id)}>Discard and regenerate</Button>
+                        <Button size="sm" variant="ghost" onClick={() => setConfirmId(null)}>Keep edits</Button>
+                      </p>
+                    ) : (
+                      <div className="mt-2">
+                        <Button size="sm" variant="outline" onClick={() => setConfirmId(e.component.id)}>Reset to generated XML</Button>
+                        <span className="ml-2 text-[12px] text-ink-muted">This XML has hand edits. Regenerating from the dialog usually clears structure problems.</span>
+                      </div>
+                    ))}
                   </details>
                 )
               })()}

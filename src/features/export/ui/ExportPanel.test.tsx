@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { AppRoutes } from '../../../App'
@@ -122,6 +122,22 @@ describe('Export section in your own projects', () => {
     expect(within(r).getByText('hand-edited XML')).toBeTruthy()
     await user.click(within(r).getByRole('button', { name: 'Download XML for Card' }))
     expect(await blobs[0].text()).toBe('<?xml version="1.0"?><jcr:root>mine</jcr:root>')
+  })
+
+  it('fixes a broken hand-edited XML with one button, after asking, and never offers it for generated XML', async () => {
+    const user = userEvent.setup()
+    const p = await createProject({ name: 'Site' })
+    const c = makeComponent({ name: 'Card', properties: [makeProperty({ key: 'a', label: 'A' })] })
+    await mutateProject(p.id, (x) => ({ ...x, components: [c], generatedXml: { [c.id]: { xml: '<?xml version="1.0"?><jcr:root>mine</jcr:root>', base: 'b', generatedAt: 't', edited: true, format: 'standalone' } } }))
+    render(<MemoryRouter initialEntries={[`/app/generator/${p.id}`]}><AppRoutes /></MemoryRouter>)
+    const r = await region()
+    await user.click(within(r).getByText(/problems? to fix/))
+    await user.click(within(r).getByRole('button', { name: 'Reset to generated XML' }))
+    expect(within(r).getByRole('alert').textContent).toMatch(/Discard the hand edits/)
+    await user.click(within(r).getByRole('button', { name: 'Discard and regenerate' }))
+    await waitFor(async () => expect((await db.projects.get(p.id))!.generatedXml?.[c.id]).toBeUndefined())
+    await waitFor(() => expect(within(r).queryByText('hand-edited XML')).toBeNull())
+    expect(within(r).queryByRole('button', { name: 'Reset to generated XML' })).toBeNull()
   })
 
   it('with no components, says so and still offers the project JSON', async () => {
