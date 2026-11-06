@@ -67,7 +67,7 @@ describe('landing page', () => {
     expect(figures).toHaveLength(4) // hero + three modules
     // The hero is a real screenshot of the running app on a laptop: it has a description and says where its data came from.
     const [hero, ...modules] = figures
-    const shot = within(hero).getByRole('img', { name: /Aemora open on the Card component from the sample project/ })
+    const shot = within(hero).getByRole('img', { name: /Aemora open on the AEM fields tab of the Card component/ })
     expect(shot.getAttribute('src')).toMatch(/app-light.*\.webp$/)
     expect(hero.querySelector('figcaption')?.textContent).toMatch(/built-in sample project/)
     for (const f of modules) {

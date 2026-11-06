@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { imageFrom } from '../clipboardImage'
 import { parseClipboard } from '../clipboard'
 import { parseComponentJson } from '../json'
 import { SAMPLES } from '../samples'
@@ -27,6 +28,20 @@ export function InputPanel({ onAdd, busy }: { onAdd: (r: ImportResult) => Promis
   const [tab, setTab] = useState<TabId>('json')
   const [result, setResult] = useState<ImportResult | null>(null)
   const onResult = useCallback((r: ImportResult) => setResult(r), [])
+  const [incoming, setIncoming] = useState<{ file: File; n: number } | null>(null)
+
+  // A screenshot pasted anywhere while this panel is open goes to the Screenshot tab, whichever tab is showing.
+  // Text pastes are left alone, so pasting JSON into the box still works.
+  useEffect(() => {
+    const onPaste = (e: ClipboardEvent) => {
+      const file = imageFrom(e.clipboardData)
+      if (!file || e.clipboardData?.getData('text/plain')) return
+      e.preventDefault()
+      setTab('screenshot'); setResult(null); setIncoming({ file, n: Date.now() })
+    }
+    document.addEventListener('paste', onPaste)
+    return () => document.removeEventListener('paste', onPaste)
+  }, [])
 
   return (
     <div>
@@ -53,7 +68,7 @@ export function InputPanel({ onAdd, busy }: { onAdd: (r: ImportResult) => Promis
         )}
         {tab === 'figma' && <FigmaPanel onResult={onResult} />}
         {tab === 'plugin' && <PluginPanel onResult={onResult} />}
-        {tab === 'screenshot' && <ScreenshotPanel onResult={onResult} />}
+        {tab === 'screenshot' && <ScreenshotPanel onResult={onResult} incoming={incoming} />}
       </div>
       {result && (
         <ReviewPanel

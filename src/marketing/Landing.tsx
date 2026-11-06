@@ -107,8 +107,8 @@ export function Landing() {
             </div>
             <div className="rise-late mx-auto mt-16 max-w-[1040px]">
               <Laptop
-                alt="Aemora open on the Card component from the sample project, showing the simulated AEM dialog preview with Content and Style tabs, a required Heading field, an image path field and a button label."
-                caption="Aemora with the Card component from the built-in sample project: the simulated AEM dialog authors would get."
+                alt="Aemora open on the AEM fields tab of the Card component from the sample project: each design property, such as Heading, Description and Image, next to the Granite UI field it maps to, like Textfield, Textarea and Pathfield."
+                caption="Aemora with the Card component from the built-in sample project: every design property next to the Granite UI field it maps to."
               />
             </div>
           </Frame>

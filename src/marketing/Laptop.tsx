@@ -3,8 +3,8 @@ import appLight from './assets/app-light.webp'
 import appDark from './assets/app-dark.webp'
 
 /**
- * A laptop with a real screenshot of the running app on its screen (the Card component's AEM dialog
- * preview, from the built-in sample). Two captures, light and dark, so it follows the page theme.
+ * A laptop with a real screenshot of the running app on its screen (the Card component's AEM fields,
+ * from the built-in sample). Two captures, light and dark, so it follows the page theme.
  */
 export function Laptop({ alt, caption, children }: { alt: string; caption: ReactNode; children?: ReactNode }) {
   return (

@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it } from 'vitest'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { AppRoutes } from '../../../App'
@@ -130,6 +130,66 @@ describe('input panel', () => {
     await screen.findByAltText('Uploaded screenshot to annotate')
     expect(review.disabled).toBe(false)
     expect(screen.getByText(/A region is a box you draw on the screenshot/)).toBeTruthy()
+  })
+})
+
+describe('screenshots from the clipboard', () => {
+  const png = () => new File([PNG], 'image.png', { type: 'image/png' })
+  const pasteImage = (target: Element | Document, extra: Record<string, string> = {}) =>
+    fireEvent.paste(target, { clipboardData: { files: [png()], items: [{ kind: 'file', type: 'image/png', getAsFile: () => png() }], getData: (t: string) => extra[t] ?? '' } })
+
+  it('a screenshot pasted on the Screenshot tab loads into the annotator', async () => {
+    const user = userEvent.setup()
+    await open()
+    await user.click(screen.getByRole('tab', { name: 'Screenshot' }))
+    pasteImage(document)
+    expect(await screen.findByAltText('Uploaded screenshot to annotate')).toBeTruthy()
+  })
+
+  it('a screenshot pasted while another tab is showing takes you to the Screenshot tab', async () => {
+    await open()
+    expect(screen.getByLabelText('Component JSON')).toBeTruthy()
+    pasteImage(screen.getByLabelText('Component JSON'))
+    expect(await screen.findByAltText('Uploaded screenshot to annotate')).toBeTruthy()
+    expect(screen.getByRole('tab', { name: 'Screenshot' }).getAttribute('aria-selected')).toBe('true')
+  })
+
+  it('leaves ordinary text pastes alone, so pasting JSON into the box still works', async () => {
+    await open()
+    const box = screen.getByLabelText('Component JSON')
+    const ev = new Event('paste', { bubbles: true, cancelable: true }) as Event & { clipboardData: unknown }
+    ev.clipboardData = { files: [], items: [], getData: () => '{"a":1}' }
+    box.dispatchEvent(ev)
+    expect(ev.defaultPrevented).toBe(false)
+    expect(screen.queryByAltText('Uploaded screenshot to annotate')).toBeNull()
+  })
+
+  it('the Paste button reads an image from the clipboard, and explains when there is none or access is refused', async () => {
+    const user = userEvent.setup()
+    await open()
+    await user.click(screen.getByRole('tab', { name: 'Screenshot' }))
+    const clip = { read: vi.fn() }
+    Object.defineProperty(navigator, 'clipboard', { value: clip, configurable: true })
+    clip.read.mockResolvedValueOnce([{ types: ['text/plain'], getType: async () => new Blob(['x']) }])
+    await user.click(screen.getByRole('button', { name: 'Paste from clipboard' }))
+    expect((await screen.findByRole('alert')).textContent).toMatch(/no image on the clipboard/)
+    clip.read.mockRejectedValueOnce(new Error('denied'))
+    await user.click(screen.getByRole('button', { name: 'Paste from clipboard' }))
+    expect((await screen.findByRole('alert')).textContent).toMatch(/did not allow reading the clipboard/)
+    clip.read.mockResolvedValueOnce([{ types: ['image/png'], getType: async () => new Blob([PNG], { type: 'image/png' }) }])
+    await user.click(screen.getByRole('button', { name: 'Paste from clipboard' }))
+    expect(await screen.findByAltText('Uploaded screenshot to annotate')).toBeTruthy()
+  })
+
+  it('a dropped image loads, and a dropped non-image is refused with a reason', async () => {
+    const user = userEvent.setup()
+    await open()
+    await user.click(screen.getByRole('tab', { name: 'Screenshot' }))
+    const zone = screen.getByRole('button', { name: /Choose a screenshot/ })
+    fireEvent.drop(zone, { dataTransfer: { files: [new File(['hi'], 'a.txt', { type: 'text/plain' })], items: [] } })
+    expect((await screen.findByRole('alert')).textContent).toMatch(/not an image/)
+    fireEvent.drop(zone, { dataTransfer: { files: [png()], items: [] } })
+    expect(await screen.findByAltText('Uploaded screenshot to annotate')).toBeTruthy()
   })
 })
 

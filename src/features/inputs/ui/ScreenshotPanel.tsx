@@ -1,5 +1,6 @@
-import { useRef, useState, type PointerEvent } from 'react'
-import { Plus, Trash2, Upload } from 'lucide-react'
+import { useEffect, useRef, useState, type DragEvent, type PointerEvent } from 'react'
+import { ClipboardPaste, Plus, Trash2, Upload } from 'lucide-react'
+import { imageFrom, readClipboardImage } from '../clipboardImage'
 import { Button } from '../../../components/ui/Button'
 import { TextField } from '../../../components/ui/Field'
 import { newId } from '../../../lib/id'
@@ -12,7 +13,7 @@ import { buildScreenshotResult, clampRegion, emptyDraft, newDraftProperty, type 
 const sel = 'h-9 rounded-lg border border-hairline-strong bg-surface px-2 text-[13px] text-ink-strong'
 const num = 'h-8 w-16 rounded-lg border border-hairline-strong bg-surface px-2 text-[13px] tabular'
 
-export function ScreenshotPanel({ onResult }: { onResult: (r: ImportResult) => void }) {
+export function ScreenshotPanel({ onResult, incoming }: { onResult: (r: ImportResult) => void; /** An image pasted while another tab was showing. */ incoming?: { file: File; n: number } | null }) {
   const [asset, setAsset] = useState<Asset | null>(null)
   const [regions, setRegions] = useState<Region[]>([])
   const [draft, setDraft] = useState<Draft>(emptyDraft)
@@ -23,6 +24,7 @@ export function ScreenshotPanel({ onResult }: { onResult: (r: ImportResult) => v
   const frame = useRef<HTMLDivElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
+  const [over, setOver] = useState(false)
   const pick = async (f?: File) => {
     if (!f) return
     try {
@@ -31,6 +33,31 @@ export function ScreenshotPanel({ onResult }: { onResult: (r: ImportResult) => v
       setErrors([e instanceof InputError ? e.message : 'Could not read that image.'])
     }
     if (fileRef.current) fileRef.current.value = ''
+  }
+
+  useEffect(() => {
+    if (!incoming) return
+    let live = true
+    readScreenshot(incoming.file)
+      .then((a) => { if (live) { setAsset(a); setRegions([]); setErrors([]) } })
+      .catch((e) => { if (live) setErrors([e instanceof InputError ? e.message : 'Could not read that image.']) })
+    return () => { live = false }
+  }, [incoming])
+
+  const pasteButton = async () => {
+    try {
+      const f = await readClipboardImage()
+      if (f) await pick(f)
+      else setErrors(['There is no image on the clipboard. Copy a screenshot first, then try again.'])
+    } catch {
+      setErrors(['The browser did not allow reading the clipboard. Copy a screenshot, then press ⌘V or Ctrl+V while this panel is open.'])
+    }
+  }
+  const drop = (e: DragEvent) => {
+    e.preventDefault(); setOver(false)
+    const f = imageFrom(e.dataTransfer)
+    if (f) void pick(f)
+    else setErrors(['That is not an image. Drop a PNG, JPG or WebP screenshot.'])
   }
 
   const pct = (e: PointerEvent) => {
@@ -96,14 +123,22 @@ export function ScreenshotPanel({ onResult }: { onResult: (r: ImportResult) => v
               <p className="mt-1 text-[12px] text-ink-muted">Drag on the image to mark a region. You can also add regions and set their position with the numbers on the right.</p>
             </>
           ) : (
-            <button type="button" onClick={() => fileRef.current?.click()} className="flex h-44 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-hairline-strong text-ink hover:bg-sand">
+            <button
+              type="button" onClick={() => fileRef.current?.click()}
+              onDragOver={(e) => { e.preventDefault(); setOver(true) }} onDragLeave={() => setOver(false)} onDrop={drop}
+              className={`flex h-44 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed text-ink hover:bg-sand ${over ? 'border-accent bg-accent/5' : 'border-hairline-strong'}`}
+            >
               <Upload size={22} aria-hidden="true" />
               <span className="font-bold text-ink-strong">Choose a screenshot</span>
-              <span className="text-[13px] text-ink-muted">PNG, JPG or WebP, up to 8 MB</span>
+              <span className="text-[13px] text-ink-muted">or drop one here. PNG, JPG or WebP, up to 8 MB</span>
             </button>
           )}
           <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" aria-label="Choose a screenshot" onChange={(e) => pick(e.target.files?.[0])} />
-          {asset && <div className="mt-2"><Button size="sm" variant="outline" onClick={() => fileRef.current?.click()}>Replace image</Button></div>}
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            {asset && <Button size="sm" variant="outline" onClick={() => fileRef.current?.click()}>Replace image</Button>}
+            <Button size="sm" variant="outline" onClick={pasteButton}><ClipboardPaste size={14} aria-hidden="true" />Paste from clipboard</Button>
+            <span className="text-[12px] text-ink-muted">or press ⌘V / Ctrl+V anywhere in this panel</span>
+          </div>
 
           {regions.length > 0 && (
             <ul aria-label="Regions" className="mt-4 space-y-1.5">
