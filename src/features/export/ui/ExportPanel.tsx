@@ -4,6 +4,7 @@ import { Button } from '../../../components/ui/Button'
 import { downloadBytes, downloadText, slug } from '../../../lib/download'
 import { exportProjectJson, mutateProject } from '../../projects/repo'
 import type { Project } from '../../projects/schema'
+import { usesShowHide } from '../bundle'
 import { autoFixComponent, autoFixProject, type Fix } from '../../autofix/autofix'
 import { createSnapshot } from '../../backup/service'
 import { buildBundle, bundleName, componentExports, hasProblems, problemsOf, type ComponentExport } from '../bundle'
@@ -74,6 +75,12 @@ export function ExportPanel({ project, onGoTo, readOnly = false }: { project: Pr
       <p className="mt-1 max-w-[70ch] text-[13px] text-ink-muted">
         Each dialog is exported as it appears in the XML tab, including any hand edits. The ZIP follows an AEM project’s folder layout, so you can merge <code className="rounded bg-sand px-1 font-mono text-[12px]">jcr_root</code> into <code className="rounded bg-sand px-1 font-mono text-[12px]">ui.apps/src/main/content</code>.
       </p>
+
+      {usesShowHide(items) && (
+        <p role="note" className="mt-3 rounded-lg bg-info-soft p-3 text-[13px] text-info">
+          <strong>These dialogs have “show only when” fields.</strong> The ZIP also includes a small show/hide clientlib (<code className="font-mono text-[12px]">clientlib-dialog-showhide</code>) that makes them work in AEM. Downloading a single XML file does not include it.
+        </p>
+      )}
 
       {bad.length > 0 && (
         <p role="status" className="mt-3 flex items-start gap-2 rounded-lg bg-warning-soft p-3 text-[13px] text-warning">

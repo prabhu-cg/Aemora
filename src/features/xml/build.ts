@@ -99,7 +99,7 @@ export function generateXml({ component, dialog, fields, projectName, componentF
     `Aemora: AEM Cloud Service Touch UI dialog for "${component.name}".`,
     `Place this at: /apps/${kebab(projectName ?? '', '<project>')}/components/${componentFolder || kebab(component.name, '<component>')}/${where}`,
     'Granite UI / Coral only. No clientlibs, custom widgets or scripts.',
-    ...(fields.some((f) => f.showWhen) ? ['Conditional fields use Granite UI\'s show/hide markers (cq-dialog-*-showhide). Your AEM project must load the script that reads them; Aemora does not generate it.'] : []),
+    ...(fields.some((f) => f.showWhen) ? ['Conditional fields use Granite UI\'s show/hide markers (cq-dialog-*-showhide). The Aemora export ZIP includes a small clientlib (clientlib-dialog-showhide) that acts on them. Add it to your project, or use your own script for these markers.'] : []),
     'Generated deterministically from the dialog layout. Not yet tested on a running AEM instance.',
     ...approachNotes(component),
   ]

@@ -47,6 +47,11 @@ export function checkGenerator(component: ComponentDef, dialog: ComponentDialog,
       out.push({ level: 'error', message: `“${f.label}” is only shown when another field has a value, but that field is not in the dialog.`, propertyId: f.propertyId, source: 'dialog' })
     }
   }
+  for (const f of fields) {
+    if (f.showWhen && f.required && inDialog.has(f.propertyId)) {
+      out.push({ level: 'warning', message: `“${f.label}” is required but only sometimes shown. AEM may still ask for it while it is hidden, so consider making it optional.`, propertyId: f.propertyId, source: 'field' })
+    }
+  }
   for (const i of validateDialog(dialog)) out.push({ level: i.level, message: i.message, source: 'dialog' })
   if (!hasComponentName) out.push({ level: 'warning', message: 'The project has no AEM component name, so the target path in the file header uses a placeholder.', source: 'component' })
   return out

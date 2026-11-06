@@ -1,0 +1,5 @@
+/* Aemora: fields that are hidden by the show/hide script. */
+.coral-Form-fieldwrapper.hide,
+[class~="hide"][class*="-showhide-target"] {
+  display: none !important;
+}

@@ -29,7 +29,7 @@ Inputs: Figma REST API (personal access token held in memory for the session onl
 ## Capabilities and Constraints
 
 - AEM field types supported: Textfield, Textarea, Numberfield, Checkbox, Switch, Select, Multifield, Pathfield, Fileupload, Colorfield, Hidden, Tagfield, Datepicker, Richtext.
-- No custom JavaScript, clientlibs, custom Granite widgets, Classic UI dialogs, or unsupported Granite components in generated output.
+- No custom JavaScript, clientlibs, custom Granite widgets, Classic UI dialogs, or unsupported Granite components in generated dialog XML. One exception, by the user's decision: when a dialog uses "show only when" fields, the export ZIP also carries a small show/hide clientlib (a fixed, dependency-free script) that acts on the standard Granite markers.
 - Preview is a simulated authoring preview, not a running AEM instance. Never claim AEM runtime validation unless tested on a real AEM environment (not yet done).
 - Screenshots do not provide reliable Figma metadata; no OCR or AI.
 - Figma tokens never persisted, exported, or logged.

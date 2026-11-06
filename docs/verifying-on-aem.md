@@ -39,7 +39,7 @@ These are written from knowledge of Granite UI and the Core Components, not from
 - Fileupload: parameter names derived from the field name (`./fieldFileName`, `./fieldFileReference`).
 - Richtext: only `useFixedInlineToolbar` is set; no `rtePlugins` configuration.
 - Tag field: `rootPath` `/content/cq:tags`.
-- Conditional fields ("Show only when"): written with the conventional Granite show/hide markers. The controller gets `granite:class="cq-dialog-checkbox-showhide"` (checkbox, switch) or `"cq-dialog-dropdown-showhide"` (select) and a `granite:data` child pointing at a CSS class; the conditional field gets `granite:class="hide <that class>"` and, for a select, `showhidetargetvalue`. A script must read these. Aemora generates none, so check that your project already loads one, and that it handles a switch as well as a checkbox. Fields hidden this way are still submitted with the dialog.
+- Conditional fields ("Show only when"): written with the conventional Granite show/hide markers. The controller gets `granite:class="cq-dialog-checkbox-showhide"` (checkbox, switch) or `"cq-dialog-dropdown-showhide"` (select) and a `granite:data` child pointing at a CSS class; the conditional field gets `granite:class="hide <that class>"` and, for a select, `showhidetargetvalue`. A script must read these. The export ZIP includes one (`clientlibs/clientlib-dialog-showhide`, category `cq.authoring.dialog`, `allowProxy`), added only when a dialog uses these markers. Check on your instance that it loads in the dialog, that the checkbox and the switch both toggle the fields, that the select values show the right fields, and that a hidden required field does not block saving. Fields hidden this way are still submitted with the dialog.
 
 ## Recording the result
 

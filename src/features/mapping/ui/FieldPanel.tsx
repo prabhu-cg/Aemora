@@ -289,7 +289,7 @@ function ShowWhen({ field, actions, error }: { field: ResolvedField; actions: Fi
         {current && current.fieldType !== 'select' && <p className="text-[13px] text-ink-strong">This field appears while “{current.label}” is checked, and is hidden when it is not.</p>}
       </div>
       <p id={`${id}-d`} role={error ? 'alert' : undefined} className={`mt-2 text-[12px] ${error ? 'text-danger' : 'text-ink-muted'}`}>
-        {error ?? 'Aemora writes the standard Granite show/hide markers, nothing more. The script that acts on them must already be loaded by your AEM project; Aemora does not generate it.'}
+        {error ?? 'Aemora marks the fields with the standard Granite show/hide markers. The Export ZIP includes a small clientlib that acts on them in AEM. Avoid making a conditional field required: AEM may still ask for it while hidden.'}
       </p>
     </fieldset>
   )

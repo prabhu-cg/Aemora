@@ -127,7 +127,7 @@ describe('AEM fields view', () => {
     await user.click(screen.getByRole('button', { name: 'Configure Label' }))
     const panel = await panelOf()
     const when = within(panel).getByLabelText('Show this field only when') as HTMLSelectElement
-    expect(within(panel).getByText(/must already be loaded by your AEM project/)).toBeTruthy()
+    expect(within(panel).getByText(/Export ZIP includes a small clientlib/)).toBeTruthy()
     expect([...when.options].map((o) => o.textContent)).toEqual(['Always shown', 'Size', 'Variant', 'State', 'Icon position']) // selects only: Button has no checkbox
     await user.selectOptions(when, 'Variant')
     await waitFor(async () => expect((await stored(p.id)).mappings[0].overrides.showWhen).toMatchObject({ value: expect.any(String) }))

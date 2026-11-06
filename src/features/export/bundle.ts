@@ -5,6 +5,8 @@ import type { ComponentDef } from '../components/schema'
 import { resolveDialog } from '../dialog/ops'
 import { resolveComponent } from '../mapping/engine'
 import { exportProjectJson } from '../projects/repo'
+import showhideJs from './clientlib/showhide.js?raw'
+import showhideCss from './clientlib/showhide.css?raw'
 import type { Project } from '../projects/schema'
 import { generateXml, type XmlFormat } from '../xml/build'
 import { validateAll, type ValidationSummary } from '../xml/validate'
@@ -115,8 +117,31 @@ export function readme(project: Project, exports: ComponentExport[]): string {
       for (const a of (e.validation.aem ?? []).filter((x) => x.level === 'error')) lines.push(`  - ${a.message} (${a.path})`)
     }
   }
+  if (usesShowHide(exports)) {
+    lines.push('', 'CONDITIONAL FIELDS (SHOW ONLY WHEN)',
+      'Some dialogs show a field only while a checkbox is checked or a select has a value. The dialog XML marks those fields;',
+      'a small script has to act on the marks. This archive includes it as a clientlib:',
+      `  jcr_root/apps/${kebab(project.name, 'project')}/clientlibs/clientlib-dialog-showhide  (category cq.authoring.dialog)`,
+      'Merge it along with the components. If your project already has its own show/hide script for these markers, you can leave this one out.',
+      'It has not been tested on a running AEM instance either. A required field that is hidden may still be asked for when saving, so avoid marking conditional fields required.')
+  }
   lines.push('', 'ALSO IN THIS ARCHIVE', '- aemora-project.json: the whole Aemora project. Import it into Aemora to continue editing.', '')
   return lines.join('\n')
+}
+
+/** The dialog XML only carries markers; this clientlib is what acts on them. Added only when a dialog uses them. */
+export const SHOWHIDE_MARKER = /cq-dialog-(?:checkbox|dropdown)-showhide/
+export const usesShowHide = (exports: Pick<ComponentExport, 'xml'>[]) => exports.some((e) => SHOWHIDE_MARKER.test(e.xml))
+
+export function showHideClientlib(project: Pick<Project, 'name'>): ZipFile[] {
+  const root = `jcr_root/apps/${kebab(project.name, 'project')}/clientlibs/clientlib-dialog-showhide`
+  return [
+    { path: `${root}/.content.xml`, content: '<?xml version="1.0" encoding="UTF-8"?>\n<jcr:root xmlns:cq="http://www.day.com/jcr/cq/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0"\n    jcr:primaryType="cq:ClientLibraryFolder"\n    allowProxy="{Boolean}true"\n    categories="[cq.authoring.dialog]"/>\n' },
+    { path: `${root}/js.txt`, content: '#base=js\nshowhide.js\n' },
+    { path: `${root}/css.txt`, content: '#base=css\nshowhide.css\n' },
+    { path: `${root}/js/showhide.js`, content: showhideJs },
+    { path: `${root}/css/showhide.css`, content: showhideCss },
+  ]
 }
 
 export function buildBundle(project: Project): { zip: Uint8Array; files: ZipFile[]; exports: ComponentExport[] } {
@@ -124,6 +149,7 @@ export function buildBundle(project: Project): { zip: Uint8Array; files: ZipFile
   const files: ZipFile[] = [
     { path: 'README.txt', content: readme(project, exports) },
     ...exports.map((e) => ({ path: e.zipPath, content: e.xml })),
+    ...(usesShowHide(exports) ? showHideClientlib(project) : []),
     { path: 'aemora-project.json', content: exportProjectJson(project) },
   ]
   return { zip: createZip(files), files, exports }
