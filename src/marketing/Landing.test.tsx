@@ -65,7 +65,12 @@ describe('landing page', () => {
     open()
     const figures = screen.getAllByRole('figure')
     expect(figures).toHaveLength(4) // hero + three modules
-    for (const f of figures) {
+    // The hero is a real screenshot of the running app on a laptop: it has a description and says where its data came from.
+    const [hero, ...modules] = figures
+    const shot = within(hero).getByRole('img', { name: /Aemora open on the Card component from the sample project/ })
+    expect(shot.getAttribute('src')).toMatch(/app-light.*\.webp$/)
+    expect(hero.querySelector('figcaption')?.textContent).toMatch(/built-in sample project/)
+    for (const f of modules) {
       expect(within(f).getByText('Sample data')).toBeTruthy()
       expect(f.querySelector('figcaption')?.textContent?.length).toBeGreaterThan(20)
       expect(f.querySelector('[aria-hidden="true"]')).toBeTruthy()

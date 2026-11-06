@@ -101,13 +101,16 @@ select:not([multiple]):disabled { opacity: 0.6; }
 .aem-skin ::selection { background: #2680eb; color: #fff; }
 .aem-skin :focus-visible { outline: 2px solid #2680eb; outline-offset: 1px; }
 
-/* Landing: Yedara's hero ground is dots only. Fine dots on a 24px grid, fading toward the edges and bottom. */
+/* Landing hero ground: a warm light, not a pattern. One glow falls from the headline, a second pools under the laptop. */
 .hero-aura {
-  background-image: radial-gradient(circle, var(--hairline-strong) 1.4px, transparent 1.6px);
-  background-size: 24px 24px;
-  -webkit-mask-image: radial-gradient(ellipse 70% 80% at 50% 25%, #000 30%, transparent 75%);
-  mask-image: radial-gradient(ellipse 70% 80% at 50% 25%, #000 30%, transparent 75%);
+  background:
+    radial-gradient(55% 48% at 50% -6%, color-mix(in oklab, var(--accent) 16%, transparent), transparent 72%),
+    radial-gradient(48% 36% at 50% 88%, color-mix(in oklab, var(--accent) 12%, transparent), transparent 70%),
+    linear-gradient(to bottom, transparent 60%, color-mix(in oklab, var(--sand) 70%, transparent));
 }
+.shot-dark { display: none; }
+.dark .shot-light { display: none; }
+.dark .shot-dark { display: block; }
 html { scroll-padding-top: 5rem; }
 
 /* XML editor token colours. Quiet: structure in ink, values in the accent family. */

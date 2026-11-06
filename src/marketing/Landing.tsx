@@ -5,7 +5,8 @@ import { Logo } from '../components/ui/Logo'
 import { ThemeToggle } from '../components/ui/ThemeToggle'
 import { buttonClass } from '../components/ui/buttonClass'
 import { Frame } from '../components/ui/Frame'
-import { AppWindow, DialogBody, HeroWindow, MappingBody, XmlBody } from './windows'
+import { AppWindow, DialogBody, MappingBody, XmlBody } from './windows'
+import { Laptop } from './Laptop'
 
 const go = (id: string) => {
   const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -105,9 +106,10 @@ export function Landing() {
               </div>
             </div>
             <div className="rise-late mx-auto mt-16 max-w-[1040px]">
-              <AppWindow title="Card · AEM fields and dialog" caption="The Card component from the built-in sample project: each design property with its suggested Granite field, and the dialog authors would get.">
-                <HeroWindow />
-              </AppWindow>
+              <Laptop
+                alt="Aemora open on the Card component from the sample project, showing the simulated AEM dialog preview with Content and Style tabs, a required Heading field, an image path field and a button label."
+                caption="Aemora with the Card component from the built-in sample project: the simulated AEM dialog authors would get."
+              />
             </div>
           </Frame>
         </section>

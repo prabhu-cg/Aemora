@@ -68,45 +68,6 @@ export function MappingBody({ rows = 6 }: { rows?: number }) {
   )
 }
 
-/** A small imitation of an AEM dialog, in the same light skin as the tool's preview. */
-export function MiniDialog() {
-  const f = fields()
-  const heading = f.find((x) => x.key === 'heading')!
-  const image = f.find((x) => x.key === 'image')!
-  const variant = f.find((x) => x.key === 'backgroundVariant')!
-  const lbl = 'mb-1 block text-[11px] text-ink'
-  const box = 'flex h-8 items-center rounded border border-hairline-strong bg-surface px-2.5 text-[12px] text-ink-strong'
-  return (
-    <div className="aem-skin bg-[#2c2c2c]/90 p-4">
-      <div className="overflow-hidden rounded-[6px] bg-surface shadow-[0_8px_30px_rgba(0,0,0,.45)]">
-        <div className="flex items-center gap-2 border-b border-hairline px-3 py-2">
-          <span className="flex-1 text-[14px] font-bold text-ink-strong">Card</span>
-          <span className="inline-flex size-6 items-center justify-center rounded-full bg-accent text-on-accent"><Check size={14} /></span>
-        </div>
-        <div className="flex border-b border-hairline bg-sand text-[12px]">
-          <span className="-mb-px border-b-2 border-accent bg-surface px-3 py-2 font-bold text-ink-strong">Content</span>
-          <span className="px-3 py-2 text-ink">Style</span>
-        </div>
-        <div className="space-y-3 p-3">
-          <div><span className={lbl}>{heading.label} <span className="text-danger">*</span></span><span className={box}>Spring collection</span></div>
-          <div className="border-b border-hairline pb-1 text-[11px] font-bold text-ink-strong">Media</div>
-          <div><span className={lbl}>{image.label}</span><span className="flex gap-1.5"><span className={`${box} flex-1 font-mono text-[11px] text-ink-muted`}>/content/dam</span><span className="flex h-8 items-center rounded border border-hairline-strong px-2 text-[11px] font-bold">Browse</span></span></div>
-          <div><span className={lbl}>{variant.label}</span><span className={`${box} justify-between`}>default<ChevronDown size={13} className="text-ink-muted" /></span></div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-export function HeroWindow() {
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_1fr]">
-      <MappingBody rows={6} />
-      <div className="border-t border-hairline lg:border-l lg:border-t-0"><MiniDialog /></div>
-    </div>
-  )
-}
-
 export function DialogBody() {
   const c = card()
   const d = buildDialog(c)
