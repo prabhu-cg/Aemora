@@ -21,6 +21,7 @@ import { DialogEditor, type Target } from '../../dialog/ui/DialogEditor'
 import { DialogPreview } from '../../preview/ui/DialogPreview'
 import { XmlPanel } from '../../xml/ui/XmlPanel'
 import { DesignPreview } from '../DesignPreview'
+import { GroupsNote } from './GroupsNote'
 import { PropertyList } from './PropertyList'
 import { PropertyPanel } from './PropertyPanel'
 import { ChildrenEditor, StandardSuggestions, UnsupportedList } from './Extras'
@@ -299,7 +300,7 @@ export function ComponentWorkspace({ project, readOnly = false, focus }: { proje
             <p className="rounded-lg border border-dashed border-hairline-strong p-4 text-ink-muted">No properties yet. Add one, or start from the standard properties below.</p>
           )}
         </div>
-        {groups.length > 0 && <p className="mt-2 text-[12px] text-ink-muted">Groups: {groups.join(' · ')}. Each group becomes a tab (or a section) in the dialog.</p>}
+        {component.properties.length > 0 && <GroupsNote component={component} dialog={dialog} onShowDialog={() => { setView('dialog'); setPropId(''); setFieldPropId('') }} />}
 
         {!readOnly && <StandardSuggestions component={component} onAdd={(props) => edit((c) => addSuggested(c, props))} />}
 
