@@ -67,8 +67,8 @@ describe('Figma component previews in the tool', () => {
     stubFigma()
     const { review } = await readFigma(user)
     await user.click(within(review).getByRole('button', { name: /Add 2 components/ }))
-    const details = (await screen.findByText('Design preview')).closest('details')!
-    expect(details.open).toBe(true)
+    await user.click(await screen.findByRole('tab', { name: 'Preview' }))
+    const details = await screen.findByRole('region', { name: 'Design preview' })
     expect(within(details).getByRole('img', { name: 'Figma render of Button' })).toBeTruthy()
     expect(details.textContent).toMatch(/A picture Figma rendered when this component was imported/)
     const link = within(details).getByRole('link', { name: /Open in Figma/ })
@@ -82,6 +82,7 @@ describe('Figma component previews in the tool', () => {
     stubFigma()
     const { p, review } = await readFigma(user)
     await user.click(within(review).getByRole('button', { name: /Add 2 components/ }))
+    await user.click(await screen.findByRole('tab', { name: 'Preview' }))
     await user.click(await screen.findByRole('button', { name: 'Remove preview' }))
     await waitFor(async () => expect((await getProject(p.id))!.assets).toHaveLength(1))
     await waitFor(() => expect(screen.queryByRole('img', { name: 'Figma render of Button' })).toBeNull())
@@ -105,7 +106,25 @@ describe('Figma component previews in the tool', () => {
     await user.click(within(review).getByRole('button', { name: /Add 2 components/ }))
     await waitFor(async () => expect((await getProject(p.id))!.components).toHaveLength(2))
     expect((await getProject(p.id))!.assets).toEqual([])
-    expect(screen.queryByText('Design preview')).toBeNull()
+    await user.click(await screen.findByRole('tab', { name: 'Preview' }))
+    // No picture: the pane stays, and offers to add one.
+    expect(within(await screen.findByRole('region', { name: 'Design preview' })).getByRole('button', { name: 'Add design image' })).toBeTruthy()
+  })
+
+  it('lets you add a design image to a component that has none, beside the dialog preview', async () => {
+    const user = userEvent.setup()
+    stubFigma({ imageDownloadFails: true })
+    const { p, review } = await readFigma(user)
+    await user.click(within(review).getByRole('button', { name: /Add 2 components/ }))
+    await user.click(await screen.findByRole('tab', { name: 'Preview' }))
+    const pane = await screen.findByRole('region', { name: 'Design preview' })
+    const png = new File([new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0])], 'button.png', { type: 'image/png' })
+    await user.upload(within(pane).getByLabelText('Design image file'), png)
+    expect(await screen.findByRole('img', { name: 'Screenshot used for Button' })).toBeTruthy()
+    expect(screen.getByRole('region', { name: 'Simulated dialog preview' })).toBeTruthy()
+    await waitFor(async () => expect((await getProject(p.id))!.assets).toHaveLength(1))
+    await user.upload(within(await screen.findByRole('region', { name: 'Design preview' })).getByLabelText('Design image file'), new File([new Uint8Array(12)], 'x.png', { type: 'image/png' }))
+    expect((await screen.findByRole('alert')).textContent).toMatch(/Only PNG, JPG and WebP/)
   })
 
   it('keeps the token out of the project, its export and the backup', async () => {

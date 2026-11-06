@@ -21,6 +21,8 @@ import { DialogEditor, type Target } from '../../dialog/ui/DialogEditor'
 import { DialogPreview } from '../../preview/ui/DialogPreview'
 import { XmlPanel } from '../../xml/ui/XmlPanel'
 import { DesignPreview } from '../DesignPreview'
+import { readScreenshot } from '../../inputs/screenshot'
+import { InputError } from '../../inputs/types'
 import { PropertyList } from './PropertyList'
 import { PropertyPanel } from './PropertyPanel'
 import { ChildrenEditor, StandardSuggestions, UnsupportedList } from './Extras'
@@ -37,6 +39,13 @@ export function ComponentWorkspace({ project, readOnly = false, focus }: { proje
   const [selectedId, setSelectedId] = useState('')
   const [propId, setPropId] = useState('')
   const [error, setError] = useState('')
+  const addDesign = (file: File) => {
+    readScreenshot(file).then((asset) => mutate(project.id, (pr) => {
+      const components = pr.components.map((c) => (c.id === component.id ? { ...c, previewAssetId: asset.id } : c))
+      const used = new Set([...components.map((c) => c.previewAssetId), ...components.flatMap((c) => c.properties.map((p) => p.origin.assetId))])
+      return { ...pr, components, assets: [...pr.assets.filter((a) => used.has(a.id)), asset] }
+    })).then(() => setError('')).catch((e) => setError(e instanceof InputError ? e.message : 'Could not save the design image to this browser.'))
+  }
   const [undo, setUndo] = useState<Undo | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [view, setView] = useState<WorkspaceView>('properties')
@@ -189,14 +198,6 @@ export function ComponentWorkspace({ project, readOnly = false, focus }: { proje
             onChange={(e) => { const description = e.target.value; edit((c) => patchComponent(c, { description })) }} />
         </label>
 
-        <DesignPreview
-          component={component} assets={project.assets} readOnly={readOnly}
-          onRemove={() => mutate(project.id, (pr) => {
-            const components = pr.components.map((c) => (c.id === component.id ? { ...c, previewAssetId: undefined } : c))
-            const used = new Set([...components.map((c) => c.previewAssetId), ...components.flatMap((c) => c.properties.map((p) => p.origin.assetId))])
-            return { ...pr, components, assets: pr.assets.filter((a) => used.has(a.id)) }
-          }).catch(() => setError('Could not remove the preview.'))}
-        />
 
         {error && <p role="alert" className="mt-3 rounded-lg bg-danger-soft p-3 text-[13px] font-semibold text-danger">{error}</p>}
 
@@ -224,7 +225,18 @@ export function ComponentWorkspace({ project, readOnly = false, focus }: { proje
           </div>
         ) : view === 'preview' ? (
           <div role="tabpanel" className="mt-4">
-            <DialogPreview key={component.id} component={component} dialog={dialog} fields={fields} onShowDialog={() => { setView('dialog'); setPropId(''); setFieldPropId('') }} />
+            <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+              <DesignPreview
+          component={component} assets={project.assets} readOnly={readOnly}
+            onAdd={addDesign}
+          onRemove={() => mutate(project.id, (pr) => {
+            const components = pr.components.map((c) => (c.id === component.id ? { ...c, previewAssetId: undefined } : c))
+            const used = new Set([...components.map((c) => c.previewAssetId), ...components.flatMap((c) => c.properties.map((p) => p.origin.assetId))])
+            return { ...pr, components, assets: pr.assets.filter((a) => used.has(a.id)) }
+          }).catch(() => setError('Could not remove the preview.'))}
+        />
+              <DialogPreview key={component.id} component={component} dialog={dialog} fields={fields} onShowDialog={() => { setView('dialog'); setPropId(''); setFieldPropId('') }} />
+            </div>
           </div>
         ) : view === 'dialog' ? (
           <div role="tabpanel" className="mt-4">
