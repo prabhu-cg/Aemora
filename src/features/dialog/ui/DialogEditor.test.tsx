@@ -86,7 +86,7 @@ describe('dialog editor', () => {
     const p = await open()
     await user.click(screen.getByRole('button', { name: 'Move Heading down' }))
     await waitFor(async () => expect(await keys(p.id, (await dlg(p.id)).tabs[0].items.filter((i) => i.kind === 'field').map((i) => i.id))).toEqual(['description', 'heading']))
-    expect((screen.getByRole('button', { name: 'Move Description up' }) as HTMLButtonElement).disabled).toBe(true)
+    await waitFor(() => expect((screen.getByRole('button', { name: 'Move Description up' }) as HTMLButtonElement).disabled).toBe(true))
   })
 
   it('adds a field: creates a property, places it where asked and selects it', async () => {
