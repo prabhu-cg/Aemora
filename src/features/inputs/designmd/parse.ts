@@ -33,6 +33,10 @@ export interface DesignMdCatalog {
 /** The file is the index of a split export. Its components are in the files of the "components" folder next to it. */
 export class DesignMdIndexError extends InputError {}
 
+/** Alphabetical, ignoring case, with numbers in their natural order: "Item 2" before "Item 10". */
+const byName = (a: CatalogEntry, b: CatalogEntry) =>
+  a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }) || a.page.localeCompare(b.page, undefined, { numeric: true, sensitivity: 'base' }) || a.id.localeCompare(b.id)
+
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v)
 
 /** True for text that looks like a DesignMD components file, so other inputs can point people here. */
@@ -84,6 +88,7 @@ export function parseDesignMdText(text: string): DesignMdCatalog {
     })
   }
   if (!entries.length) throw new InputError('No readable components were found in this file.')
+  entries.sort(byName)
   return { byAnyId, fileName: file.metadata?.fileName, pluginVersion: file.metadata?.pluginVersion, entries, components, tokens: file.tokens, warnings: file.warnings }
 }
 
@@ -97,6 +102,7 @@ export function mergeCatalogs(list: DesignMdCatalog[]): DesignMdCatalog {
     Object.assign(merged.tokens, c.tokens)
     merged.warnings.push(...c.warnings)
   }
+  merged.entries.sort(byName)
   return merged
 }
 

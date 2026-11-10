@@ -203,8 +203,9 @@ describe('layer handling', () => {
     const plain = frame('Cta', {})
     const asButton = (t: object) => file(component('Cta', design(t), [], 'button'), 'css')
     expect(asButton(plain)).toMatch(/\.cmp-cta \{[^}]*border: 0;[^}]*cursor: pointer;/s)
-    expect(asButton(tree)).toMatch(/border: 2px solid #ff0000;/)
-    expect(asButton(tree)).not.toMatch(/border: 0;/)
+    // The stroke is a shadow, so the browser border stays reset: a stroke in Figma never changes a size.
+    expect(asButton(tree)).toContain('box-shadow: inset 0 0 0 2px #ff0000;')
+    expect(asButton(tree)).toMatch(/border: 0;/)
     const asLink = file(component('Cta', design(plain), [prop('link', 'link')], 'button'), 'css')
     expect(asLink).toContain('text-decoration: none;')
     expect(file(component('Cta', design(plain), [], 'custom'), 'css')).not.toContain('cursor: pointer')
@@ -228,12 +229,12 @@ describe('layer handling', () => {
     expect(css).toContain('padding: 8px 16px;')
     expect(css).toContain('justify-content: space-between;')
     expect(css).toContain('align-items: center;')
-    expect(css).toContain('width: 100%;')
+    expect(css).toContain('width: 300px;') // the root has no parent to fill, so it keeps its size
     expect(css).toContain('border-radius: 4px 4px 0 0;')
     expect(css).toContain('opacity: 0.5;')
     expect(css).toContain('background-color: var(--color-surface, rgba(16, 32, 48, 0.5));')
-    expect(css).toContain('border: 2px solid #ff0000;')
-    expect(css).toContain('box-shadow: 0 4px 8px -1px rgba(0, 0, 0, 0.25), inset 1px 1px 0 0 rgba(255, 255, 255, 1);')
+    expect(css).toContain('box-shadow: inset 0 0 0 2px #ff0000, 0 4px 8px -1px rgba(0, 0, 0, 0.25), inset 1px 1px 0 0 rgba(255, 255, 255, 1);')
+    expect(css).not.toMatch(/\n  border: 2px/)
     expect(css).toContain('font-family: "Inter", sans-serif;')
     expect(css).toContain('line-height: 1.2;')
     expect(css).toContain('letter-spacing: 0.05em;')
@@ -248,7 +249,45 @@ describe('layer handling', () => {
     const tree = frame('Hero', { fills: [{ type: 'GRADIENT_LINEAR', description: 'blue to red' }], strokes: { paints: [{ type: 'SOLID', hex: '#000000' }], weight: 1, align: 'OUTSIDE' } })
     const m = generateMarkup(component('Hero', design(tree), []))
     expect(m.notes.some((n) => /gradient linear fill is not reproduced/.test(n.message))).toBe(true)
-    expect(m.notes.some((n) => /outside stroke/.test(n.message))).toBe(true)
+  })
+
+  it('draws inside, outside and centered strokes without changing any size', () => {
+    const css = (align: string) => file(component('S', design(frame('S', { strokes: { paints: [{ type: 'SOLID', hex: '#000000', alpha: 1 }], weight: 4, align } })), []), 'css')
+    expect(css('INSIDE')).toContain('box-shadow: inset 0 0 0 4px #000000;')
+    expect(css('OUTSIDE')).toContain('box-shadow: 0 0 0 4px #000000;')
+    expect(css('CENTER')).toContain('box-shadow: inset 0 0 0 2px #000000, 0 0 0 2px #000000;')
+  })
+
+  it('says "align to start" out loud, since flex stretches children by default', () => {
+    const css = (counterAlign: string) => file(component('Col', design(frame('Col', { layout: { mode: 'VERTICAL', counterAlign, sizingH: 'HUG', sizingV: 'HUG' } })), []), 'css')
+    expect(css('MIN')).toContain('align-items: flex-start;')
+    expect(css('CENTER')).toContain('align-items: center;')
+  })
+
+  it('gives layers with a size of their own a real box that does not shrink', () => {
+    const tree = frame('Row', { layout: { mode: 'HORIZONTAL', sizingH: 'HUG', sizingV: 'HUG' } }, [{ id: 'v', name: 'Shape', type: 'VECTOR', role: 'icon', visible: true, size: { width: 10, height: 5 } }])
+    expect(file(component('Row', design(tree), []), 'css')).toMatch(/__shape \{[^}]*width: 10px;[^}]*height: 5px;[^}]*display: block;[^}]*flex-shrink: 0;/s)
+  })
+
+  it('leaves a layer that a yes/no property switches to the HTL, and hides one nothing switches', () => {
+    const tree = frame('Tag', {}, [text('Switched', 'a', { visible: false, propertyRefs: { visible: 'has a#1:1' } }), text('Plain', 'b', { visible: false })])
+    const css = file(component('Tag', design(tree), [prop('hasA', 'boolean')]), 'css')
+    expect(css).not.toMatch(/__switched \{[^}]*display: none/s)
+    expect(css).toMatch(/__plain \{[^}]*display: none/s)
+  })
+
+  it('removes the margins and borders browsers add to text, dividers, buttons and inputs', () => {
+    const tree = frame('Form', {}, [
+      text('Title', 't', { role: 'heading' }), text('Copy', 'c', { role: 'text', text: { characters: 'x'.repeat(100) } }),
+      { id: 'd', name: 'Rule', type: 'LINE', role: 'divider', visible: true }, { id: 'i', name: 'Field', type: 'RECTANGLE', role: 'input', visible: true },
+      { id: 'b', name: 'Go', type: 'INSTANCE', role: 'button', visible: true, children: [text('Cap', 'go')] },
+    ])
+    const css = file(component('Form', design(tree), []), 'css')
+    expect(css).toMatch(/__title \{[^}]*margin: 0;/s)
+    expect(css).toMatch(/__copy \{[^}]*margin: 0;/s)
+    expect(css).toMatch(/__rule \{[^}]*margin: 0;[^}]*border: 0;/s)
+    expect(css).toMatch(/__field \{[^}]*padding: 0;[^}]*border: 0;/s)
+    expect(css).toMatch(/__go \{[^}]*margin: 0;[^}]*padding: 0;[^}]*border: 0;[^}]*background: none;/s)
   })
 
   it('renders images, dividers and slots and tells you what is missing', () => {
@@ -328,7 +367,7 @@ describe('layer handling', () => {
     expect(validateMarkup(m)).toEqual([])
   })
 
-  it('judges a layer by the default look, and uses a yes/no property for layers that only exist in a state (the Chip)', () => {
+  it('judges a layer by the default look, and keeps layers that only exist in a state hidden until that state (the Chip)', () => {
     const tree = frame('Chip', {}, [text('Text', 'Default', { role: 'text' })])
     const icon = (name: string, extra: object = {}) => ({ id: name, name, type: 'INSTANCE', role: 'icon', visible: true, ...extra })
     const diff = (variantProperties: Record<string, string>, added: object[]) => ({ variantId: JSON.stringify(variantProperties), variantProperties, layers: [], added: added.map((layer) => ({ parentPath: 'Chip', layer })), removed: [] })
@@ -346,11 +385,56 @@ describe('layer handling', () => {
     const html = m.files[0].content
     expect(html).toContain('class="cmp-chip__chevron" data-sly-test="${model.typeModifier == \'filter\'}"')
     expect(html).toContain('class="cmp-chip__close" data-sly-test="${model.hasCloseButton}"')
-    expect(html).not.toContain('chevron-disabled')
-    expect(m.notes.some((n) => n.layer === 'close' && /focused state.*whenever "hasCloseButton" is on/s.test(n.message))).toBe(true)
-    expect(m.notes.some((n) => n.layer === 'chevron-disabled' && n.level === 'info' && /only exists in the disabled state/.test(n.message))).toBe(true)
+    // Layers of one interaction state are in the markup, hidden, and the CSS shows them in that state.
+    const css = m.files[1].content
+    expect(html).toContain('cmp-chip__chevron-disabled')
+    expect(css).toMatch(/\.cmp-chip__close \{[^}]*display: none;/s)
+    // In the focus state only the Input type has it, and in the disabled state only the Filter type has its own chevron.
+    expect(css).toContain('.cmp-chip:focus-visible.cmp-chip--type-input .cmp-chip__close {\n  display: block;\n}')
+    expect(css).toMatch(/\.cmp-chip:disabled\.cmp-chip--type-filter \.cmp-chip__chevron-disabled/)
+    expect(m.notes.some((n) => n.layer === 'close' && n.level === 'info' && /only shows in the focused state, so it is hidden until then/.test(n.message))).toBe(true)
+    expect(m.notes.some((n) => n.layer === 'chevron-disabled' && /only shows in the disabled state/.test(n.message))).toBe(true)
     expect(m.notes.some((n) => /no single option/.test(n.message))).toBe(false)
     expect(validateMarkup(m)).toEqual([])
+  })
+
+  it('states what a combination of options looks like only where the single options stacked would be wrong', () => {
+    const pad = (n: number) => ({ layout: { mode: 'HORIZONTAL', padding: { top: n, right: n, bottom: n, left: n }, sizingH: 'HUG', sizingV: 'HUG' } })
+    const tree = frame('Btn', pad(8), [text('Label', 'Go')])
+    const diff = (vp: Record<string, string>, p: number) => ({ variantId: JSON.stringify(vp), variantProperties: vp, layers: [{ path: 'Btn', changes: pad(p) }], added: [], removed: [] })
+    const d = design(tree, {
+      defaultVariantProperties: { size: 'sm', look: 'plain' },
+      variantDiffs: [diff({ size: 'lg', look: 'plain' }, 16), diff({ size: 'sm', look: 'bold' }, 12), diff({ size: 'lg', look: 'bold' }, 20)],
+    })
+    const props = [prop('size', 'enum', { defaultValue: 'sm', allowedValues: ['sm', 'lg'] }), prop('look', 'enum', { defaultValue: 'plain', allowedValues: ['plain', 'bold'] })]
+    const css = file(component('Btn', d, props), 'css')
+    expect(css).toContain('.cmp-btn--size-lg {\n  padding: 16px;\n}')
+    expect(css).toContain('.cmp-btn--look-bold {\n  padding: 12px;\n}')
+    // lg + bold is 20, but stacking would give 12 (the later rule wins): the combination says 20.
+    expect(css).toContain('.cmp-btn--size-lg.cmp-btn--look-bold {\n  padding: 20px;\n}')
+    // When the stack is already right, nothing extra is written.
+    const same = design(tree, { defaultVariantProperties: { size: 'sm', look: 'plain' }, variantDiffs: [diff({ size: 'lg', look: 'plain' }, 16), diff({ size: 'sm', look: 'bold' }, 12), diff({ size: 'lg', look: 'bold' }, 12)] })
+    expect(file(component('Btn', same, props), 'css')).not.toContain('.cmp-btn--size-lg.cmp-btn--look-bold')
+  })
+
+  it('shows a layer of an interaction state only for the looks of the component that have it (the Date)', () => {
+    const tree = frame('D', {}, [text('Day', '4')])
+    const note = { id: 'n', name: 'Note', type: 'TEXT', role: 'text', visible: true, text: { characters: 'Last Day' } }
+    const diff = (vp: Record<string, string>, added: object[]) => ({ variantId: JSON.stringify(vp), variantProperties: vp, layers: [], added: added.map((layer) => ({ parentPath: 'D', layer })), removed: [] })
+    const d = design(tree, {
+      defaultVariantProperties: { State: 'Default', Position: 'Start' },
+      variantDiffs: [
+        diff({ State: 'Default', Position: 'Last Day' }, []),
+        diff({ State: 'Selected', Position: 'Start' }, []),
+        diff({ State: 'Selected', Position: 'Last Day' }, [note]),
+      ],
+    })
+    const props = [prop('position', 'enum', { defaultValue: 'Start', allowedValues: ['Start', 'Last Day'] })]
+    const css = file(component('D', d, props), 'css')
+    expect(css).toMatch(/\.cmp-d__note \{[^}]*display: none;/s)
+    // Selected alone is not enough: it also has to be the Last Day look.
+    expect(css).toContain('.cmp-d[aria-selected="true"].cmp-d--position-last-day .cmp-d__note,\n.cmp-d.is-selected.cmp-d--position-last-day .cmp-d__note {\n  display: inline;\n}')
+    expect(css).not.toMatch(/\.cmp-d\.is-selected \.cmp-d__note/)
   })
 
   it('falls back to a simple wrapper without a layer structure', () => {

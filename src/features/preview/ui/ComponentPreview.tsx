@@ -4,30 +4,14 @@ import type { ComponentDef, Property } from '../../components/schema'
 import type { ResolvedField } from '../../mapping/engine'
 import type { Project } from '../../projects/schema'
 import { effectiveContent, generateForProject } from '../../markup/effective'
+import { readDesign } from '../../markup/layers'
 import { renderHtl } from '../../markup/render/render'
 import { buildModel, defaultSamples, type SampleValue } from '../../markup/render/samples'
+import { paintFrame, STATES, type Background, type PreviewState } from '../paintFrame'
 
-type PreviewState = 'default' | 'hover' | 'focus' | 'pressed' | 'disabled'
-type Background = 'light' | 'dark'
 const ZOOMS = [{ v: '1', label: '100%' }, { v: '1.5', label: '150%' }, { v: '2', label: '200%' }, { v: '3', label: '300%' }]
 
-/** The pseudo-class each state stands for. A state button appears only when the CSS styles it. */
-const STATES: { id: Exclude<PreviewState, 'default'>; label: string; pseudo: string }[] = [
-  { id: 'hover', label: 'Hover', pseudo: ':hover' },
-  { id: 'focus', label: 'Focus', pseudo: ':focus-visible' },
-  { id: 'pressed', label: 'Pressed', pseudo: ':active' },
-  { id: 'disabled', label: 'Disabled', pseudo: ':disabled' },
-]
-
-const FRAME_CSS = `html,body{margin:0}body{padding:16px;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#fff;color:#101828}body.pv-dark{background:#101828;color:#f2f4f7}body *:empty:not(hr):not(img):not(input):not(br){outline:1px dashed rgba(128,128,128,.7);outline-offset:-1px}`
-
-/** The CSS with each state's pseudo-class swapped for a class, so a state can be shown without hovering. */
-function withStateClasses(css: string): string {
-  return STATES.reduce((out, s) => out.split(s.pseudo).join(`.is-preview-${s.id}`), css)
-}
-
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n))
-const seen = new WeakSet<Document>()
 
 /**
  * Shows what the generated HTL and CSS look like, next to the design they came from.
@@ -52,44 +36,29 @@ export function ComponentPreview({ project, component, fields }: { project: Proj
   const frame = useRef<HTMLIFrameElement>(null)
 
   const rendered = useMemo(() => renderHtl(html, buildModel(component.properties, samples)), [html, component.properties, samples])
-  const available = STATES.filter((s) => css.includes(s.pseudo))
-  const shownState = available.some((s) => s.id === state) ? state : 'default'
+  const states = useMemo(() => {
+    const pseudo = STATES.filter((s) => css.includes(s.pseudo)).map((s) => ({ id: s.id as PreviewState, label: s.label }))
+    // States the design has that are set with a class (selected, active, error ...) come after the pseudo-class ones.
+    const named = [...new Set([...css.matchAll(/\.is-([a-z0-9][a-z0-9-]*)/g)].map((m) => m[1]))].map((n) => ({ id: `is-${n}` as PreviewState, label: n.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase()) }))
+    return [...pseudo, ...named]
+  }, [css])
+  const shownState: PreviewState = states.some((s) => s.id === state) ? state : 'default'
 
   useEffect(() => {
     const doc = frame.current?.contentDocument
-    const win = doc?.defaultView
-    if (!doc?.body || !win) return
-    const sheets = [`${FRAME_CSS}body{zoom:${zoom}}`, css, ...(shownState === 'default' ? [] : [withStateClasses(css)])]
-    // Stylesheets are set through the CSS object model, which the page's content security policy allows. An inline <style> would be blocked.
-    if ('adoptedStyleSheets' in doc && 'CSSStyleSheet' in win) {
-      doc.adoptedStyleSheets = sheets.map((text) => { const s = new win.CSSStyleSheet(); s.replaceSync(text); return s })
-    } else {
-      doc.querySelectorAll('style[data-preview]').forEach((n) => n.remove())
-      const style = doc.createElement('style')
-      style.setAttribute('data-preview', '')
-      style.textContent = sheets.join('\n')
-      doc.head.appendChild(style)
-    }
-    doc.body.className = bg === 'dark' ? 'pv-dark' : ''
-    doc.body.replaceChildren(...[...rendered.body.childNodes].map((n) => doc.importNode(n, true)))
-    // Icons and pictures are not in the markup, only their names are. Hovering a dashed box says which one.
-    doc.querySelectorAll('[data-icon]').forEach((el) => el.setAttribute('title', `Icon: ${el.getAttribute('data-icon')}`))
-    const root = doc.body.firstElementChild
-    if (root && shownState !== 'default') {
-      root.classList.add(`is-preview-${shownState}`)
-      if (shownState === 'disabled') root.setAttribute('aria-disabled', 'true')
-    }
-    if (!seen.has(doc)) {
-      seen.add(doc)
-      // Links in the markup must not take the frame somewhere else.
-      doc.addEventListener('click', (e) => { if ((e.target as Element | null)?.closest?.('a')) e.preventDefault() })
-    }
-    setHeight(clamp(doc.documentElement.scrollHeight, 260, 800))
+    if (!doc) return
+    const needed = paintFrame(doc, { css, body: rendered.body, state: shownState, bg, zoom })
+    if (needed !== null) setHeight(clamp(needed, 260, 800))
   }, [css, rendered, shownState, bg, zoom, loads])
 
+  // Without a layer structure there is nothing to draw but a plain wrapper, and it must not pass for the design.
+  const noLayers = !readDesign(component)?.tree
   const asset = project.assets.find((a) => a.id === component.previewAssetId)
   const editable = component.properties.filter((p) => ['string', 'text', 'richtext', 'link', 'enum', 'boolean', 'number'].includes(p.type))
   const set = (key: string, v: SampleValue) => setSamples((s) => ({ ...s, [key]: v }))
+  const options = editable.filter((p) => p.type === 'enum')
+  const content = editable.filter((p) => ['string', 'text', 'richtext', 'link', 'number'].includes(p.type))
+  const toggles = editable.filter((p) => p.type === 'boolean')
 
   return (
     <section aria-label="Component preview">
@@ -97,12 +66,24 @@ export function ComponentPreview({ project, component, fields }: { project: Proj
         The generated HTL and CSS, rendered with the sample values below{edited.length ? ` and your hand edits to the ${edited.map((k) => k.toUpperCase()).join(' and ')}` : ''}. Fonts and pictures from the design are not loaded here, so text uses a fallback font and icons, avatars and images show as dashed boxes.
       </p>
 
+      {noLayers && (
+        <div role="note" className="mt-4 rounded-lg border border-warning bg-warning-soft p-3 text-[13px] text-warning">
+          <p className="font-bold">This preview is not the design.</p>
+          <p className="mt-1">
+            {component.origin.kind === 'figma-rest'
+              ? 'This component came from the Figma API, which brings its fields and text but not its layers, colors or spacing, so only a plain wrapper with its text fields can be drawn.'
+              : 'This component has no layer structure from the design, so only a plain wrapper with its text fields can be drawn.'}{' '}
+            To get the design itself, bring it in with the DesignMD plugin (the DesignMD tab).
+          </p>
+        </div>
+      )}
+
       <div className="mt-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
         <h3 className="text-[13px] font-extrabold text-ink-strong">Generated</h3>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          {available.length > 0 && (
-            <span role="group" aria-label="State" className="flex gap-1">
-              {[{ id: 'default' as const, label: 'Default' }, ...available].map((s) => (
+          {states.length > 0 && (
+            <span role="group" aria-label="State" className="flex flex-wrap gap-1">
+              {[{ id: 'default' as PreviewState, label: 'Default' }, ...states].map((s) => (
                 <button key={s.id} type="button" aria-pressed={shownState === s.id} onClick={() => setState(s.id)}
                   className={`h-7 cursor-pointer rounded-md border px-2 text-[12px] font-bold ${shownState === s.id ? 'border-accent bg-accent-tint text-accent-text' : 'border-hairline-strong bg-surface text-ink hover:bg-sand'}`}>{s.label}</button>
               ))}
@@ -132,10 +113,12 @@ export function ComponentPreview({ project, component, fields }: { project: Proj
       {editable.length > 0 && (
         <fieldset className="mt-5 rounded-lg border border-hairline p-4">
           <legend className="px-1 text-[13px] font-extrabold text-ink-strong">Sample values</legend>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {editable.map((p) => <Control key={p.id} property={p} value={samples[p.key]} onChange={(v) => set(p.key, v)} />)}
+          <div className="space-y-5">
+            <SampleGroup title="Options" items={options} samples={samples} onChange={set} cols="sm:grid-cols-2 lg:grid-cols-3" />
+            <SampleGroup title="Content" items={content} samples={samples} onChange={set} cols="sm:grid-cols-2" />
+            <SampleGroup title="Show or hide" items={toggles} samples={samples} onChange={set} cols="flex flex-wrap" />
           </div>
-          <p className="mt-3 text-[12px] text-ink-muted">These only change the preview. They are not saved and not part of the export.</p>
+          <p className="mt-4 text-[12px] text-ink-muted">These only change the preview. They are not saved and not part of the export.</p>
         </fieldset>
       )}
 
@@ -151,17 +134,35 @@ export function ComponentPreview({ project, component, fields }: { project: Proj
   )
 }
 
+/** One kind of sample value, with a small heading. Nothing is shown for a kind the component does not have. */
+function SampleGroup({ title, items, samples, onChange, cols }: { title: string; items: Property[]; samples: Record<string, SampleValue>; onChange: (key: string, v: SampleValue) => void; cols: string }) {
+  if (!items.length) return null
+  const toggles = cols.startsWith('flex')
+  return (
+    <section aria-label={title}>
+      <h4 className="mb-2 text-[11px] font-extrabold uppercase tracking-wide text-ink-muted">{title}</h4>
+      <div className={toggles ? `${cols} gap-2` : `grid items-start gap-x-4 gap-y-3 ${cols}`}>
+        {items.map((p) => <Control key={p.id} property={p} value={samples[p.key]} onChange={(v) => onChange(p.key, v)} />)}
+      </div>
+    </section>
+  )
+}
+
 function Control({ property: p, value, onChange }: { property: Property; value: SampleValue | undefined; onChange: (v: SampleValue) => void }) {
   const id = `pv-${p.id}`
   const field = 'mt-1 w-full rounded-lg border border-hairline-strong bg-surface px-3 text-[13px] font-normal'
   if (p.type === 'boolean') {
-    return <label className="flex cursor-pointer items-center gap-2 pt-6 text-[13px] font-bold text-ink-strong"><input type="checkbox" checked={value === true} onChange={(e) => onChange(e.target.checked)} />{p.label}</label>
+    return (
+      <label className={`inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg border px-3 text-[13px] font-bold ${value === true ? 'border-accent bg-accent-tint text-accent-text' : 'border-hairline-strong bg-surface text-ink-strong hover:bg-sand'}`}>
+        <input type="checkbox" checked={value === true} onChange={(e) => onChange(e.target.checked)} />{p.label}
+      </label>
+    )
   }
   // Long copy needs room to read and edit. It spans the whole row.
   const long = p.type === 'text' || p.type === 'richtext'
   return (
-    <div className={long ? 'sm:col-span-2 lg:col-span-3' : undefined}>
-      <label htmlFor={id} className="text-[13px] font-bold text-ink-strong">{p.label}</label>
+    <div className={long ? 'sm:col-span-full' : undefined}>
+      <label htmlFor={id} className="block text-[13px] font-bold text-ink-strong">{p.label}</label>
       {long ? (
         <textarea id={id} value={String(value ?? '')} rows={3} spellCheck={false} onChange={(e) => onChange(e.target.value)} className={`${field} resize-y py-2 leading-relaxed`} />
       ) : p.type === 'enum' ? (

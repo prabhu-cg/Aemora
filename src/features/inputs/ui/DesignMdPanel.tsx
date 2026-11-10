@@ -4,6 +4,8 @@ import { Button } from '../../../components/ui/Button'
 import { DesignMdIndexError, importDesignMd, mergeCatalogs, parseDesignMdText, MAX_DESIGNMD_CHARS, MAX_DESIGNMD_IMPORT, type DesignMdCatalog } from '../designmd/parse'
 import { InputError, type ImportResult } from '../types'
 
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
+
 /** Reads components.json from the DesignMD Figma plugin, then lets the user pick which components to bring in. */
 export function DesignMdPanel({ onResult }: { onResult: (r: ImportResult) => void }) {
   const [catalog, setCatalog] = useState<DesignMdCatalog | null>(null)
@@ -106,7 +108,7 @@ export function DesignMdPanel({ onResult }: { onResult: (r: ImportResult) => voi
                     <span className="font-bold text-ink-strong">{e.name}</span>
                     {e.page && <span className="ml-2 text-[12px] text-ink-muted">{e.page}</span>}
                   </span>
-                  <span className="tabular text-[12px] text-ink-muted">{e.variants} variants · {e.properties} props · {e.layers} layers</span>
+                  <span className="tabular text-[12px] text-ink-muted">{plural(e.variants, 'variant')} · {plural(e.properties, 'prop')} · {plural(e.layers, 'layer')}</span>
                 </label>
               </li>
             ))}

@@ -2,10 +2,10 @@ import { kebab } from '../../lib/kebab'
 import type { ComponentDef } from '../components/schema'
 import { generateComponentXml, generateEditConfig } from './componentXml'
 import { generateCss } from './css'
-import { generateFallbackHtl, generateHtl, rootTagFor } from './htl'
+import { generateFallbackHtl, generateHtl } from './htl'
 import { generateModel } from './java'
 import { readDesign } from './layers'
-import { modelNames, pascal } from './naming'
+import { pascal } from './naming'
 import { buildStructure, type Node } from './structure'
 import { DEFAULT_MARKUP_OPTIONS, type MarkupFile, type MarkupNote, type MarkupOptions, type MarkupResult } from './types'
 
@@ -41,8 +41,8 @@ export function generateMarkup(component: ComponentDef, options: Partial<MarkupO
       const n = st.byPath.get(l.path)
       if (n && l.changes.visible === false && n.layer.type === 'TEXT' && n.layer.role === 'label') hidden.push(n)
     }
-    const htl = generateHtl(st, component, block, modelFqn, hidden, notes)
-    css = generateCss(st, block, notes, rootTagFor(component, component.properties, modelNames(component.properties.map((p) => p.key))).tag)
+    const { html: htl, tags } = generateHtl(st, component, block, modelFqn, hidden, notes)
+    css = generateCss(st, block, notes, tags)
     files.push({ kind: 'htl', name: `${folder}.html`, content: htl })
   } else {
     notes.push({ level: 'warning', message: 'This component has no layer structure from the design, so only a simple wrapper with its text fields was generated and there is no styling.' })

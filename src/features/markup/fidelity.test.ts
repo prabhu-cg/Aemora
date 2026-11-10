@@ -40,8 +40,8 @@ describe('the preview shows the layers Figma has, for every look of a component'
     const m = generateMarkup(c)
     const st = buildStructure(design, c.properties, [] as MarkupNote[])!
     const pathOfClass = new Map(st.nodes.map((n) => [n.el ?? '', n.path]))
-    // Layers shown only through a yes/no property, when the design has them in an interaction state, are announced in a note.
-    const viaProperty = m.notes.filter((n) => /whenever/.test(n.message)).map((n) => (n.layer ?? '').trim())
+    // Layers the design has only in an interaction state are in the markup, hidden by the CSS until that state.
+    const stateOnly = st.nodes.filter((n) => n.showIn).map((n) => norm(n.path))
     const states = st.factors.filter((f) => f.isState)
     const defaults = design.defaultVariantProperties ?? {}
     let checked = 0
@@ -63,7 +63,7 @@ describe('the preview shows the layers Figma has, for every look of a component'
       const want = layersIn(design, vp).filter((p) => p !== norm(design.tree!.name))
       const sc = counts(shown), wc = counts(want)
       const missing = [...wc].filter(([p, n]) => (sc.get(p) ?? 0) < n).map(([p]) => p)
-      const extra = [...sc].filter(([p, n]) => (wc.get(p) ?? 0) < n && !viaProperty.some((a) => p.trim().endsWith(a))).map(([p]) => p)
+      const extra = [...sc].filter(([p, n]) => (wc.get(p) ?? 0) < n && !stateOnly.some((x) => p === x || p.startsWith(`${x}/`))).map(([p]) => p)
       expect({ look: vp, missing, extra }).toEqual({ look: vp, missing: [], extra: [] })
       checked++
     }

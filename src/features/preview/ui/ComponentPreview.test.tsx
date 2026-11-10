@@ -6,6 +6,7 @@ import { AppRoutes } from '../../../App'
 import { db } from '../../projects/db'
 import { createProject, mutateProject } from '../../projects/repo'
 import { importDesignMd, parseDesignMdText } from '../../inputs/designmd/parse'
+import { makeComponent, makeProperty } from '../../components/factory'
 
 const raw = import.meta.glob('../../../test/fixtures/designmd-rayna.json', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
 const catalog = parseDesignMdText(Object.values(raw)[0])
@@ -13,8 +14,8 @@ const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
 
 beforeEach(async () => { await Promise.all([db.projects.clear(), db.previous.clear(), db.quarantine.clear()]) })
 
-async function open(opts: { image?: boolean; stored?: Record<string, { content: string; base: string; edited: boolean; generatedAt: string }> } = {}) {
-  const c = importDesignMd(catalog, [catalog.entries.find((e) => e.name === 'Button / primary')!.id]).components[0]
+async function open(opts: { name?: string; image?: boolean; stored?: Record<string, { content: string; base: string; edited: boolean; generatedAt: string }> } = {}) {
+  const c = importDesignMd(catalog, [catalog.entries.find((e) => e.name === (opts.name ?? 'Button / primary'))!.id]).components[0]
   const p = await createProject({ name: 'Acme' })
   await mutateProject(p.id, (x) => ({
     ...x,
@@ -194,5 +195,64 @@ describe('Component preview', () => {
     await waitFor(() => expect(frameDoc().querySelector('.cmp-message-bubbles__avatars')).toBeNull())
     await user.click(region().getByLabelText('has avatar'))
     await waitFor(() => expect(frameDoc().querySelector('.cmp-message-bubbles__avatars')).toBeTruthy())
+  })
+
+  it('offers every state the design has, including ones a script sets with a class, such as Selected', async () => {
+    const { user } = await open({ name: 'Dropdown / menu item' })
+    await waitFor(() => expect(root()).toBeTruthy())
+    const group = region().getByRole('group', { name: 'State' })
+    const labels = within(group).getAllByRole('button').map((b) => b.textContent)
+    expect(labels[0]).toBe('Default')
+    expect(labels).toEqual(expect.arrayContaining(['Hover', 'Disabled', 'Selected']))
+    await user.click(within(group).getByRole('button', { name: 'Selected' }))
+    await waitFor(() => expect(root().classList.contains('is-selected')).toBe(true))
+    expect(root().getAttribute('aria-selected')).toBe('true')
+    await user.click(within(group).getByRole('button', { name: 'Default' }))
+    await waitFor(() => expect(root().classList.contains('is-selected')).toBe(false))
+  })
+
+  it('groups the sample values by kind: options, content, then show or hide', async () => {
+    const cat = parseDesignMdText(Object.values(msgRaw)[0])
+    const c = importDesignMd(cat, [cat.entries[0].id]).components[0]
+    const p = await createProject({ name: 'Acme' })
+    await mutateProject(p.id, (x) => ({ ...x, components: [c] }))
+    render(<MemoryRouter initialEntries={[`/app/generator/${p.id}`]}><AppRoutes /></MemoryRouter>)
+    await screen.findByRole('list', { name: /Properties of/ })
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('tab', { name: 'Preview' }))
+    await user.click(screen.getByRole('button', { name: 'Component' }))
+    const groups = within((await screen.findByText('Sample values')).closest('fieldset')!)
+    const options = groups.getByRole('region', { name: 'Options' })
+    const content = groups.getByRole('region', { name: 'Content' })
+    const toggles = groups.getByRole('region', { name: 'Show or hide' })
+    expect(within(options).getAllByRole('combobox').map((x) => x.id.length > 0)).toHaveLength(2)
+    expect(within(content).getByLabelText(/supporting text/i).tagName).toBe('TEXTAREA')
+    expect(within(toggles).getByLabelText('has avatar')).toBeTruthy()
+    // Each kind sits in the one place: no selects among the toggles, no checkboxes among the options.
+    expect(within(toggles).queryAllByRole('combobox')).toHaveLength(0)
+    expect(within(options).queryAllByRole('checkbox')).toHaveLength(0)
+    expect(options.compareDocumentPosition(content) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(content.compareDocumentPosition(toggles) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('says plainly that a component with no layer structure is not the design, and why', async () => {
+    const c = { ...makeComponent({ name: 'Card', type: 'card', properties: [makeProperty({ key: 'title', label: 'Title', type: 'string' })] }), origin: { kind: 'figma-rest' as const, suggested: false } }
+    const p = await createProject({ name: 'Acme' })
+    await mutateProject(p.id, (x) => ({ ...x, components: [c] }))
+    render(<MemoryRouter initialEntries={[`/app/generator/${p.id}`]}><AppRoutes /></MemoryRouter>)
+    await screen.findByRole('list', { name: /Properties of/ })
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('tab', { name: 'Preview' }))
+    await user.click(screen.getByRole('button', { name: 'Component' }))
+    const note = await screen.findByRole('note')
+    expect(note.textContent).toMatch(/This preview is not the design/)
+    expect(note.textContent).toMatch(/came from the Figma API, which brings its fields and text but not its layers/)
+    expect(note.textContent).toMatch(/DesignMD plugin/)
+  })
+
+  it('does not show that warning for a component that has its layers', async () => {
+    await open()
+    await waitFor(() => expect(root()).toBeTruthy())
+    expect(screen.queryByRole('note')).toBeNull()
   })
 })

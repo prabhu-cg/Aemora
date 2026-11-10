@@ -14,6 +14,8 @@ export interface Node {
   children: Node[]
   /** When the layer shows. Absent means always. */
   presence?: Presence
+  /** The layer exists only in these interaction states of the design (a focus icon, a selected check). Hidden until then. */
+  showIn?: { factor: Factor; value: string; /** Also needs one of these combinations of the other options (the Last Day position, say). Absent means any. */ when?: Term[][] }[]
 }
 
 export interface Term { factor: Factor; value: string }
@@ -38,6 +40,8 @@ export interface Structure {
   factors: Factor[]
   /** Diffs that differ from the default variant in exactly one factor. */
   single: { factor: Factor; value: string; diff: VariantDiff }[]
+  /** Diffs that differ from the default in two or more options the author picks (size and icon style together). */
+  multi: { combo: { factor: Factor; value: string }[]; diff: VariantDiff }[]
 }
 
 const BEFORE = /lead|left|start|before|prefix|front/i
@@ -98,6 +102,13 @@ export function buildStructure(design: DesignData, props: Property[], notes: Mar
     const differing = Object.keys(d.variantProperties).filter((k) => d.variantProperties[k] !== defaults[k])
     if (differing.length === 1) single.push({ factor: factorOf(differing[0]), value: d.variantProperties[differing[0]], diff: d })
   }
+  const multi: Structure['multi'] = []
+  for (const d of design.variantDiffs) {
+    const differing = Object.keys(d.variantProperties).filter((k) => d.variantProperties[k] !== defaults[k])
+    if (differing.length >= 2 && differing.every((k) => factorOf(k).key && !factorOf(k).isState)) {
+      multi.push({ combo: differing.map((k) => ({ factor: factorOf(k), value: d.variantProperties[k] })), diff: d })
+    }
+  }
 
   // Which factor value decides whether a layer is there? Uniform across every known variant, and not constant.
   const allVariants: Record<string, string>[] = [defaults, ...design.variantDiffs.map((d) => ({ ...defaults, ...d.variantProperties }))]
@@ -111,8 +122,8 @@ export function buildStructure(design: DesignData, props: Property[], notes: Mar
    * The option combinations where a layer exists, reduced to the fewest options that still tell them apart from
    * the combinations where it does not. One option often decides (icon style), sometimes two do (type and variant).
    */
-  const decide = (presentIn: boolean[]): { positive: Term[][]; negative: Term[][] } | null => {
-    const base = allVariants.map((v, i) => ({ v, present: presentIn[i] })).filter(({ v }) => isBase(v))
+  const decide = (presentIn: boolean[], inScope: (v: Record<string, string>) => boolean = isBase): { positive: Term[][]; negative: Term[][] } | null => {
+    const base = allVariants.map((v, i) => ({ v, present: presentIn[i] })).filter(({ v }) => inScope(v))
     if (!base.some((b) => b.present) || base.every((b) => b.present)) return null
     for (let size = 1; size <= usable.length; size++) {
       for (const used of subsetsOf(usable, size)) {
@@ -162,24 +173,31 @@ export function buildStructure(design: DesignData, props: Property[], notes: Mar
     const parent = byPath.get(g.parentPath)
     if (!parent) { notes.push({ level: 'warning', layer: g.layer.name, message: 'This layer appears in some variants, but its parent layer was not found, so it was left out.' }); continue }
 
-    // A layer that only exists in an interaction state (a focus icon, a disabled badge) cannot be chosen by authors.
-    // If a yes/no property controls it, that property is the switch. Otherwise it is left out, and the note says so.
+    // A layer that only exists in an interaction state (a focus icon, a selected check) cannot be chosen by authors.
+    // It is in the markup but hidden, and the CSS shows it in the state where the design has it.
     if (!g.present.some((p, i) => p && isBase(allVariants[i]))) {
-      const states = [...new Set(design.variantDiffs.flatMap((d, i) => (g.present[i + 1] ? stateFactors.flatMap((f) => { const v = d.variantProperties[f.name]; return v && v !== f.default ? [v] : [] }) : [])))]
-      const ref = g.layer.propertyRefs?.visible
-      const switchProp = ref ? props.find((p) => p.type === 'boolean' && p.key === toKey(ref)) : undefined
-      if (switchProp) {
-        const path = childPath(g.parentPath, g.layer, [...(parent.layer.children ?? []), g.layer])
-        const node: Node = { layer: g.layer, path, el: elName(g.layer), parent, children: [] }
-        const kids = g.layer.children ?? []
-        node.children = kids.map((c) => make(c, childPath(path, c, kids), node, elName(c)))
-        nodes.push(node)
-        if (typeof g.index === 'number') parent.children.splice(Math.min(g.index, parent.children.length), 0, node)
-        else parent.children.push(node)
-        notes.push({ level: 'info', layer: g.layer.name, message: `In the design this only shows in the ${states.join(' and ')} state. The markup shows it whenever "${switchProp.label}" is on, and puts it last because the plugin did not say where it sits.` })
-      } else {
-        notes.push({ level: 'info', layer: g.layer.name, message: `In the design this only exists in the ${states.join(' and ')} state, so it is not in the generated markup.` })
+      const seenIn = new Set<string>()
+      const showIn: NonNullable<Node['showIn']> = []
+      design.variantDiffs.forEach((d, i) => {
+        if (!g.present[i + 1]) return
+        for (const f of stateFactors) {
+          const v = d.variantProperties[f.name]
+          if (v && v !== f.default && !seenIn.has(`${f.name}|${v}`)) { seenIn.add(`${f.name}|${v}`); showIn.push({ factor: f, value: v }) }
+        }
+      })
+      // In that state, which of the other options is it for? Judged among the variants of that state only.
+      for (const entry of showIn) {
+        const rule = decide(g.present, (v) => v[entry.factor.name] === entry.value && stateFactors.every((o) => o === entry.factor || v[o.name] === o.default))
+        if (rule) entry.when = rule.positive
       }
+      const path = childPath(g.parentPath, g.layer, [...(parent.layer.children ?? []), g.layer])
+      const node: Node = { layer: g.layer, path, el: elName(g.layer), parent, children: [], showIn }
+      const kids = g.layer.children ?? []
+      node.children = kids.map((c) => make(c, childPath(path, c, kids), node, elName(c)))
+      nodes.push(node)
+      if (typeof g.index === 'number') parent.children.splice(Math.min(g.index, parent.children.length), 0, node)
+      else parent.children.push(node)
+      notes.push({ level: 'info', layer: g.layer.name, message: `In the design this only shows in the ${showIn.map((x) => x.value).join(' and ')} state, so it is hidden until then.${typeof g.index === 'number' ? '' : ' Its position among its siblings was guessed, because the plugin did not say where it sits.'}` })
       continue
     }
 
@@ -237,7 +255,7 @@ export function buildStructure(design: DesignData, props: Property[], notes: Mar
   const ordered: Node[] = []
   const visit = (n: Node) => { ordered.push(n); n.children.forEach(visit) }
   visit(root)
-  return { root, nodes: ordered, byPath, factors, single }
+  return { root, nodes: ordered, byPath, factors, single, multi }
 }
 
 /** The layer with a diff's changes applied, to know the effective layout and size. */

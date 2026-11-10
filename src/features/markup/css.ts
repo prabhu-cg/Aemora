@@ -49,7 +49,8 @@ function layoutDecls(eff: Layer, ctx: Ctx): Decl[] {
     if (t || r || b || x) out.push(['padding', t === b && r === x ? (t === r ? px(t) : `${px(t)} ${px(r)}`) : `${px(t)} ${px(r)} ${px(b)} ${px(x)}`])
   }
   if (l.primaryAlign && l.primaryAlign !== 'MIN') out.push(['justify-content', JUSTIFY[l.primaryAlign]])
-  if (l.counterAlign && l.counterAlign !== 'MIN') out.push(['align-items', ALIGN[l.counterAlign]])
+  // Flex stretches children across by default. Figma only does that when a child asks to fill, so "start" must be said out loud.
+  out.push(['align-items', ALIGN[l.counterAlign ?? 'MIN']])
   return out
 }
 
@@ -62,7 +63,8 @@ function sizeDecls(eff: Layer, ctx: Ctx): Decl[] {
     const dim = horizontal ? 'width' : 'height'
     if (sizing === 'HUG') return
     if (sizing === 'FILL') {
-      if (!ctx.parentMode) { if (horizontal) out.push(['width', '100%']); return }
+      // The root has no parent to fill, so it keeps the size it has in the design.
+      if (!ctx.parentMode) { out.push([dim, px(horizontal ? sz.width : sz.height)]); return }
       const along = (ctx.parentMode === 'HORIZONTAL') === horizontal
       if (along) out.push(['flex', '1 1 0'], [horizontal ? 'min-width' : 'min-height', '0'])
       else out.push(['align-self', 'stretch'])
@@ -71,7 +73,11 @@ function sizeDecls(eff: Layer, ctx: Ctx): Decl[] {
     out.push([dim, px(horizontal ? sz.width : sz.height)])
   }
   axis(true); axis(false)
-  if (!eff.layout) out.push(['flex-shrink', '0'])
+  // A box with a size of its own must really have it. Inline elements ignore width and height, and flex items shrink by default.
+  if (out.some(([p]) => p === 'width' || p === 'height')) {
+    if (!eff.layout) out.push(['display', 'block'])
+    out.push(['flex-shrink', '0'])
+  }
   return out
 }
 
@@ -82,14 +88,18 @@ function fillDecls(eff: Layer, ctx: Ctx, explicit: boolean): Decl[] {
   return explicit && eff.type !== 'TEXT' ? [[prop, 'transparent']] : []
 }
 
-function strokeDecls(eff: Layer, ctx: Ctx, explicit: boolean): Decl[] {
+/**
+ * Strokes are drawn as shadows, not borders. A border changes the size of a box, but a stroke in Figma never does:
+ * an inside stroke sits within the layer, an outside stroke around it, and a centered one half and half.
+ */
+function strokeShadows(eff: Layer, ctx: Ctx): string[] {
   const s = eff.strokes
   const c = s ? topPaint(s.paints, ctx, 'stroke') : null
-  if (s && c && (s.weight ?? 0) > 0) {
-    if (s.align && s.align !== 'INSIDE') ctx.notes.push({ level: 'info', layer: ctx.layer, message: `The ${s.align.toLowerCase()} stroke is drawn as a normal inside border.` })
-    return [['border', `${px(s.weight!)} solid ${c}`]]
-  }
-  return explicit ? [['border', '0']] : []
+  if (!s || !c || (s.weight ?? 0) <= 0) return []
+  const w = s.weight!
+  if (s.align === 'OUTSIDE') return [`0 0 0 ${px(w)} ${c}`]
+  if (s.align === 'CENTER') return [`inset 0 0 0 ${px(w / 2)} ${c}`, `0 0 0 ${px(w / 2)} ${c}`]
+  return [`inset 0 0 0 ${px(w)} ${c}`]
 }
 
 function radiusDecls(eff: Layer): Decl[] {
@@ -100,17 +110,30 @@ function radiusDecls(eff: Layer): Decl[] {
   return [['border-radius', `${px(o.tl)} ${px(o.tr)} ${px(o.br)} ${px(o.bl)}`]]
 }
 
-function effectDecls(eff: Layer): Decl[] {
-  const shadows: string[] = []
-  const decls: Decl[] = []
+function effectShadows(eff: Layer): string[] {
+  const out: string[] = []
+  for (const e of eff.effects ?? []) {
+    if (e.visible === false || (e.type !== 'DROP_SHADOW' && e.type !== 'INNER_SHADOW')) continue
+    const col = e.color ? (e.color.hex ? hexColor(e.color.hex, e.color.alpha ?? 1) : rgba(e.color.r ?? 0, e.color.g ?? 0, e.color.b ?? 0, e.color.a ?? e.color.alpha ?? 1)) : 'rgba(0, 0, 0, 0.25)'
+    out.push(`${e.type === 'INNER_SHADOW' ? 'inset ' : ''}${px(e.offsetX ?? 0)} ${px(e.offsetY ?? 0)} ${px(e.radius ?? 0)} ${px(e.spread ?? 0)} ${col}`)
+  }
+  return out
+}
+
+function blurDecls(eff: Layer): Decl[] {
+  const out: Decl[] = []
   for (const e of eff.effects ?? []) {
     if (e.visible === false) continue
-    const col = e.color ? (e.color.hex ? hexColor(e.color.hex, e.color.alpha ?? 1) : rgba(e.color.r ?? 0, e.color.g ?? 0, e.color.b ?? 0, e.color.a ?? e.color.alpha ?? 1)) : 'rgba(0, 0, 0, 0.25)'
-    if (e.type === 'DROP_SHADOW' || e.type === 'INNER_SHADOW') shadows.push(`${e.type === 'INNER_SHADOW' ? 'inset ' : ''}${px(e.offsetX ?? 0)} ${px(e.offsetY ?? 0)} ${px(e.radius ?? 0)} ${px(e.spread ?? 0)} ${col}`)
-    else if (e.type === 'LAYER_BLUR') decls.push(['filter', `blur(${px(e.radius ?? 0)})`])
-    else if (e.type === 'BACKGROUND_BLUR') decls.push(['backdrop-filter', `blur(${px(e.radius ?? 0)})`])
+    if (e.type === 'LAYER_BLUR') out.push(['filter', `blur(${px(e.radius ?? 0)})`])
+    else if (e.type === 'BACKGROUND_BLUR') out.push(['backdrop-filter', `blur(${px(e.radius ?? 0)})`])
   }
-  return shadows.length ? [['box-shadow', shadows.join(', ')], ...decls] : decls
+  return out
+}
+
+/** Strokes and shadows share one box-shadow list, with the stroke on top. */
+function shadowDecls(eff: Layer, ctx: Ctx, explicit: boolean): Decl[] {
+  const all = [...strokeShadows(eff, ctx), ...effectShadows(eff)]
+  return all.length ? [['box-shadow', all.join(', ')]] : explicit ? [['box-shadow', 'none']] : []
 }
 
 function textDecls(eff: Layer, ctx: Ctx): Decl[] {
@@ -134,7 +157,7 @@ function textDecls(eff: Layer, ctx: Ctx): Decl[] {
 }
 
 function displayFor(eff: Layer): string {
-  return eff.layout ? 'flex' : eff.type === 'TEXT' ? 'inline' : 'inline-block'
+  return eff.layout ? 'flex' : eff.type === 'TEXT' ? 'inline' : 'block'
 }
 
 /** Declarations for the attributes in `attrs`, resolved against the effective layer. */
@@ -146,12 +169,12 @@ function declsFor(attrs: LayerChanges, eff: Layer, ctx: Ctx, explicit: boolean):
       case 'layout': out.push(...layoutDecls(eff, ctx)); break
       case 'size': out.push(...sizeDecls(eff, ctx)); break
       case 'fills': out.push(...fillDecls(eff, ctx, explicit)); break
-      case 'strokes': out.push(...strokeDecls(eff, ctx, explicit)); break
+      case 'strokes': case 'effects': if (!out.some(([p]) => p === 'box-shadow')) out.push(...shadowDecls(eff, ctx, explicit)); if (k === 'effects') out.push(...blurDecls(eff)); break
       case 'radius': out.push(...radiusDecls(eff)); break
-      case 'effects': { const d = effectDecls(eff); out.push(...(d.length || !explicit ? d : [['box-shadow', 'none'] as Decl])); break }
       case 'opacity': if (eff.opacity !== undefined && (explicit || eff.opacity < 1)) out.push(['opacity', String(round(eff.opacity))]); break
       case 'text': out.push(...textDecls(eff, ctx)); break
-      case 'visible': if (eff.visible === false) out.push(['display', 'none']); else if (explicit) out.push(['display', displayFor(eff)]); break
+      // A layer that a yes/no property switches is shown or hidden by the HTL, so the CSS must not hide it for good.
+      case 'visible': if (eff.visible === false) { if (!eff.propertyRefs?.visible) out.push(['display', 'none']) } else if (explicit) out.push(['display', displayFor(eff)]); break
     }
   }
   // A frame's size and layout can change on their own. Re-emit the sizing that depends on both.
@@ -176,11 +199,23 @@ const STATE_SELECTORS: { match: RegExp; rank: number; selector: (root: string) =
 ]
 const isDefaultState = (v: string) => /^(default|enabled|rest|normal)$/i.test(v)
 
-export function generateCss(st: Structure, block: string, notes: MarkupNote[], rootTag = 'div'): string {
+/** What browsers add to some tags that the design does not have: margins, borders, padding, underlines. */
+const TAG_RESETS: Record<string, Decl[]> = {
+  button: [['margin', '0'], ['padding', '0'], ['border', '0'], ['background', 'none'], ['font', 'inherit'], ['cursor', 'pointer']],
+  a: [['text-decoration', 'none'], ['cursor', 'pointer']],
+  input: [['margin', '0'], ['padding', '0'], ['border', '0'], ['background', 'none'], ['font', 'inherit']],
+  hr: [['margin', '0'], ['border', '0']],
+  p: [['margin', '0']], h1: [['margin', '0']], h2: [['margin', '0']], h3: [['margin', '0']], h4: [['margin', '0']], h5: [['margin', '0']], h6: [['margin', '0']],
+}
+
+export function generateCss(st: Structure, block: string, notes: MarkupNote[], tags: Map<Node, string> = new Map()): string {
   const rootSel = `.${block}`
   const sel = (n: Node) => (n.el ? `${rootSel}__${n.el}` : rootSel)
   const rules: Rule[] = []
   const done = new Set<string>()
+  const baseDecls = new Map<Node, Decl[]>()
+  const applied: { factor: Factor; value: string; node: Node; decls: Decl[] }[] = []
+  const unique: Node[] = []
 
   // Base styles, one rule per element class.
   for (const n of st.nodes) {
@@ -192,11 +227,13 @@ export function generateCss(st: Structure, block: string, notes: MarkupNote[], r
     for (const k of KEYS) if (n.layer[k] !== undefined) (attrs as Record<string, unknown>)[k] = n.layer[k]
     const decls: Decl[] = []
     if (n.layer.type !== 'TEXT') decls.push(['box-sizing', 'border-box'])
-    // Browsers draw their own border and underline on buttons and links. The design has none unless it says so.
-    if (!n.parent && rootTag === 'button') decls.push(['border', '0'], ['cursor', 'pointer'])
-    if (!n.parent && rootTag === 'a') decls.push(['text-decoration', 'none'], ['cursor', 'pointer'])
+    decls.push(...(TAG_RESETS[tags.get(n) ?? ''] ?? []))
     decls.push(...declsFor(attrs, n.layer, ctx, false))
-    rules.push({ selectors: [sel(n)], decls: dedupe(decls) })
+    if (n.showIn?.length) decls.push(['display', 'none'])
+    const cleaned = dedupe(decls)
+    baseDecls.set(n, cleaned)
+    unique.push(n)
+    rules.push({ selectors: [sel(n)], decls: cleaned })
   }
 
   // Variants: options that differ from the default in one property become modifier classes or interaction states.
@@ -223,11 +260,40 @@ export function generateCss(st: Structure, block: string, notes: MarkupNote[], r
       const decls = declsFor(entry.changes, eff, ctx, true).filter(([p, v]) => !base.some(([bp, bv]) => bp === p && bv === v))
       if (!node.parent) decls.push(...extra)
       if (!decls.length) continue
+      if (!factor.isState) applied.push({ factor, value, node, decls })
       rules.push({ selectors: prefixes.list.map((p) => (node.el ? `${p} ${rootSel}__${node.el}` : p)), decls })
     }
   }
-  const combos = st.factors.length > 1 ? 'Looks that combine several options at once (for example a large size while hovered) are not generated on their own.' : ''
-  if (combos && notes.every((n) => n.message !== combos)) notes.push({ level: 'info', message: combos })
+  // Layers that exist only in an interaction state are shown in the state where the design has them.
+  for (const n of unique) {
+    for (const { factor, value, when } of n.showIn ?? []) {
+      const prefixes = prefixesFor(factor, value, rootSel)
+      if (!prefixes) continue
+      // The state, and, when only some looks of the component have the layer, those looks as well.
+      const looks = (when ?? [[]]).map((term) => term.map((t) => `${rootSel}--${slug(t.factor.name)}-${modifier(t.value)}`).join(''))
+      rules.push({ selectors: prefixes.list.flatMap((p) => looks.map((l) => `${p}${l} ${sel(n)}`)), decls: [['display', displayFor(n.layer)]] })
+    }
+  }
+
+  // Options picked together. The single-option rules above would stack, which is not always what Figma has for the combination
+  // (a large button with a leading icon has its own padding). Wherever the stack would differ, the combination says so.
+  for (const { combo, diff } of st.multi) {
+    const compound = combo.map((c) => `${rootSel}--${slug(c.factor.name)}-${modifier(c.value)}`).join('')
+    for (const node of unique) {
+      const change = diff.layers.find((l) => l.path === node.path)?.changes
+      const eff = change ? withChanges(node.layer, change) : node.layer
+      const ctx: Ctx = { isRoot: !node.parent, parentMode: node.parent?.layer.layout?.mode, notes: [], layer: node.layer.name }
+      const attrs: LayerChanges = {}
+      for (const k of KEYS) if (eff[k] !== undefined) (attrs as Record<string, unknown>)[k] = eff[k]
+      const real = declsFor(attrs, eff, ctx, false)
+      const cascade = new Map<string, string>(baseDecls.get(node) ?? [])
+      for (const a of applied) {
+        if (a.node === node && combo.some((c) => c.factor === a.factor && c.value === a.value)) for (const [p, v] of a.decls) cascade.set(p, v)
+      }
+      const differs = real.filter(([p, v]) => cascade.get(p) !== v)
+      if (differs.length) rules.push({ selectors: [node.el ? `${compound} ${rootSel}__${node.el}` : compound], decls: differs })
+    }
+  }
 
   return rules.map((r) => `${r.selectors.join(',\n')} {\n${r.decls.map(([p, v]) => `  ${p}: ${v};`).join('\n')}\n}`).join('\n\n') + '\n'
 }

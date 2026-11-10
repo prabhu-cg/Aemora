@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Plus, Trash2, Undo2 } from 'lucide-react'
 import { Button } from '../../../components/ui/Button'
+import { ConfirmDialog } from '../../../components/ui/ConfirmDialog'
 import type { Project } from '../../projects/schema'
 import { mutateProject } from '../../projects/repo'
 import { COMPONENT_TYPES, type ComponentDef, type Property, type Unsupported } from '../schema'
@@ -43,6 +44,7 @@ export function ComponentWorkspace({ project, readOnly = false, focus }: { proje
   const [error, setError] = useState('')
   const [undo, setUndo] = useState<Undo | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [confirmDeleteAll, setConfirmDeleteAll] = useState(false)
   const [view, setView] = useState<WorkspaceView>('properties')
   const [previewMode, setPreviewMode] = useState<'dialog' | 'component'>('dialog')
   const [fieldPropId, setFieldPropId] = useState('')
@@ -178,6 +180,11 @@ export function ComponentWorkspace({ project, readOnly = false, focus }: { proje
             )
           })}
         </ul>
+        {!readOnly && components.length > 1 && (
+          <button type="button" onClick={() => setConfirmDeleteAll(true)} className="mt-3 inline-flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-semibold text-ink-muted hover:bg-danger-soft hover:text-danger">
+            <Trash2 size={14} aria-hidden="true" />Delete all components
+          </button>
+        )}
       </nav>
 
       <div key={component.id} className="min-w-0">
@@ -191,13 +198,6 @@ export function ComponentWorkspace({ project, readOnly = false, focus }: { proje
               {COMPONENT_TYPES.map((t) => <option key={t}>{t}</option>)}
             </select>
           </label>
-          {confirmDelete ? (
-            <span role="alert" className="flex items-center gap-2 text-[13px]">
-              Delete “{component.name}” and its properties?
-              <Button size="sm" variant="outline" className="!border-danger !text-danger" onClick={() => { setConfirmDelete(false); setPropId(''); mutate(project.id, (p) => { const components = p.components.filter((c) => c.id !== component.id); return { ...p, components, mappings: pruneMappings(p.mappings, components), dialog: pruneDialogs(p.dialog, components), generatedXml: Object.fromEntries(Object.entries(p.generatedXml ?? {}).filter(([id]) => components.some((c) => c.id === id))), markup: Object.fromEntries(Object.entries(p.markup ?? {}).filter(([id]) => components.some((c) => c.id === id))) } }).catch(() => setError('Could not delete the component.')) }}>Delete</Button>
-              <Button size="sm" variant="ghost" onClick={() => setConfirmDelete(false)}>Cancel</Button>
-            </span>
-          ) : null}
         </div>
         <label className="mt-3 block text-[13px] font-bold text-ink-strong">Description
           <input className="mt-1 h-9 w-full rounded-lg border border-hairline-strong bg-surface px-3 text-sm font-normal" defaultValue={component.description} readOnly={readOnly} placeholder="What this component is for"
@@ -214,6 +214,26 @@ export function ComponentWorkspace({ project, readOnly = false, focus }: { proje
           }).catch(() => setError('Could not remove the preview.'))}
         />
 
+        <ConfirmDialog
+          open={confirmDeleteAll} title={`Delete all ${components.length} components?`} confirmLabel="Delete all"
+          onCancel={() => setConfirmDeleteAll(false)}
+          onConfirm={() => {
+            setConfirmDeleteAll(false); setPropId(''); setFieldPropId(''); setDialogSelected(''); setUndo(null)
+            // Everything that belongs to a component goes with it. The project, its name and its settings stay.
+            mutate(project.id, (p) => ({ ...p, components: [], mappings: [], dialog: { components: {} }, generatedXml: {}, markup: {}, assets: [] })).catch(() => setError('Could not delete the components.'))
+          }}
+        >
+          <p>This removes every component in this project: {components.map((c) => c.name).slice(0, 4).join(', ')}{components.length > 4 ? `, and ${components.length - 4} more` : ''}. Their properties, field settings, dialog layouts and any markup you edited go with them. The project itself stays.</p>
+          <p className="mt-2 font-semibold text-ink-strong">This can’t be undone.</p>
+        </ConfirmDialog>
+        <ConfirmDialog
+          open={confirmDelete} title={`Delete “${component.name}”?`} confirmLabel="Delete"
+          onCancel={() => setConfirmDelete(false)}
+          onConfirm={() => { setConfirmDelete(false); setPropId(''); mutate(project.id, (p) => { const components = p.components.filter((c) => c.id !== component.id); return { ...p, components, mappings: pruneMappings(p.mappings, components), dialog: pruneDialogs(p.dialog, components), generatedXml: Object.fromEntries(Object.entries(p.generatedXml ?? {}).filter(([id]) => components.some((c) => c.id === id))), markup: Object.fromEntries(Object.entries(p.markup ?? {}).filter(([id]) => components.some((c) => c.id === id))) } }).catch(() => setError('Could not delete the component.')) }}
+        >
+          <p>This removes the component with its {component.properties.length} propert{component.properties.length === 1 ? 'y' : 'ies'}, field settings, dialog layout and any markup you edited.</p>
+          <p className="mt-2 font-semibold text-ink-strong">This can’t be undone.</p>
+        </ConfirmDialog>
         {error && <p role="alert" className="mt-3 rounded-lg bg-danger-soft p-3 text-[13px] font-semibold text-danger">{error}</p>}
 
         <div

@@ -23,8 +23,8 @@ const byName = (text: string, name: string) => {
 describe('DesignMD components.json adapter', () => {
   it('lists the components in the file with their sizes', () => {
     const cat = parseDesignMdText(rayna)
-    expect(cat.entries.map((e) => e.name)).toEqual(['Button / primary', 'Dropdown / menu item', 'Input', 'Metrics Card', 'Alert'])
-    const button = cat.entries[0]
+    expect(cat.entries.map((e) => e.name)).toEqual(['Alert', 'Button / primary', 'Dropdown / menu item', 'Input', 'Metrics Card'])
+    const button = cat.entries.find((e) => e.name === 'Button / primary')!
     expect(button).toMatchObject({ variants: 32, properties: 4 })
     expect(button.layers).toBeGreaterThan(1)
     expect(cat.fileName).toMatch(/Rayna UI/)
@@ -93,7 +93,7 @@ describe('DesignMD components.json adapter', () => {
     const data = JSON.parse(rayna)
     data.components[2].treeTruncated = true
     const cat = parseDesignMdText(JSON.stringify(data))
-    const res = importDesignMd(cat, [cat.entries[2].id])
+    const res = importDesignMd(cat, [cat.entries.find((e) => e.id === data.components[2].id)!.id])
     expect(res.warnings.some((x) => x.level === 'warning' && /cut off/.test(x.message))).toBe(true)
   })
 
@@ -130,7 +130,16 @@ describe('DesignMD components.json adapter', () => {
   it('merges several per-component files without duplicates', () => {
     const one = (name: string) => { const d = JSON.parse(rayna); d.components = d.components.filter((c: { name: string }) => c.name === name); return parseDesignMdText(JSON.stringify(d)) }
     const merged = mergeCatalogs([one('Input'), one('Alert'), one('Input')])
-    expect(merged.entries.map((e) => e.name)).toEqual(['Input', 'Alert'])
+    expect(merged.entries.map((e) => e.name)).toEqual(['Alert', 'Input'])
+  })
+
+  it('lists components alphabetically, ignoring case and reading numbers as numbers, however the files came', () => {
+    const names = ['zebra', 'Item 10', 'apple', 'Item 2', 'Banana', 'item 1', 'icon / download', 'Icon / box']
+    const text = JSON.stringify({ schema: 'designmd.components/v1', index: { componentCount: names.length }, tokens: {}, warnings: [], components: names.map((n, i) => ({ id: `c${i}`, name: n, key: `c${i}`, isComponentSet: false, pageName: 'P', properties: [], states: [], sizes: [], variants: [], tree: { id: `t${i}`, name: n, type: 'FRAME', visible: true, children: [] }, variantDiffs: [], treeTruncated: false })) })
+    const expected = ['apple', 'Banana', 'Icon / box', 'icon / download', 'item 1', 'Item 2', 'Item 10', 'zebra']
+    expect(parseDesignMdText(text).entries.map((e) => e.name)).toEqual(expected)
+    const merged = mergeCatalogs([parseDesignMdText(one('x', 'Zed')), parseDesignMdText(text), parseDesignMdText(one('y', 'alpha'))])
+    expect(merged.entries.map((e) => e.name)).toEqual(['alpha', ...expected, 'Zed'])
   })
 
   it('rejects other input with a message that says what to do', () => {
@@ -189,6 +198,14 @@ describe('DesignMD tab', () => {
       expect(saved).toHaveLength(1)
       expect((saved[0].meta.design as { tree: unknown }).tree).toBeTruthy()
     })
+  })
+
+  it('shows the components in alphabetical order, with correct singular and plural counts', async () => {
+    const user = await openTab()
+    await user.upload(screen.getByLabelText('Choose DesignMD components file'), [json('c.json', one('c', 'cherry')), json('a.json', one('a', 'Apple')), json('b.json', one('b', 'banana'))])
+    const list = within(await screen.findByRole('region', { name: 'Choose components' })).getByRole('list', { name: 'Components in the file' })
+    expect(within(list).getAllByRole('listitem').map((li) => li.querySelector('.font-bold')?.textContent)).toEqual(['Apple', 'banana', 'cherry'])
+    expect(list.textContent).toMatch(/0 variants · 0 props · 1 layer\b/)
   })
 
   it('shows a clear error for a file that is not a DesignMD export', async () => {

@@ -16,7 +16,7 @@ function condExpr(presence: Presence, names: Record<string, string>): string {
   return `!(${presence.terms.map((t) => `(${all(t)})`).join(' || ')})`
 }
 
-interface Ctx { names: Record<string, string>; block: string; props: Property[]; component: ComponentDef; modelFqn: string; notes: MarkupNote[]; rootTag: string; hiddenLabels: Node[] }
+interface Ctx { tags: Map<Node, string>; names: Record<string, string>; block: string; props: Property[]; component: ComponentDef; modelFqn: string; notes: MarkupNote[]; rootTag: string; hiddenLabels: Node[] }
 
 function propFor(ctx: Ctx, ref?: string, layerId?: string): Property | undefined {
   if (ref) { const k = toKey(ref); const p = ctx.props.find((x) => x.key === k); if (p) return p }
@@ -77,6 +77,7 @@ function describeTag(n: Node, ctx: Ctx): { tag: string; attrs: string[] } {
 function render(n: Node, depth: number, ctx: Ctx, modifierClasses: string, inline = false): string[] {
   const pad = INDENT.repeat(depth)
   const d = describe(n, ctx, inline)
+  ctx.tags.set(n, d.tag)
   const cls = n.el ? `${ctx.block}__${n.el}` : `${ctx.block}${modifierClasses}`
   const l = n.layer
 
@@ -117,11 +118,12 @@ function rootExtra(ctx: Ctx): string[] {
   return [`aria-label="\${model.${ctx.names[label.key]}}"`]
 }
 
-export function generateHtl(st: Structure, component: ComponentDef, block: string, modelFqn: string, hiddenLabels: Node[], notes: MarkupNote[]): string {
-  const ctx: Ctx = { names: modelNames(component.properties.map((p) => p.key)), block, props: component.properties, component, modelFqn, notes, rootTag: 'div', hiddenLabels }
+/** The HTL, and the tag each layer was written as. The CSS needs the tags to undo what browsers add to some of them. */
+export function generateHtl(st: Structure, component: ComponentDef, block: string, modelFqn: string, hiddenLabels: Node[], notes: MarkupNote[]): { html: string; tags: Map<Node, string> } {
+  const ctx: Ctx = { tags: new Map(), names: modelNames(component.properties.map((p) => p.key)), block, props: component.properties, component, modelFqn, notes, rootTag: 'div', hiddenLabels }
   const modifiers = st.factors.filter((f) => f.key).map((f) => ` ${block}--${slug(f.name)}-\${model.${ctx.names[f.key!]}Modifier}`).join('')
   const body = render(st.root, 0, ctx, modifiers)
-  return [`<sly data-sly-use.model="${modelFqn}"></sly>`, ...body].join('\n') + '\n'
+  return { html: [`<sly data-sly-use.model="${modelFqn}"></sly>`, ...body].join('\n') + '\n', tags: ctx.tags }
 }
 
 /** Simple wrapper when there is no layer structure. */
