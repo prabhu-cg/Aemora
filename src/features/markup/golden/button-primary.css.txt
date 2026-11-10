@@ -1,0 +1,74 @@
+.cmp-button-primary {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 8px 16px;
+  justify-content: center;
+  align-items: center;
+  background-color: #eb5017;
+  border-radius: 8px;
+}
+
+.cmp-button-primary__container {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+}
+
+.cmp-button-primary__button-icon {
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.cmp-button-primary__label {
+  color: #ffffff;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.cmp-button-primary--icon-style-trailing-icon {
+  padding: 8px 12px;
+}
+
+.cmp-button-primary--icon-style-icon-only {
+  padding: 8px;
+}
+
+.cmp-button-primary--icon-style-icon-only .cmp-button-primary__label {
+  display: none;
+}
+
+.cmp-button-primary--icon-style-leading-icon {
+  padding: 8px 12px;
+}
+
+.cmp-button-primary--size-lg {
+  padding: 16px 24px;
+}
+
+.cmp-button-primary--size-lg .cmp-button-primary__label {
+  font-size: 16px;
+}
+
+.cmp-button-primary:hover {
+  background-color: #f56630;
+}
+
+.cmp-button-primary:focus-visible {
+  background-color: #ad3307;
+}
+
+.cmp-button-primary:disabled,
+.cmp-button-primary[aria-disabled="true"] {
+  background-color: #d0d5dd;
+  cursor: not-allowed;
+}

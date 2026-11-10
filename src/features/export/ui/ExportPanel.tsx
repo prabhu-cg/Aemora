@@ -10,7 +10,7 @@ import { createSnapshot } from '../../backup/service'
 import { buildBundle, bundleName, componentExports, hasProblems, problemsOf, type ComponentExport } from '../bundle'
 import type { WorkspaceView } from '../../components/inspector/ComponentWorkspace'
 
-const VIEW_LABEL: Record<WorkspaceView, string> = { properties: 'Properties', fields: 'AEM fields', dialog: 'Dialog', preview: 'Preview', xml: 'XML' }
+const VIEW_LABEL: Record<WorkspaceView, string> = { properties: 'Properties', fields: 'AEM fields', dialog: 'Dialog', markup: 'Markup', preview: 'Preview', xml: 'XML' }
 
 const pill = 'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold'
 

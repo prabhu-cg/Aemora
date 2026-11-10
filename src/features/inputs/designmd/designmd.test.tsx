@@ -67,7 +67,7 @@ describe('DesignMD components.json adapter', () => {
     const design = c.meta.design as { format: string; tree: { name: string; children: unknown[] }; variantDiffs: unknown[]; layout: { gap: number }; states: string[]; sizes: string[] }
     expect(design.format).toBe('designmd.components/v1')
     expect(design.tree.name).toBe('Button / primary')
-    expect(design.variantDiffs).toHaveLength(6)
+    expect(design.variantDiffs).toHaveLength(7)
     expect(design.layout.gap).toBe(10)
     expect(design.states).toEqual(['default', 'hover', 'focused', 'de-activated'])
     expect(design.sizes).toEqual(['sm', 'lg'])

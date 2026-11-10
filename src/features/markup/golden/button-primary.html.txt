@@ -1,0 +1,8 @@
+<sly data-sly-use.model="com.example.core.models.ButtonPrimaryModel"></sly>
+<button class="cmp-button-primary cmp-button-primary--size-${model.sizeModifier} cmp-button-primary--icon-style-${model.iconStyleModifier}" type="button" aria-label="${model.label}">
+  <span class="cmp-button-primary__container">
+    <span class="cmp-button-primary__button-icon" data-sly-test="${model.iconStyleModifier == 'leading-icon'}" data-icon="${model.icon}" aria-hidden="true"></span>
+    <span class="cmp-button-primary__label" data-sly-test="${model.label}">${model.label}</span>
+    <span class="cmp-button-primary__button-icon" data-sly-test="${model.iconStyleModifier == 'trailing-icon' || model.iconStyleModifier == 'icon-only'}" data-icon="${model.icon}" aria-hidden="true"></span>
+  </span>
+</button>

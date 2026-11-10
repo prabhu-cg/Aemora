@@ -20,6 +20,7 @@ import type { ComponentDialog } from '../../dialog/schema'
 import { DialogEditor, type Target } from '../../dialog/ui/DialogEditor'
 import { DialogPreview } from '../../preview/ui/DialogPreview'
 import { XmlPanel } from '../../xml/ui/XmlPanel'
+import { MarkupPanel } from '../../markup/ui/MarkupPanel'
 import { DesignPreview } from '../DesignPreview'
 import { GroupsNote } from './GroupsNote'
 import { PropertyList } from './PropertyList'
@@ -28,7 +29,8 @@ import { ChildrenEditor, StandardSuggestions, UnsupportedList } from './Extras'
 
 type Undo = { kind: 'property'; property: Property; index: number } | { kind: 'unsupported'; item: Unsupported }
 
-export type WorkspaceView = 'properties' | 'fields' | 'dialog' | 'preview' | 'xml'
+export type WorkspaceView = 'properties' | 'fields' | 'dialog' | 'markup' | 'preview' | 'xml'
+const VIEWS: readonly (readonly [WorkspaceView, string])[] = [['properties', 'Properties'], ['fields', 'AEM fields'], ['dialog', 'Dialog'], ['markup', 'Markup'], ['preview', 'Preview'], ['xml', 'XML']]
 /** Ask the workspace to show a component's tab. A new nonce each time, so asking again for the same place still works. */
 export interface WorkspaceFocus { componentId: string; view: WorkspaceView; nonce: number }
 
@@ -190,7 +192,7 @@ export function ComponentWorkspace({ project, readOnly = false, focus }: { proje
           {confirmDelete ? (
             <span role="alert" className="flex items-center gap-2 text-[13px]">
               Delete “{component.name}” and its properties?
-              <Button size="sm" variant="outline" className="!border-danger !text-danger" onClick={() => { setConfirmDelete(false); setPropId(''); mutate(project.id, (p) => { const components = p.components.filter((c) => c.id !== component.id); return { ...p, components, mappings: pruneMappings(p.mappings, components), dialog: pruneDialogs(p.dialog, components), generatedXml: Object.fromEntries(Object.entries(p.generatedXml ?? {}).filter(([id]) => components.some((c) => c.id === id))) } }).catch(() => setError('Could not delete the component.')) }}>Delete</Button>
+              <Button size="sm" variant="outline" className="!border-danger !text-danger" onClick={() => { setConfirmDelete(false); setPropId(''); mutate(project.id, (p) => { const components = p.components.filter((c) => c.id !== component.id); return { ...p, components, mappings: pruneMappings(p.mappings, components), dialog: pruneDialogs(p.dialog, components), generatedXml: Object.fromEntries(Object.entries(p.generatedXml ?? {}).filter(([id]) => components.some((c) => c.id === id))), markup: Object.fromEntries(Object.entries(p.markup ?? {}).filter(([id]) => components.some((c) => c.id === id))) } }).catch(() => setError('Could not delete the component.')) }}>Delete</Button>
               <Button size="sm" variant="ghost" onClick={() => setConfirmDelete(false)}>Cancel</Button>
             </span>
           ) : null}
@@ -212,16 +214,44 @@ export function ComponentWorkspace({ project, readOnly = false, focus }: { proje
 
         {error && <p role="alert" className="mt-3 rounded-lg bg-danger-soft p-3 text-[13px] font-semibold text-danger">{error}</p>}
 
-        <div role="tablist" aria-label="Component view" className="mt-6 flex gap-1 overflow-x-auto overflow-y-hidden border-b border-hairline">
-          {([['properties', 'Properties'], ['fields', 'AEM fields'], ['dialog', 'Dialog'], ['preview', 'Preview'], ['xml', 'XML']] as const).map(([id, label]) => (
-            <button key={id} id={`wtab-${id}`} role="tab" type="button" aria-selected={view === id} onClick={() => { setView(id); setPropId(''); setFieldPropId(''); setDialogSelected('') }}
+        <div
+          role="tablist" aria-label="Component view" className="mt-6 flex gap-1 overflow-x-auto overflow-y-hidden border-b border-hairline"
+          onKeyDown={(e) => {
+            // Arrow keys, Home and End move between tabs, as the tab pattern expects.
+            const i = VIEWS.findIndex(([id]) => id === view)
+            const next = e.key === 'ArrowRight' ? (i + 1) % VIEWS.length : e.key === 'ArrowLeft' ? (i + VIEWS.length - 1) % VIEWS.length : e.key === 'Home' ? 0 : e.key === 'End' ? VIEWS.length - 1 : -1
+            if (next < 0) return
+            e.preventDefault()
+            const id = VIEWS[next][0]
+            setView(id); setPropId(''); setFieldPropId(''); setDialogSelected('')
+            requestAnimationFrame(() => { const el = document.getElementById(`wtab-${id}`); el?.focus(); el?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' }) })
+          }}
+        >
+          {VIEWS.map(([id, label]) => (
+            <button key={id} id={`wtab-${id}`} role="tab" type="button" aria-selected={view === id} tabIndex={view === id ? 0 : -1} onClick={() => { setView(id); setPropId(''); setFieldPropId(''); setDialogSelected('') }}
               className={`h-9 shrink-0 cursor-pointer whitespace-nowrap border-b-2 px-3 text-[14px] font-bold ${view === id ? 'border-accent text-accent-text' : 'border-transparent text-ink hover:text-ink-strong'}`}>
               {label}{id === 'fields' && fieldErrors > 0 && <span className="ml-2 text-[12px] font-semibold text-danger">{fieldErrors} to fix</span>}{id === 'dialog' && dialogErrors > 0 && <span className="ml-2 text-[12px] font-semibold text-danger">{dialogErrors} to fix</span>}
             </button>
           ))}
         </div>
 
-        {view === 'xml' ? (
+        {view === 'markup' ? (
+          <div role="tabpanel" className="mt-4">
+            <MarkupPanel
+              key={component.id} readOnly={readOnly} project={project} component={component} fields={fields}
+              onStore={(kind, entry) => mutate(project.id, (pr) => {
+                const all = { ...(pr.markup ?? {}) }
+                const files = { ...(all[component.id]?.files ?? {}) }
+                if (entry) files[kind] = { content: entry.content, base: entry.base, edited: true, generatedAt: new Date().toISOString() }
+                else delete files[kind]
+                if (Object.keys(files).length) all[component.id] = { files }
+                else delete all[component.id]
+                return { ...pr, markup: all }
+              }).catch(() => setError('Could not save your edits to this browser. They were not applied.'))}
+              onSettings={(patch) => mutate(project.id, (pr) => ({ ...pr, markupSettings: { ...pr.markupSettings, ...patch } })).catch(() => setError('Could not save the naming settings.'))}
+            />
+          </div>
+        ) : view === 'xml' ? (
           <div role="tabpanel" className="mt-4">
             <XmlPanel
               readOnly={readOnly}

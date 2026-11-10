@@ -1,11 +1,11 @@
 import { useRef, type UIEvent } from 'react'
-import { highlightXml } from '../format'
+import { highlight, type EditorLanguage } from '../format'
 
 /**
  * A small XML editor: a transparent textarea over a highlighted copy of the same text, so it is
  * a real, accessible text field. Read-only mode is a native readOnly textarea.
  */
-export function XmlEditor({ value, onChange, readOnly, label = 'XML' }: { value: string; onChange: (v: string) => void; readOnly: boolean; label?: string }) {
+export function XmlEditor({ value, onChange, readOnly, label = 'XML', language = 'xml' }: { value: string; onChange: (v: string) => void; readOnly: boolean; label?: string; language?: EditorLanguage }) {
   const pre = useRef<HTMLPreElement>(null)
   const gutter = useRef<HTMLDivElement>(null)
   const lines = value.split('\n').length
@@ -21,7 +21,7 @@ export function XmlEditor({ value, onChange, readOnly, label = 'XML' }: { value:
         {Array.from({ length: lines }, (_, i) => i + 1).join('\n')}
       </div>
       <div className="relative min-w-0 flex-1">
-        <pre ref={pre} aria-hidden="true" className={`${shared} pointer-events-none absolute inset-0 overflow-auto text-ink-strong`} dangerouslySetInnerHTML={{ __html: highlightXml(value) + '\n' }} />
+        <pre ref={pre} aria-hidden="true" className={`${shared} pointer-events-none absolute inset-0 overflow-auto text-ink-strong`} dangerouslySetInnerHTML={{ __html: highlight(value, language) + '\n' }} />
         <textarea
           aria-label={label}
           value={value}

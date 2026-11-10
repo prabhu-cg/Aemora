@@ -855,193 +855,124 @@
      "removed": []
     },
     {
-     "variantId": "2002:42970",
+     "variantId": "2002:42985",
      "variantProperties": {
       "size": "sm",
-      "state": "hover",
-      "icon-style": "trailing icon"
+      "state": "focused",
+      "icon-style": "none"
      },
      "layers": [
       {
        "path": "Button / primary",
        "changes": {
-        "size": {
-         "width": 89,
-         "height": 36
-        },
-        "layout": {
-         "mode": "VERTICAL",
-         "gap": 10,
-         "padding": {
-          "top": 8,
-          "right": 12,
-          "bottom": 8,
-          "left": 12
-         },
-         "primaryAlign": "CENTER",
-         "counterAlign": "CENTER",
-         "sizingH": "HUG",
-         "sizingV": "HUG",
-         "wrap": false
-        },
         "fills": [
          {
           "type": "SOLID",
           "visible": true,
-          "hex": "#f56630",
+          "hex": "#ad3307",
           "alpha": 1
          }
         ]
        }
-      },
-      {
-       "path": "Button / primary/Container",
-       "changes": {
-        "size": {
-         "width": 65,
-         "height": 20
-        }
-       }
       }
      ],
-     "added": [
-      {
-       "parentPath": "Button / primary/Container",
-       "layer": {
-        "id": "4008:190691",
-        "name": "button-icon",
-        "type": "INSTANCE",
-        "visible": true,
-        "children": [],
-        "size": {
-         "width": 20,
-         "height": 20
-        },
-        "opacity": 1,
-        "fills": [
-         {
-          "type": "SOLID",
-          "visible": false,
-          "hex": "#ffffff",
-          "alpha": 1
-         }
-        ],
-        "strokes": {
-         "paints": [],
-         "weight": 0,
-         "align": "INSIDE"
-        },
-        "effects": [],
-        "instanceOf": {
-         "componentId": "3253:139749",
-         "componentName": "icon / question-circle"
-        },
-        "propertyRefs": {
-         "mainComponent": "icon#3287:0"
-        },
-        "role": "icon",
-        "roleSource": "property"
-       }
-      }
-     ],
+     "added": [],
      "removed": []
     },
     {
-     "variantId": "2002:42975",
+     "variantId": "2002:43005",
      "variantProperties": {
       "size": "sm",
-      "state": "hover",
-      "icon-style": "icon-only"
+      "state": "de-activated",
+      "icon-style": "none"
+     },
+     "layers": [
+      {
+       "path": "Button / primary",
+       "changes": {
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": true,
+          "hex": "#d0d5dd",
+          "alpha": 1
+         }
+        ]
+       }
+      }
+     ],
+     "added": [],
+     "removed": []
+    },
+    {
+     "variantId": "2002:43025",
+     "variantProperties": {
+      "size": "lg",
+      "state": "default",
+      "icon-style": "none"
      },
      "layers": [
       {
        "path": "Button / primary",
        "changes": {
         "size": {
-         "width": 36,
-         "height": 36
+         "width": 90,
+         "height": 55
         },
         "layout": {
          "mode": "VERTICAL",
          "gap": 10,
          "padding": {
-          "top": 8,
-          "right": 8,
-          "bottom": 8,
-          "left": 8
+          "top": 16,
+          "right": 24,
+          "bottom": 16,
+          "left": 24
          },
          "primaryAlign": "CENTER",
          "counterAlign": "CENTER",
          "sizingH": "HUG",
          "sizingV": "HUG",
          "wrap": false
-        },
-        "fills": [
-         {
-          "type": "SOLID",
-          "visible": true,
-          "hex": "#f56630",
-          "alpha": 1
-         }
-        ]
+        }
        }
       },
       {
        "path": "Button / primary/Container",
        "changes": {
         "size": {
-         "width": 20,
-         "height": 20
+         "width": 42,
+         "height": 23
         }
        }
       },
       {
        "path": "Button / primary/Container/Label",
        "changes": {
-        "visible": false
-       }
-      }
-     ],
-     "added": [
-      {
-       "parentPath": "Button / primary/Container",
-       "layer": {
-        "id": "4008:190963",
-        "name": "button-icon",
-        "type": "INSTANCE",
-        "visible": true,
-        "children": [],
         "size": {
-         "width": 20,
-         "height": 20
+         "width": 42,
+         "height": 23
         },
-        "opacity": 1,
-        "fills": [
-         {
-          "type": "SOLID",
-          "visible": false,
-          "hex": "#ffffff",
-          "alpha": 1
-         }
-        ],
-        "strokes": {
-         "paints": [],
-         "weight": 0,
-         "align": "INSIDE"
-        },
-        "effects": [],
-        "instanceOf": {
-         "componentId": "3253:139749",
-         "componentName": "icon / question-circle"
-        },
-        "propertyRefs": {
-         "mainComponent": "icon#3287:0"
-        },
-        "role": "icon",
-        "roleSource": "property"
+        "text": {
+         "fontFamily": "Inter",
+         "fontWeight": 600,
+         "fontSize": 16,
+         "lineHeight": {
+          "value": 145,
+          "unit": "percent"
+         },
+         "letterSpacing": {
+          "value": 0,
+          "unit": "percent"
+         },
+         "textCase": "ORIGINAL",
+         "textDecoration": "NONE",
+         "align": "CENTER",
+         "characters": "Label"
+        }
        }
       }
      ],
+     "added": [],
      "removed": []
     }
    ],
@@ -1745,38 +1676,24 @@
      ]
     },
     {
-     "variantId": "2159:51536",
+     "variantId": "2159:51461",
      "variantProperties": {
-      "type": "avatar",
-      "state": "hover"
+      "type": "icon",
+      "state": "default"
      },
-     "layers": [
-      {
-       "path": "Dropdown / menu item",
-       "changes": {
-        "fills": [
-         {
-          "type": "SOLID",
-          "visible": true,
-          "hex": "#f9fafb",
-          "alpha": 1
-         }
-        ]
-       }
-      }
-     ],
+     "layers": [],
      "added": [
       {
        "parentPath": "Dropdown / menu item",
        "layer": {
-        "id": "2159:51537",
+        "id": "2159:51483",
         "name": "Left Content",
         "type": "FRAME",
         "visible": true,
         "children": [
          {
-          "id": "2159:51538",
-          "name": "Avatars",
+          "id": "3662:180543",
+          "name": "icon / hashtag",
           "type": "INSTANCE",
           "visible": true,
           "children": [],
@@ -1800,14 +1717,17 @@
           },
           "effects": [],
           "instanceOf": {
-           "componentId": "1483:13727",
-           "componentName": "Avatars"
+           "componentId": "3253:140640",
+           "componentName": "icon / hashtag"
           },
-          "role": "unknown",
-          "roleSource": "none"
+          "propertyRefs": {
+           "mainComponent": "icon#3287:637"
+          },
+          "role": "icon",
+          "roleSource": "property"
          },
          {
-          "id": "2159:51539",
+          "id": "2159:51463",
           "name": "Text",
           "type": "TEXT",
           "visible": true,
@@ -2868,98 +2788,6 @@
      "removed": []
     },
     {
-     "variantId": "2148:62434",
-     "variantProperties": {
-      "type": "default",
-      "state": "hover",
-      "size": "lg"
-     },
-     "layers": [
-      {
-       "path": "Input",
-       "changes": {
-        "size": {
-         "width": 375,
-         "height": 108
-        }
-       }
-      },
-      {
-       "path": "Input/Label + Frame",
-       "changes": {
-        "size": {
-         "width": 375,
-         "height": 80
-        }
-       }
-      },
-      {
-       "path": "Input/Label + Frame/Input Frame",
-       "changes": {
-        "size": {
-         "width": 375,
-         "height": 56
-        },
-        "layout": {
-         "mode": "HORIZONTAL",
-         "gap": 12,
-         "padding": {
-          "top": 16,
-          "right": 16,
-          "bottom": 16,
-          "left": 16
-         },
-         "primaryAlign": "MIN",
-         "counterAlign": "CENTER",
-         "sizingH": "FILL",
-         "sizingV": "FIXED",
-         "wrap": false
-        },
-        "strokes": {
-         "paints": [
-          {
-           "type": "SOLID",
-           "visible": true,
-           "hex": "#fcb59a",
-           "alpha": 1
-          }
-         ],
-         "weight": 1,
-         "align": "INSIDE"
-        },
-        "effects": [
-         {
-          "type": "DROP_SHADOW",
-          "visible": false,
-          "radius": 0,
-          "color": {
-           "hex": "#fcd2c2",
-           "alpha": 1,
-           "r": 252,
-           "g": 210,
-           "b": 194
-          },
-          "offsetX": 0,
-          "offsetY": 0,
-          "spread": 4
-         }
-        ]
-       }
-      },
-      {
-       "path": "Input/Label + Frame/Input Frame/Left Content",
-       "changes": {
-        "size": {
-         "width": 311,
-         "height": 20
-        }
-       }
-      }
-     ],
-     "added": [],
-     "removed": []
-    },
-    {
      "variantId": "2884:114565",
      "variantProperties": {
       "type": "default",
@@ -3004,124 +2832,6 @@
      ],
      "added": [],
      "removed": []
-    },
-    {
-     "variantId": "2148:62450",
-     "variantProperties": {
-      "type": "default",
-      "state": "active",
-      "size": "lg"
-     },
-     "layers": [
-      {
-       "path": "Input",
-       "changes": {
-        "size": {
-         "width": 375,
-         "height": 108
-        }
-       }
-      },
-      {
-       "path": "Input/Label + Frame",
-       "changes": {
-        "size": {
-         "width": 375,
-         "height": 80
-        }
-       }
-      },
-      {
-       "path": "Input/Label + Frame/Input Frame",
-       "changes": {
-        "size": {
-         "width": 375,
-         "height": 56
-        },
-        "layout": {
-         "mode": "HORIZONTAL",
-         "gap": 12,
-         "padding": {
-          "top": 16,
-          "right": 16,
-          "bottom": 16,
-          "left": 16
-         },
-         "primaryAlign": "MIN",
-         "counterAlign": "CENTER",
-         "sizingH": "FILL",
-         "sizingV": "FIXED",
-         "wrap": false
-        },
-        "strokes": {
-         "paints": [
-          {
-           "type": "SOLID",
-           "visible": true,
-           "hex": "#fa9874",
-           "alpha": 1
-          }
-         ],
-         "weight": 1,
-         "align": "INSIDE"
-        }
-       }
-      },
-      {
-       "path": "Input/Label + Frame/Input Frame/Left Content",
-       "changes": {
-        "size": {
-         "width": 311,
-         "height": 20
-        }
-       }
-      },
-      {
-       "path": "Input/Label + Frame/Input Frame/Left Content/Text + Cursor",
-       "changes": {
-        "size": {
-         "width": 82,
-         "height": 20
-        }
-       }
-      }
-     ],
-     "added": [
-      {
-       "parentPath": "Input/Label + Frame/Input Frame/Left Content/Text + Cursor",
-       "layer": {
-        "id": "2148:62459",
-        "name": "cursor",
-        "type": "RECTANGLE",
-        "visible": true,
-        "children": [],
-        "size": {
-         "width": 1,
-         "height": 20
-        },
-        "opacity": 1,
-        "fills": [
-         {
-          "type": "SOLID",
-          "visible": true,
-          "hex": "#b6d8ff",
-          "alpha": 1
-         }
-        ],
-        "strokes": {
-         "paints": [],
-         "weight": 0,
-         "align": "INSIDE"
-        },
-        "effects": [],
-        "role": "divider",
-        "roleSource": "type"
-       }
-      }
-     ],
-     "removed": [
-      "Input/Label + Frame/Input Frame/Left Content/Text + Cursor/Cursor"
-     ]
     },
     {
      "variantId": "2884:114581",
@@ -3196,53 +2906,16 @@
      "removed": []
     },
     {
-     "variantId": "2148:62466",
+     "variantId": "2884:114597",
      "variantProperties": {
       "type": "default",
       "state": "typing",
-      "size": "lg"
+      "size": "sm"
      },
      "layers": [
       {
-       "path": "Input",
-       "changes": {
-        "size": {
-         "width": 375,
-         "height": 108
-        }
-       }
-      },
-      {
-       "path": "Input/Label + Frame",
-       "changes": {
-        "size": {
-         "width": 375,
-         "height": 80
-        }
-       }
-      },
-      {
        "path": "Input/Label + Frame/Input Frame",
        "changes": {
-        "size": {
-         "width": 375,
-         "height": 56
-        },
-        "layout": {
-         "mode": "HORIZONTAL",
-         "gap": 12,
-         "padding": {
-          "top": 16,
-          "right": 16,
-          "bottom": 16,
-          "left": 16
-         },
-         "primaryAlign": "MIN",
-         "counterAlign": "CENTER",
-         "sizingH": "FILL",
-         "sizingV": "FIXED",
-         "wrap": false
-        },
         "strokes": {
          "paints": [
           {
@@ -3258,19 +2931,71 @@
        }
       },
       {
-       "path": "Input/Label + Frame/Input Frame/Left Content",
+       "path": "Input/Label + Frame/Input Frame/Left Content/Text + Cursor",
        "changes": {
         "size": {
-         "width": 311,
+         "width": 37,
          "height": 20
         }
        }
       },
       {
+       "path": "Input/Label + Frame/Input Frame/Left Content/Text + Cursor/Input",
+       "changes": {
+        "visible": true
+       }
+      },
+      {
+       "path": "Input/Label + Frame/Input Frame/Left Content/Text + Cursor/Cursor",
+       "changes": {
+        "visible": true,
+        "size": {
+         "width": 1,
+         "height": 20
+        }
+       }
+      },
+      {
+       "path": "Input/Label + Frame/Input Frame/Left Content/Text + Cursor/Cursor/Rectangle",
+       "changes": {
+        "visible": true,
+        "size": {
+         "width": 1,
+         "height": 20
+        },
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": true,
+          "hex": "#b6d8ff",
+          "alpha": 1
+         }
+        ]
+       }
+      },
+      {
+       "path": "Input/Label + Frame/Input Frame/Left Content/Text + Cursor/Placeholder",
+       "changes": {
+        "visible": false
+       }
+      }
+     ],
+     "added": [],
+     "removed": []
+    },
+    {
+     "variantId": "2884:114613",
+     "variantProperties": {
+      "type": "default",
+      "state": "filled",
+      "size": "sm"
+     },
+     "layers": [
+      {
        "path": "Input/Label + Frame/Input Frame/Left Content/Text + Cursor",
        "changes": {
         "size": {
-         "width": 37,
+         "width": 34,
          "height": 20
         }
        }
@@ -3292,13 +3017,13 @@
       {
        "parentPath": "Input/Label + Frame/Input Frame/Left Content/Text + Cursor",
        "layer": {
-        "id": "2148:62475",
-        "name": "cursor",
+        "id": "2884:114621",
+        "name": "Rectangle",
         "type": "RECTANGLE",
-        "visible": true,
+        "visible": false,
         "children": [],
         "size": {
-         "width": 1,
+         "width": 2,
          "height": 20
         },
         "opacity": 1,
@@ -3306,8 +3031,335 @@
          {
           "type": "SOLID",
           "visible": true,
-          "hex": "#b6d8ff",
+          "hex": "#4b4efc",
+          "alpha": 1,
+          "token": {
+           "styleId": "S:734adfe138f919d5fcdc1efa0baaeed7fae9d56a,124:7",
+           "cssName": "--primary-500-main"
+          }
+         }
+        ],
+        "strokes": {
+         "paints": [],
+         "weight": 0,
+         "align": "INSIDE"
+        },
+        "effects": [],
+        "role": "divider",
+        "roleSource": "type"
+       }
+      }
+     ],
+     "removed": [
+      "Input/Label + Frame/Input Frame/Left Content/Text + Cursor/Cursor"
+     ]
+    },
+    {
+     "variantId": "2884:114628",
+     "variantProperties": {
+      "type": "default",
+      "state": "success",
+      "size": "sm"
+     },
+     "layers": [
+      {
+       "path": "Input/Label + Frame/Input Frame",
+       "changes": {
+        "strokes": {
+         "paints": [
+          {
+           "type": "SOLID",
+           "visible": true,
+           "hex": "#5fc381",
+           "alpha": 1
+          }
+         ],
+         "weight": 1,
+         "align": "INSIDE"
+        }
+       }
+      },
+      {
+       "path": "Input/Label + Frame/Input Frame/Left Content/Text + Cursor",
+       "changes": {
+        "size": {
+         "width": 34,
+         "height": 20
+        }
+       }
+      },
+      {
+       "path": "Input/Label + Frame/Input Frame/Left Content/Text + Cursor/Input",
+       "changes": {
+        "visible": true
+       }
+      },
+      {
+       "path": "Input/Label + Frame/Input Frame/Left Content/Text + Cursor/Placeholder",
+       "changes": {
+        "visible": false
+       }
+      },
+      {
+       "path": "Input/Label + Frame/Input Frame/Right Content/Icon-right",
+       "changes": {
+        "instanceOf": {
+         "componentId": "3253:139489",
+         "componentName": "icon / check-circle"
+        },
+        "propertyRefs": {
+         "visible": "has right-icon#2091:13"
+        }
+       }
+      },
+      {
+       "path": "Input/Helper Text",
+       "changes": {
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": true,
+          "hex": "#04802e",
           "alpha": 1
+         }
+        ],
+        "text": {
+         "fontFamily": "Inter",
+         "fontWeight": 400,
+         "fontSize": 14,
+         "lineHeight": {
+          "value": 145,
+          "unit": "percent"
+         },
+         "letterSpacing": {
+          "value": 0,
+          "unit": "percent"
+         },
+         "textCase": "ORIGINAL",
+         "textDecoration": "NONE",
+         "align": "LEFT",
+         "characters": "Success text"
+        }
+       }
+      }
+     ],
+     "added": [
+      {
+       "parentPath": "Input/Label + Frame/Input Frame/Left Content/Text + Cursor",
+       "layer": {
+        "id": "2884:114636",
+        "name": "Rectangle",
+        "type": "RECTANGLE",
+        "visible": false,
+        "children": [],
+        "size": {
+         "width": 2,
+         "height": 20
+        },
+        "opacity": 1,
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": true,
+          "hex": "#4b4efc",
+          "alpha": 1,
+          "token": {
+           "styleId": "S:734adfe138f919d5fcdc1efa0baaeed7fae9d56a,124:7",
+           "cssName": "--primary-500-main"
+          }
+         }
+        ],
+        "strokes": {
+         "paints": [],
+         "weight": 0,
+         "align": "INSIDE"
+        },
+        "effects": [],
+        "role": "divider",
+        "roleSource": "type"
+       }
+      }
+     ],
+     "removed": [
+      "Input/Label + Frame/Input Frame/Left Content/Text + Cursor/Cursor"
+     ]
+    },
+    {
+     "variantId": "2884:114643",
+     "variantProperties": {
+      "type": "default",
+      "state": "error",
+      "size": "sm"
+     },
+     "layers": [
+      {
+       "path": "Input/Label + Frame/Input Frame",
+       "changes": {
+        "strokes": {
+         "paints": [
+          {
+           "type": "SOLID",
+           "visible": true,
+           "hex": "#e26e6a",
+           "alpha": 1
+          }
+         ],
+         "weight": 1,
+         "align": "INSIDE"
+        }
+       }
+      },
+      {
+       "path": "Input/Label + Frame/Input Frame/Left Content/Text + Cursor",
+       "changes": {
+        "size": {
+         "width": 34,
+         "height": 20
+        }
+       }
+      },
+      {
+       "path": "Input/Label + Frame/Input Frame/Left Content/Text + Cursor/Input",
+       "changes": {
+        "visible": true
+       }
+      },
+      {
+       "path": "Input/Label + Frame/Input Frame/Left Content/Text + Cursor/Placeholder",
+       "changes": {
+        "visible": false
+       }
+      },
+      {
+       "path": "Input/Label + Frame/Input Frame/Right Content/Icon-right",
+       "changes": {
+        "instanceOf": {
+         "componentId": "3253:139744",
+         "componentName": "icon / multiply-circle"
+        },
+        "propertyRefs": {
+         "visible": "has right-icon#2091:13"
+        }
+       }
+      },
+      {
+       "path": "Input/Helper Text",
+       "changes": {
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": true,
+          "hex": "#cb1a14",
+          "alpha": 1
+         }
+        ],
+        "text": {
+         "fontFamily": "Inter",
+         "fontWeight": 400,
+         "fontSize": 14,
+         "lineHeight": {
+          "value": 145,
+          "unit": "percent"
+         },
+         "letterSpacing": {
+          "value": 0,
+          "unit": "percent"
+         },
+         "textCase": "ORIGINAL",
+         "textDecoration": "NONE",
+         "align": "LEFT",
+         "characters": "Error text"
+        }
+       }
+      }
+     ],
+     "added": [
+      {
+       "parentPath": "Input/Label + Frame/Input Frame/Left Content/Text + Cursor",
+       "layer": {
+        "id": "2884:114651",
+        "name": "Rectangle",
+        "type": "RECTANGLE",
+        "visible": false,
+        "children": [],
+        "size": {
+         "width": 2,
+         "height": 20
+        },
+        "opacity": 1,
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": true,
+          "hex": "#4b4efc",
+          "alpha": 1,
+          "token": {
+           "styleId": "S:734adfe138f919d5fcdc1efa0baaeed7fae9d56a,124:7",
+           "cssName": "--primary-500-main"
+          }
+         }
+        ],
+        "strokes": {
+         "paints": [],
+         "weight": 0,
+         "align": "INSIDE"
+        },
+        "effects": [],
+        "role": "divider",
+        "roleSource": "type"
+       }
+      }
+     ],
+     "removed": [
+      "Input/Label + Frame/Input Frame/Left Content/Text + Cursor/Cursor"
+     ]
+    },
+    {
+     "variantId": "2884:114658",
+     "variantProperties": {
+      "type": "default",
+      "state": "read only",
+      "size": "sm"
+     },
+     "layers": [
+      {
+       "path": "Input/Label + Frame/Input Frame",
+       "changes": {
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": true,
+          "hex": "#f0f2f5",
+          "alpha": 1
+         }
+        ]
+       }
+      }
+     ],
+     "added": [
+      {
+       "parentPath": "Input/Label + Frame/Input Frame/Left Content/Text + Cursor",
+       "layer": {
+        "id": "2884:114666",
+        "name": "Rectangle",
+        "type": "RECTANGLE",
+        "visible": false,
+        "children": [],
+        "size": {
+         "width": 2,
+         "height": 20
+        },
+        "opacity": 1,
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": true,
+          "hex": "#4b4efc",
+          "alpha": 1,
+          "token": {
+           "styleId": "S:734adfe138f919d5fcdc1efa0baaeed7fae9d56a,124:7",
+           "cssName": "--primary-500-main"
+          }
          }
         ],
         "strokes": {
@@ -5490,964 +5542,6 @@
      ]
     },
     {
-     "variantId": "6291:1874",
-     "variantProperties": {
-      "variation": "3",
-      "type": "data only",
-      "orientation": "left aligned"
-     },
-     "layers": [
-      {
-       "path": "Metrics Card",
-       "changes": {
-        "size": {
-         "width": 282,
-         "height": 163
-        }
-       }
-      },
-      {
-       "path": "Metrics Card/Metrics Body",
-       "changes": {
-        "size": {
-         "width": 282,
-         "height": 163
-        },
-        "layout": {
-         "mode": "VERTICAL",
-         "gap": 51,
-         "padding": {
-          "top": 16,
-          "right": 16,
-          "bottom": 16,
-          "left": 16
-         },
-         "primaryAlign": "MIN",
-         "counterAlign": "MIN",
-         "sizingH": "FILL",
-         "sizingV": "HUG",
-         "wrap": false
-        }
-       }
-      },
-      {
-       "path": "Metrics Card/Metrics Body/Body Content",
-       "changes": {
-        "size": {
-         "width": 190,
-         "height": 131
-        },
-        "layout": {
-         "mode": "VERTICAL",
-         "gap": 32,
-         "padding": {
-          "top": 0,
-          "right": 0,
-          "bottom": 0,
-          "left": 0
-         },
-         "primaryAlign": "MIN",
-         "counterAlign": "MIN",
-         "sizingH": "HUG",
-         "sizingV": "HUG",
-         "wrap": false
-        }
-       }
-      }
-     ],
-     "added": [
-      {
-       "parentPath": "Metrics Card/Metrics Body/Body Content",
-       "layer": {
-        "id": "6291:1577",
-        "name": "Header",
-        "type": "FRAME",
-        "visible": true,
-        "children": [
-         {
-          "id": "6291:1578",
-          "name": "Misc icon",
-          "type": "INSTANCE",
-          "visible": true,
-          "children": [],
-          "size": {
-           "width": 32,
-           "height": 32
-          },
-          "radius": 8,
-          "opacity": 1,
-          "fills": [
-           {
-            "type": "SOLID",
-            "visible": true,
-            "hex": "#ffffff",
-            "alpha": 1
-           }
-          ],
-          "strokes": {
-           "paints": [
-            {
-             "type": "SOLID",
-             "visible": true,
-             "hex": "#e4e7ec",
-             "alpha": 1
-            }
-           ],
-           "weight": 1,
-           "align": "INSIDE"
-          },
-          "effects": [],
-          "instanceOf": {
-           "componentId": "6011:145511",
-           "componentName": "Misc icon"
-          },
-          "propertyRefs": {
-           "visible": "has icon#6291:57"
-          },
-          "role": "icon",
-          "roleSource": "name"
-         },
-         {
-          "id": "6291:1579",
-          "name": "Header Text",
-          "type": "FRAME",
-          "visible": true,
-          "children": [
-           {
-            "id": "6291:1580",
-            "name": "Text",
-            "type": "TEXT",
-            "visible": true,
-            "children": [],
-            "size": {
-             "width": 111,
-             "height": 16
-            },
-            "opacity": 1,
-            "fills": [
-             {
-              "type": "SOLID",
-              "visible": true,
-              "hex": "#667185",
-              "alpha": 1
-             }
-            ],
-            "strokes": {
-             "paints": [],
-             "weight": 0,
-             "align": "INSIDE"
-            },
-            "effects": [],
-            "text": {
-             "fontFamily": "Inter",
-             "fontWeight": 500,
-             "fontSize": 14,
-             "lineHeight": {
-              "value": 16,
-              "unit": "px"
-             },
-             "letterSpacing": {
-              "value": 0,
-              "unit": "percent"
-             },
-             "textCase": "ORIGINAL",
-             "textDecoration": "NONE",
-             "align": "LEFT",
-             "mixed": true,
-             "runs": [
-              {
-               "fontFamily": "Inter",
-               "fontWeight": 500,
-               "fontSize": 14,
-               "lineHeight": {
-                "value": 16,
-                "unit": "px"
-               },
-               "letterSpacing": {
-                "value": 0,
-                "unit": "percent"
-               },
-               "textCase": "ORIGINAL",
-               "textDecoration": "NONE",
-               "characters": "Total Solar Sales"
-              }
-             ],
-             "characters": "Total Solar Sales"
-            },
-            "role": "text",
-            "roleSource": "type"
-           }
-          ],
-          "size": {
-           "width": 111,
-           "height": 16
-          },
-          "layout": {
-           "mode": "HORIZONTAL",
-           "gap": 12,
-           "padding": {
-            "top": 0,
-            "right": 0,
-            "bottom": 0,
-            "left": 0
-           },
-           "primaryAlign": "MIN",
-           "counterAlign": "CENTER",
-           "sizingH": "HUG",
-           "sizingV": "HUG",
-           "wrap": false
-          },
-          "opacity": 1,
-          "fills": [],
-          "strokes": {
-           "paints": [],
-           "weight": 0,
-           "align": "INSIDE"
-          },
-          "effects": [],
-          "role": "container",
-          "roleSource": "type"
-         }
-        ],
-        "size": {
-         "width": 190,
-         "height": 32
-        },
-        "layout": {
-         "mode": "HORIZONTAL",
-         "gap": 12,
-         "padding": {
-          "top": 0,
-          "right": 0,
-          "bottom": 0,
-          "left": 0
-         },
-         "primaryAlign": "MIN",
-         "counterAlign": "CENTER",
-         "sizingH": "FILL",
-         "sizingV": "HUG",
-         "wrap": false
-        },
-        "opacity": 1,
-        "fills": [],
-        "strokes": {
-         "paints": [],
-         "weight": 0,
-         "align": "INSIDE"
-        },
-        "effects": [],
-        "role": "container",
-        "roleSource": "type"
-       }
-      },
-      {
-       "parentPath": "Metrics Card/Metrics Body/Body Content",
-       "layer": {
-        "id": "6291:1581",
-        "name": "Metrics Container",
-        "type": "FRAME",
-        "visible": true,
-        "children": [
-         {
-          "id": "6291:1582",
-          "name": "Subtext",
-          "type": "FRAME",
-          "visible": true,
-          "children": [
-           {
-            "id": "6291:1583",
-            "name": "Badge",
-            "type": "INSTANCE",
-            "visible": true,
-            "children": [],
-            "size": {
-             "width": 48,
-             "height": 17
-            },
-            "layout": {
-             "mode": "VERTICAL",
-             "gap": 8,
-             "padding": {
-              "top": 0,
-              "right": 4,
-              "bottom": 0,
-              "left": 4
-             },
-             "primaryAlign": "CENTER",
-             "counterAlign": "CENTER",
-             "sizingH": "HUG",
-             "sizingV": "HUG",
-             "wrap": false
-            },
-            "radius": 12,
-            "opacity": 1,
-            "fills": [
-             {
-              "type": "SOLID",
-              "visible": true,
-              "hex": "#ffece5",
-              "alpha": 1
-             }
-            ],
-            "strokes": {
-             "paints": [],
-             "weight": 0,
-             "align": "INSIDE"
-            },
-            "effects": [],
-            "instanceOf": {
-             "componentId": "1913:29447",
-             "componentName": "Badge"
-            },
-            "propertyRefs": {
-             "visible": "has badge#6291:0"
-            },
-            "role": "unknown",
-            "roleSource": "none"
-           },
-           {
-            "id": "6291:1584",
-            "name": "Secondary Text",
-            "type": "TEXT",
-            "visible": true,
-            "children": [],
-            "size": {
-             "width": 138,
-             "height": 17
-            },
-            "opacity": 1,
-            "fills": [
-             {
-              "type": "SOLID",
-              "visible": true,
-              "hex": "#98a2b3",
-              "alpha": 1
-             }
-            ],
-            "strokes": {
-             "paints": [],
-             "weight": 0,
-             "align": "INSIDE"
-            },
-            "effects": [],
-            "text": {
-             "fontFamily": "Inter",
-             "fontWeight": 500,
-             "fontSize": 12,
-             "lineHeight": {
-              "value": 145,
-              "unit": "percent"
-             },
-             "letterSpacing": {
-              "value": -0.5,
-              "unit": "percent"
-             },
-             "textCase": "ORIGINAL",
-             "textDecoration": "NONE",
-             "align": "LEFT",
-             "characters": "Compared to last month"
-            },
-            "propertyRefs": {
-             "visible": "has description#6291:19"
-            },
-            "role": "text",
-            "roleSource": "type"
-           }
-          ],
-          "size": {
-           "width": 190,
-           "height": 17
-          },
-          "layout": {
-           "mode": "HORIZONTAL",
-           "gap": 4,
-           "padding": {
-            "top": 0,
-            "right": 0,
-            "bottom": 0,
-            "left": 0
-           },
-           "primaryAlign": "MIN",
-           "counterAlign": "CENTER",
-           "sizingH": "HUG",
-           "sizingV": "HUG",
-           "wrap": false
-          },
-          "opacity": 1,
-          "fills": [],
-          "strokes": {
-           "paints": [],
-           "weight": 0,
-           "align": "INSIDE"
-          },
-          "effects": [],
-          "role": "container",
-          "roleSource": "type"
-         },
-         {
-          "id": "6291:1585",
-          "name": "Data",
-          "type": "TEXT",
-          "visible": true,
-          "children": [],
-          "size": {
-           "width": 108,
-           "height": 38
-          },
-          "opacity": 1,
-          "fills": [
-           {
-            "type": "SOLID",
-            "visible": true,
-            "hex": "#1d2739",
-            "alpha": 1
-           }
-          ],
-          "strokes": {
-           "paints": [],
-           "weight": 0,
-           "align": "INSIDE"
-          },
-          "effects": [],
-          "text": {
-           "fontFamily": "Inter",
-           "fontWeight": 600,
-           "fontSize": 32,
-           "lineHeight": {
-            "value": 120,
-            "unit": "percent"
-           },
-           "letterSpacing": {
-            "value": -2,
-            "unit": "percent"
-           },
-           "textCase": "ORIGINAL",
-           "textDecoration": "NONE",
-           "align": "LEFT",
-           "characters": "45,823"
-          },
-          "role": "text",
-          "roleSource": "type"
-         }
-        ],
-        "size": {
-         "width": 190,
-         "height": 67
-        },
-        "layout": {
-         "mode": "VERTICAL",
-         "gap": 12,
-         "padding": {
-          "top": 0,
-          "right": 0,
-          "bottom": 0,
-          "left": 0
-         },
-         "primaryAlign": "MAX",
-         "counterAlign": "MIN",
-         "sizingH": "HUG",
-         "sizingV": "HUG",
-         "wrap": false
-        },
-        "opacity": 1,
-        "fills": [],
-        "strokes": {
-         "paints": [],
-         "weight": 0,
-         "align": "INSIDE"
-        },
-        "effects": [],
-        "role": "container",
-        "roleSource": "type"
-       }
-      }
-     ],
-     "removed": [
-      "Metrics Card/Metrics Body/Body Content/Body Content",
-      "Metrics Card/Metrics Body/Body Content/Button / texts",
-      "Metrics Card/Metrics Body/Frame 2"
-     ]
-    },
-    {
-     "variantId": "6291:1873",
-     "variantProperties": {
-      "variation": "2",
-      "type": "data only",
-      "orientation": "left aligned"
-     },
-     "layers": [
-      {
-       "path": "Metrics Card",
-       "changes": {
-        "size": {
-         "width": 282,
-         "height": 163
-        }
-       }
-      },
-      {
-       "path": "Metrics Card/Metrics Body",
-       "changes": {
-        "size": {
-         "width": 282,
-         "height": 163
-        },
-        "layout": {
-         "mode": "VERTICAL",
-         "gap": 51,
-         "padding": {
-          "top": 16,
-          "right": 16,
-          "bottom": 16,
-          "left": 16
-         },
-         "primaryAlign": "MIN",
-         "counterAlign": "MIN",
-         "sizingH": "FILL",
-         "sizingV": "HUG",
-         "wrap": false
-        }
-       }
-      },
-      {
-       "path": "Metrics Card/Metrics Body/Body Content",
-       "changes": {
-        "size": {
-         "width": 190,
-         "height": 131
-        },
-        "layout": {
-         "mode": "VERTICAL",
-         "gap": 32,
-         "padding": {
-          "top": 0,
-          "right": 0,
-          "bottom": 0,
-          "left": 0
-         },
-         "primaryAlign": "MIN",
-         "counterAlign": "MIN",
-         "sizingH": "HUG",
-         "sizingV": "HUG",
-         "wrap": false
-        }
-       }
-      }
-     ],
-     "added": [
-      {
-       "parentPath": "Metrics Card/Metrics Body/Body Content",
-       "layer": {
-        "id": "6291:1589",
-        "name": "Header",
-        "type": "FRAME",
-        "visible": true,
-        "children": [
-         {
-          "id": "6291:1590",
-          "name": "Misc icon",
-          "type": "INSTANCE",
-          "visible": true,
-          "children": [],
-          "size": {
-           "width": 32,
-           "height": 32
-          },
-          "radius": 8,
-          "opacity": 1,
-          "fills": [
-           {
-            "type": "SOLID",
-            "visible": true,
-            "hex": "#ffffff",
-            "alpha": 1
-           }
-          ],
-          "strokes": {
-           "paints": [
-            {
-             "type": "SOLID",
-             "visible": true,
-             "hex": "#e4e7ec",
-             "alpha": 1
-            }
-           ],
-           "weight": 1,
-           "align": "INSIDE"
-          },
-          "effects": [],
-          "instanceOf": {
-           "componentId": "6011:145511",
-           "componentName": "Misc icon"
-          },
-          "propertyRefs": {
-           "visible": "has icon#6291:57"
-          },
-          "role": "icon",
-          "roleSource": "name"
-         },
-         {
-          "id": "6291:1591",
-          "name": "Header Text",
-          "type": "FRAME",
-          "visible": true,
-          "children": [
-           {
-            "id": "6291:1592",
-            "name": "Text",
-            "type": "TEXT",
-            "visible": true,
-            "children": [],
-            "size": {
-             "width": 111,
-             "height": 16
-            },
-            "opacity": 1,
-            "fills": [
-             {
-              "type": "SOLID",
-              "visible": true,
-              "hex": "#667185",
-              "alpha": 1
-             }
-            ],
-            "strokes": {
-             "paints": [],
-             "weight": 0,
-             "align": "INSIDE"
-            },
-            "effects": [],
-            "text": {
-             "fontFamily": "Inter",
-             "fontWeight": 500,
-             "fontSize": 14,
-             "lineHeight": {
-              "value": 16,
-              "unit": "px"
-             },
-             "letterSpacing": {
-              "value": 0,
-              "unit": "percent"
-             },
-             "textCase": "ORIGINAL",
-             "textDecoration": "NONE",
-             "align": "LEFT",
-             "mixed": true,
-             "runs": [
-              {
-               "fontFamily": "Inter",
-               "fontWeight": 500,
-               "fontSize": 14,
-               "lineHeight": {
-                "value": 16,
-                "unit": "px"
-               },
-               "letterSpacing": {
-                "value": 0,
-                "unit": "percent"
-               },
-               "textCase": "ORIGINAL",
-               "textDecoration": "NONE",
-               "characters": "Total Solar Sales"
-              }
-             ],
-             "characters": "Total Solar Sales"
-            },
-            "role": "text",
-            "roleSource": "type"
-           }
-          ],
-          "size": {
-           "width": 111,
-           "height": 16
-          },
-          "layout": {
-           "mode": "HORIZONTAL",
-           "gap": 12,
-           "padding": {
-            "top": 0,
-            "right": 0,
-            "bottom": 0,
-            "left": 0
-           },
-           "primaryAlign": "MIN",
-           "counterAlign": "CENTER",
-           "sizingH": "HUG",
-           "sizingV": "HUG",
-           "wrap": false
-          },
-          "opacity": 1,
-          "fills": [],
-          "strokes": {
-           "paints": [],
-           "weight": 0,
-           "align": "INSIDE"
-          },
-          "effects": [],
-          "role": "container",
-          "roleSource": "type"
-         }
-        ],
-        "size": {
-         "width": 190,
-         "height": 32
-        },
-        "layout": {
-         "mode": "HORIZONTAL",
-         "gap": 12,
-         "padding": {
-          "top": 0,
-          "right": 0,
-          "bottom": 0,
-          "left": 0
-         },
-         "primaryAlign": "MIN",
-         "counterAlign": "CENTER",
-         "sizingH": "FILL",
-         "sizingV": "HUG",
-         "wrap": false
-        },
-        "opacity": 1,
-        "fills": [],
-        "strokes": {
-         "paints": [],
-         "weight": 0,
-         "align": "INSIDE"
-        },
-        "effects": [],
-        "role": "container",
-        "roleSource": "type"
-       }
-      },
-      {
-       "parentPath": "Metrics Card/Metrics Body/Body Content",
-       "layer": {
-        "id": "6291:1593",
-        "name": "Metrics Container",
-        "type": "FRAME",
-        "visible": true,
-        "children": [
-         {
-          "id": "6291:1594",
-          "name": "Data",
-          "type": "TEXT",
-          "visible": true,
-          "children": [],
-          "size": {
-           "width": 108,
-           "height": 38
-          },
-          "opacity": 1,
-          "fills": [
-           {
-            "type": "SOLID",
-            "visible": true,
-            "hex": "#1d2739",
-            "alpha": 1
-           }
-          ],
-          "strokes": {
-           "paints": [],
-           "weight": 0,
-           "align": "INSIDE"
-          },
-          "effects": [],
-          "text": {
-           "fontFamily": "Inter",
-           "fontWeight": 600,
-           "fontSize": 32,
-           "lineHeight": {
-            "value": 120,
-            "unit": "percent"
-           },
-           "letterSpacing": {
-            "value": -2,
-            "unit": "percent"
-           },
-           "textCase": "ORIGINAL",
-           "textDecoration": "NONE",
-           "align": "LEFT",
-           "characters": "45,823"
-          },
-          "role": "text",
-          "roleSource": "type"
-         },
-         {
-          "id": "6291:1595",
-          "name": "Subtext",
-          "type": "FRAME",
-          "visible": true,
-          "children": [
-           {
-            "id": "6291:1596",
-            "name": "Badge",
-            "type": "INSTANCE",
-            "visible": true,
-            "children": [],
-            "size": {
-             "width": 48,
-             "height": 17
-            },
-            "layout": {
-             "mode": "VERTICAL",
-             "gap": 8,
-             "padding": {
-              "top": 0,
-              "right": 4,
-              "bottom": 0,
-              "left": 4
-             },
-             "primaryAlign": "CENTER",
-             "counterAlign": "CENTER",
-             "sizingH": "HUG",
-             "sizingV": "HUG",
-             "wrap": false
-            },
-            "radius": 12,
-            "opacity": 1,
-            "fills": [
-             {
-              "type": "SOLID",
-              "visible": true,
-              "hex": "#ffece5",
-              "alpha": 1
-             }
-            ],
-            "strokes": {
-             "paints": [],
-             "weight": 0,
-             "align": "INSIDE"
-            },
-            "effects": [],
-            "instanceOf": {
-             "componentId": "1913:29447",
-             "componentName": "Badge"
-            },
-            "propertyRefs": {
-             "visible": "has badge#6291:0"
-            },
-            "role": "unknown",
-            "roleSource": "none"
-           },
-           {
-            "id": "6291:1597",
-            "name": "Secondary Text",
-            "type": "TEXT",
-            "visible": true,
-            "children": [],
-            "size": {
-             "width": 138,
-             "height": 17
-            },
-            "opacity": 1,
-            "fills": [
-             {
-              "type": "SOLID",
-              "visible": true,
-              "hex": "#98a2b3",
-              "alpha": 1
-             }
-            ],
-            "strokes": {
-             "paints": [],
-             "weight": 0,
-             "align": "INSIDE"
-            },
-            "effects": [],
-            "text": {
-             "fontFamily": "Inter",
-             "fontWeight": 500,
-             "fontSize": 12,
-             "lineHeight": {
-              "value": 145,
-              "unit": "percent"
-             },
-             "letterSpacing": {
-              "value": -0.5,
-              "unit": "percent"
-             },
-             "textCase": "ORIGINAL",
-             "textDecoration": "NONE",
-             "align": "LEFT",
-             "characters": "Compared to last month"
-            },
-            "propertyRefs": {
-             "visible": "has description#6291:19"
-            },
-            "role": "text",
-            "roleSource": "type"
-           }
-          ],
-          "size": {
-           "width": 190,
-           "height": 17
-          },
-          "layout": {
-           "mode": "HORIZONTAL",
-           "gap": 4,
-           "padding": {
-            "top": 0,
-            "right": 0,
-            "bottom": 0,
-            "left": 0
-           },
-           "primaryAlign": "MIN",
-           "counterAlign": "CENTER",
-           "sizingH": "HUG",
-           "sizingV": "HUG",
-           "wrap": false
-          },
-          "opacity": 1,
-          "fills": [],
-          "strokes": {
-           "paints": [],
-           "weight": 0,
-           "align": "INSIDE"
-          },
-          "effects": [],
-          "role": "container",
-          "roleSource": "type"
-         }
-        ],
-        "size": {
-         "width": 190,
-         "height": 67
-        },
-        "layout": {
-         "mode": "VERTICAL",
-         "gap": 12,
-         "padding": {
-          "top": 0,
-          "right": 0,
-          "bottom": 0,
-          "left": 0
-         },
-         "primaryAlign": "MAX",
-         "counterAlign": "MIN",
-         "sizingH": "HUG",
-         "sizingV": "HUG",
-         "wrap": false
-        },
-        "opacity": 1,
-        "fills": [],
-        "strokes": {
-         "paints": [],
-         "weight": 0,
-         "align": "INSIDE"
-        },
-        "effects": [],
-        "role": "container",
-        "roleSource": "type"
-       }
-      }
-     ],
-     "removed": [
-      "Metrics Card/Metrics Body/Body Content/Body Content",
-      "Metrics Card/Metrics Body/Body Content/Button / texts",
-      "Metrics Card/Metrics Body/Frame 2"
-     ]
-    },
-    {
      "variantId": "6291:1866",
      "variantProperties": {
       "variation": "4",
@@ -7076,10 +6170,10 @@
      ]
     },
     {
-     "variantId": "6291:1876",
+     "variantId": "6291:3731",
      "variantProperties": {
-      "variation": "4",
-      "type": "data only",
+      "variation": "5",
+      "type": "data + CTA",
       "orientation": "left aligned"
      },
      "layers": [
@@ -7088,7 +6182,7 @@
        "changes": {
         "size": {
          "width": 282,
-         "height": 128
+         "height": 124
         },
         "layout": {
          "mode": "HORIZONTAL",
@@ -7112,7 +6206,7 @@
        "changes": {
         "size": {
          "width": 282,
-         "height": 128
+         "height": 124
         },
         "layout": {
          "mode": "HORIZONTAL",
@@ -7135,8 +6229,8 @@
        "path": "Metrics Card/Metrics Body/Body Content",
        "changes": {
         "size": {
-         "width": 190,
-         "height": 96
+         "width": 108,
+         "height": 92
         },
         "layout": {
          "mode": "VERTICAL",
@@ -7154,25 +6248,79 @@
          "wrap": false
         }
        }
+      },
+      {
+       "path": "Metrics Card/Metrics Body/Frame 2",
+       "changes": {
+        "size": {
+         "width": 105,
+         "height": 92
+        }
+       }
+      },
+      {
+       "path": "Metrics Card/Metrics Body/Frame 2/Subtext",
+       "changes": {
+        "size": {
+         "width": 44,
+         "height": 17
+        }
+       }
+      },
+      {
+       "path": "Metrics Card/Metrics Body/Frame 2/Subtext/Badge",
+       "changes": {
+        "size": {
+         "width": 44,
+         "height": 17
+        },
+        "layout": {
+         "mode": "VERTICAL",
+         "gap": 8,
+         "padding": {
+          "top": 0,
+          "right": 4,
+          "bottom": 0,
+          "left": 4
+         },
+         "primaryAlign": "CENTER",
+         "counterAlign": "CENTER",
+         "sizingH": "HUG",
+         "sizingV": "HUG",
+         "wrap": false
+        },
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": true,
+          "hex": "#ffece5",
+          "alpha": 1
+         }
+        ],
+        "instanceOf": {
+         "componentId": "1913:29447",
+         "componentName": "Badge"
+        }
+       }
       }
      ],
      "added": [
       {
        "parentPath": "Metrics Card/Metrics Body/Body Content",
        "layer": {
-        "id": "6291:1668",
+        "id": "6291:3734",
         "name": "Header",
         "type": "FRAME",
         "visible": true,
         "children": [
          {
-          "id": "6291:1669",
+          "id": "6291:3735",
           "name": "Header Text",
           "type": "FRAME",
           "visible": true,
           "children": [
            {
-            "id": "6291:1670",
+            "id": "6291:3736",
             "name": "Text",
             "type": "TEXT",
             "visible": true,
@@ -7249,7 +6397,7 @@
          }
         ],
         "size": {
-         "width": 190,
+         "width": 108,
          "height": 17
         },
         "layout": {
@@ -7282,13 +6430,13 @@
       {
        "parentPath": "Metrics Card/Metrics Body/Body Content",
        "layer": {
-        "id": "6291:1671",
+        "id": "6291:3737",
         "name": "Metrics Container",
         "type": "FRAME",
         "visible": true,
         "children": [
          {
-          "id": "6291:1672",
+          "id": "6291:3738",
           "name": "Data",
           "type": "TEXT",
           "visible": true,
@@ -7333,29 +6481,636 @@
           "roleSource": "type"
          },
          {
-          "id": "6291:3461",
+          "id": "6291:3739",
+          "name": "Header",
+          "type": "FRAME",
+          "visible": true,
+          "children": [
+           {
+            "id": "6291:3740",
+            "name": "Header Text",
+            "type": "FRAME",
+            "visible": true,
+            "children": [
+             {
+              "id": "6291:3741",
+              "name": "Text",
+              "type": "TEXT",
+              "visible": true,
+              "children": [],
+              "size": {
+               "width": 90,
+               "height": 17
+              },
+              "opacity": 1,
+              "fills": [
+               {
+                "type": "SOLID",
+                "visible": true,
+                "hex": "#667185",
+                "alpha": 1
+               }
+              ],
+              "strokes": {
+               "paints": [],
+               "weight": 0,
+               "align": "INSIDE"
+              },
+              "effects": [],
+              "text": {
+               "fontFamily": "Inter",
+               "fontWeight": 500,
+               "fontSize": 12,
+               "lineHeight": {
+                "value": 145,
+                "unit": "percent"
+               },
+               "letterSpacing": {
+                "value": -0.5,
+                "unit": "percent"
+               },
+               "textCase": "ORIGINAL",
+               "textDecoration": "NONE",
+               "align": "LEFT",
+               "characters": "$1,873 last year"
+              },
+              "role": "text",
+              "roleSource": "type"
+             }
+            ],
+            "size": {
+             "width": 90,
+             "height": 17
+            },
+            "layout": {
+             "mode": "HORIZONTAL",
+             "gap": 12,
+             "padding": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+             },
+             "primaryAlign": "MIN",
+             "counterAlign": "CENTER",
+             "sizingH": "HUG",
+             "sizingV": "HUG",
+             "wrap": false
+            },
+            "opacity": 1,
+            "fills": [],
+            "strokes": {
+             "paints": [],
+             "weight": 0,
+             "align": "INSIDE"
+            },
+            "effects": [],
+            "role": "container",
+            "roleSource": "type"
+           }
+          ],
+          "size": {
+           "width": 108,
+           "height": 17
+          },
+          "layout": {
+           "mode": "HORIZONTAL",
+           "gap": 12,
+           "padding": {
+            "top": 0,
+            "right": 0,
+            "bottom": 0,
+            "left": 0
+           },
+           "primaryAlign": "MIN",
+           "counterAlign": "CENTER",
+           "sizingH": "FILL",
+           "sizingV": "HUG",
+           "wrap": false
+          },
+          "opacity": 1,
+          "fills": [],
+          "strokes": {
+           "paints": [],
+           "weight": 0,
+           "align": "INSIDE"
+          },
+          "effects": [],
+          "propertyRefs": {
+           "visible": "has description#6291:19"
+          },
+          "role": "container",
+          "roleSource": "type"
+         }
+        ],
+        "size": {
+         "width": 108,
+         "height": 59
+        },
+        "layout": {
+         "mode": "VERTICAL",
+         "gap": 4,
+         "padding": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+         },
+         "primaryAlign": "MAX",
+         "counterAlign": "MIN",
+         "sizingH": "HUG",
+         "sizingV": "HUG",
+         "wrap": false
+        },
+        "opacity": 1,
+        "fills": [],
+        "strokes": {
+         "paints": [],
+         "weight": 0,
+         "align": "INSIDE"
+        },
+        "effects": [],
+        "role": "container",
+        "roleSource": "type"
+       }
+      },
+      {
+       "parentPath": "Metrics Card/Metrics Body/Frame 2",
+       "layer": {
+        "id": "6291:3745",
+        "name": "Button / texts",
+        "type": "INSTANCE",
+        "visible": true,
+        "children": [],
+        "size": {
+         "width": 105,
+         "height": 20
+        },
+        "layout": {
+         "mode": "VERTICAL",
+         "gap": 10,
+         "padding": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+         },
+         "primaryAlign": "CENTER",
+         "counterAlign": "CENTER",
+         "sizingH": "HUG",
+         "sizingV": "FIXED",
+         "wrap": false
+        },
+        "radius": 8,
+        "opacity": 1,
+        "fills": [],
+        "strokes": {
+         "paints": [],
+         "weight": 0,
+         "align": "INSIDE"
+        },
+        "effects": [],
+        "instanceOf": {
+         "componentId": "2002:51994",
+         "componentName": "Button / texts"
+        },
+        "role": "button",
+        "roleSource": "name"
+       }
+      }
+     ],
+     "removed": [
+      "Metrics Card/Metrics Body/Body Content/Body Content",
+      "Metrics Card/Metrics Body/Body Content/Button / texts",
+      "Metrics Card/Metrics Body/Frame 2/Header"
+     ]
+    },
+    {
+     "variantId": "6291:1884",
+     "variantProperties": {
+      "variation": "1",
+      "type": "data only",
+      "orientation": "left aligned"
+     },
+     "layers": [
+      {
+       "path": "Metrics Card",
+       "changes": {
+        "size": {
+         "width": 329,
+         "height": 118
+        }
+       }
+      },
+      {
+       "path": "Metrics Card/Metrics Body",
+       "changes": {
+        "size": {
+         "width": 329,
+         "height": 118
+        },
+        "layout": {
+         "mode": "HORIZONTAL",
+         "gap": 16,
+         "padding": {
+          "top": 16,
+          "right": 16,
+          "bottom": 16,
+          "left": 16
+         },
+         "primaryAlign": "SPACE_BETWEEN",
+         "counterAlign": "MIN",
+         "sizingH": "FILL",
+         "sizingV": "HUG",
+         "wrap": false
+        }
+       }
+      },
+      {
+       "path": "Metrics Card/Metrics Body/Body Content",
+       "changes": {
+        "size": {
+         "width": 111,
+         "height": 86
+        },
+        "layout": {
+         "mode": "VERTICAL",
+         "gap": 32,
+         "padding": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+         },
+         "primaryAlign": "MIN",
+         "counterAlign": "MIN",
+         "sizingH": "HUG",
+         "sizingV": "HUG",
+         "wrap": false
+        }
+       }
+      }
+     ],
+     "added": [
+      {
+       "parentPath": "Metrics Card/Metrics Body/Body Content",
+       "layer": {
+        "id": "6291:1477",
+        "name": "Header",
+        "type": "FRAME",
+        "visible": true,
+        "children": [
+         {
+          "id": "6291:1478",
+          "name": "Header Text",
+          "type": "FRAME",
+          "visible": true,
+          "children": [
+           {
+            "id": "6291:1479",
+            "name": "Text",
+            "type": "TEXT",
+            "visible": true,
+            "children": [],
+            "size": {
+             "width": 111,
+             "height": 16
+            },
+            "opacity": 1,
+            "fills": [
+             {
+              "type": "SOLID",
+              "visible": true,
+              "hex": "#667185",
+              "alpha": 1
+             }
+            ],
+            "strokes": {
+             "paints": [],
+             "weight": 0,
+             "align": "INSIDE"
+            },
+            "effects": [],
+            "text": {
+             "fontFamily": "Inter",
+             "fontWeight": 500,
+             "fontSize": 14,
+             "lineHeight": {
+              "value": 16,
+              "unit": "px"
+             },
+             "letterSpacing": {
+              "value": 0,
+              "unit": "percent"
+             },
+             "textCase": "ORIGINAL",
+             "textDecoration": "NONE",
+             "align": "LEFT",
+             "mixed": true,
+             "runs": [
+              {
+               "fontFamily": "Inter",
+               "fontWeight": 500,
+               "fontSize": 14,
+               "lineHeight": {
+                "value": 16,
+                "unit": "px"
+               },
+               "letterSpacing": {
+                "value": 0,
+                "unit": "percent"
+               },
+               "textCase": "ORIGINAL",
+               "textDecoration": "NONE",
+               "characters": "Total Solar Sales"
+              }
+             ],
+             "characters": "Total Solar Sales"
+            },
+            "role": "text",
+            "roleSource": "type"
+           }
+          ],
+          "size": {
+           "width": 111,
+           "height": 16
+          },
+          "layout": {
+           "mode": "HORIZONTAL",
+           "gap": 12,
+           "padding": {
+            "top": 0,
+            "right": 0,
+            "bottom": 0,
+            "left": 0
+           },
+           "primaryAlign": "MIN",
+           "counterAlign": "CENTER",
+           "sizingH": "HUG",
+           "sizingV": "HUG",
+           "wrap": false
+          },
+          "opacity": 1,
+          "fills": [],
+          "strokes": {
+           "paints": [],
+           "weight": 0,
+           "align": "INSIDE"
+          },
+          "effects": [],
+          "role": "container",
+          "roleSource": "type"
+         }
+        ],
+        "size": {
+         "width": 111,
+         "height": 16
+        },
+        "layout": {
+         "mode": "HORIZONTAL",
+         "gap": 12,
+         "padding": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+         },
+         "primaryAlign": "MIN",
+         "counterAlign": "CENTER",
+         "sizingH": "FILL",
+         "sizingV": "HUG",
+         "wrap": false
+        },
+        "opacity": 1,
+        "fills": [],
+        "strokes": {
+         "paints": [],
+         "weight": 0,
+         "align": "INSIDE"
+        },
+        "effects": [],
+        "role": "container",
+        "roleSource": "type"
+       }
+      },
+      {
+       "parentPath": "Metrics Card/Metrics Body/Body Content",
+       "layer": {
+        "id": "6291:1480",
+        "name": "Metrics Container",
+        "type": "FRAME",
+        "visible": true,
+        "children": [
+         {
+          "id": "6291:1481",
+          "name": "Data",
+          "type": "TEXT",
+          "visible": true,
+          "children": [],
+          "size": {
+           "width": 108,
+           "height": 38
+          },
+          "opacity": 1,
+          "fills": [
+           {
+            "type": "SOLID",
+            "visible": true,
+            "hex": "#1d2739",
+            "alpha": 1
+           }
+          ],
+          "strokes": {
+           "paints": [],
+           "weight": 0,
+           "align": "INSIDE"
+          },
+          "effects": [],
+          "text": {
+           "fontFamily": "Inter",
+           "fontWeight": 600,
+           "fontSize": 32,
+           "lineHeight": {
+            "value": 120,
+            "unit": "percent"
+           },
+           "letterSpacing": {
+            "value": -2,
+            "unit": "percent"
+           },
+           "textCase": "ORIGINAL",
+           "textDecoration": "NONE",
+           "align": "LEFT",
+           "characters": "45,823"
+          },
+          "role": "text",
+          "roleSource": "type"
+         }
+        ],
+        "size": {
+         "width": 108,
+         "height": 38
+        },
+        "layout": {
+         "mode": "HORIZONTAL",
+         "gap": 12,
+         "padding": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+         },
+         "primaryAlign": "MIN",
+         "counterAlign": "CENTER",
+         "sizingH": "HUG",
+         "sizingV": "HUG",
+         "wrap": false
+        },
+        "opacity": 1,
+        "fills": [],
+        "strokes": {
+         "paints": [],
+         "weight": 0,
+         "align": "INSIDE"
+        },
+        "effects": [],
+        "role": "container",
+        "roleSource": "type"
+       }
+      },
+      {
+       "parentPath": "Metrics Card/Metrics Body",
+       "layer": {
+        "id": "6291:1485",
+        "name": "Header",
+        "type": "FRAME",
+        "visible": true,
+        "children": [
+         {
+          "id": "6291:1486",
+          "name": "Header Text",
+          "type": "FRAME",
+          "visible": true,
+          "children": [
+           {
+            "id": "6291:1487",
+            "name": "Text",
+            "type": "TEXT",
+            "visible": true,
+            "children": [],
+            "size": {
+             "width": 100,
+             "height": 16
+            },
+            "opacity": 1,
+            "fills": [
+             {
+              "type": "SOLID",
+              "visible": true,
+              "hex": "#667185",
+              "alpha": 1
+             }
+            ],
+            "strokes": {
+             "paints": [],
+             "weight": 0,
+             "align": "INSIDE"
+            },
+            "effects": [],
+            "text": {
+             "fontFamily": "Inter",
+             "fontWeight": 500,
+             "fontSize": 14,
+             "lineHeight": {
+              "value": 16,
+              "unit": "px"
+             },
+             "letterSpacing": {
+              "value": 0,
+              "unit": "percent"
+             },
+             "textCase": "ORIGINAL",
+             "textDecoration": "NONE",
+             "align": "LEFT",
+             "mixed": true,
+             "runs": [
+              {
+               "fontFamily": "Inter",
+               "fontWeight": 500,
+               "fontSize": 14,
+               "lineHeight": {
+                "value": 16,
+                "unit": "px"
+               },
+               "letterSpacing": {
+                "value": 0,
+                "unit": "percent"
+               },
+               "textCase": "ORIGINAL",
+               "textDecoration": "NONE",
+               "characters": "Jun 12th, 2023"
+              }
+             ],
+             "characters": "Jun 12th, 2023"
+            },
+            "role": "text",
+            "roleSource": "type"
+           }
+          ],
+          "size": {
+           "width": 100,
+           "height": 16
+          },
+          "layout": {
+           "mode": "HORIZONTAL",
+           "gap": 12,
+           "padding": {
+            "top": 0,
+            "right": 0,
+            "bottom": 0,
+            "left": 0
+           },
+           "primaryAlign": "MIN",
+           "counterAlign": "CENTER",
+           "sizingH": "HUG",
+           "sizingV": "HUG",
+           "wrap": false
+          },
+          "opacity": 1,
+          "fills": [],
+          "strokes": {
+           "paints": [],
+           "weight": 0,
+           "align": "INSIDE"
+          },
+          "effects": [],
+          "role": "container",
+          "roleSource": "type"
+         },
+         {
+          "id": "6299:104420",
           "name": "Subtext",
           "type": "FRAME",
           "visible": true,
           "children": [
            {
-            "id": "6291:3462",
+            "id": "6299:104421",
             "name": "Badge",
             "type": "INSTANCE",
             "visible": true,
             "children": [],
             "size": {
-             "width": 48,
-             "height": 17
+             "width": 54,
+             "height": 24
             },
             "layout": {
              "mode": "VERTICAL",
              "gap": 8,
              "padding": {
-              "top": 0,
-              "right": 4,
-              "bottom": 0,
-              "left": 4
+              "top": 2,
+              "right": 12,
+              "bottom": 2,
+              "left": 12
              },
              "primaryAlign": "CENTER",
              "counterAlign": "CENTER",
@@ -7369,7 +7124,7 @@
              {
               "type": "SOLID",
               "visible": true,
-              "hex": "#ffece5",
+              "hex": "#e7f6ec",
               "alpha": 1
              }
             ],
@@ -7380,7 +7135,7 @@
             },
             "effects": [],
             "instanceOf": {
-             "componentId": "1913:29447",
+             "componentId": "1913:29501",
              "componentName": "Badge"
             },
             "propertyRefs": {
@@ -7388,59 +7143,11 @@
             },
             "role": "unknown",
             "roleSource": "none"
-           },
-           {
-            "id": "6291:3463",
-            "name": "Secondary Text",
-            "type": "TEXT",
-            "visible": true,
-            "children": [],
-            "size": {
-             "width": 138,
-             "height": 17
-            },
-            "opacity": 1,
-            "fills": [
-             {
-              "type": "SOLID",
-              "visible": true,
-              "hex": "#98a2b3",
-              "alpha": 1
-             }
-            ],
-            "strokes": {
-             "paints": [],
-             "weight": 0,
-             "align": "INSIDE"
-            },
-            "effects": [],
-            "text": {
-             "fontFamily": "Inter",
-             "fontWeight": 500,
-             "fontSize": 12,
-             "lineHeight": {
-              "value": 145,
-              "unit": "percent"
-             },
-             "letterSpacing": {
-              "value": -0.5,
-              "unit": "percent"
-             },
-             "textCase": "ORIGINAL",
-             "textDecoration": "NONE",
-             "align": "LEFT",
-             "characters": "Compared to last month"
-            },
-            "propertyRefs": {
-             "visible": "has description#6291:19"
-            },
-            "role": "text",
-            "roleSource": "type"
            }
           ],
           "size": {
-           "width": 190,
-           "height": 17
+           "width": 54,
+           "height": 24
           },
           "layout": {
            "mode": "HORIZONTAL",
@@ -7470,87 +7177,11 @@
          }
         ],
         "size": {
-         "width": 190,
-         "height": 63
+         "width": 100,
+         "height": 86
         },
         "layout": {
          "mode": "VERTICAL",
-         "gap": 8,
-         "padding": {
-          "top": 0,
-          "right": 0,
-          "bottom": 0,
-          "left": 0
-         },
-         "primaryAlign": "MAX",
-         "counterAlign": "MIN",
-         "sizingH": "HUG",
-         "sizingV": "HUG",
-         "wrap": false
-        },
-        "opacity": 0.8,
-        "fills": [],
-        "strokes": {
-         "paints": [],
-         "weight": 0,
-         "align": "INSIDE"
-        },
-        "effects": [],
-        "role": "container",
-        "roleSource": "type"
-       }
-      },
-      {
-       "parentPath": "Metrics Card/Metrics Body",
-       "layer": {
-        "id": "6291:3126",
-        "name": "Header",
-        "type": "FRAME",
-        "visible": true,
-        "children": [
-         {
-          "id": "6291:3127",
-          "name": "Misc icon",
-          "type": "INSTANCE",
-          "visible": true,
-          "children": [],
-          "size": {
-           "width": 48,
-           "height": 48
-          },
-          "radius": 8,
-          "opacity": 1,
-          "fills": [
-           {
-            "type": "SOLID",
-            "visible": true,
-            "hex": "#ffece5",
-            "alpha": 1
-           }
-          ],
-          "strokes": {
-           "paints": [],
-           "weight": 0,
-           "align": "INSIDE"
-          },
-          "effects": [],
-          "instanceOf": {
-           "componentId": "6011:145483",
-           "componentName": "Misc icon"
-          },
-          "propertyRefs": {
-           "visible": "has icon#6291:57"
-          },
-          "role": "icon",
-          "roleSource": "name"
-         }
-        ],
-        "size": {
-         "width": 48,
-         "height": 48
-        },
-        "layout": {
-         "mode": "HORIZONTAL",
          "gap": 12,
          "padding": {
           "top": 0,
@@ -7558,10 +7189,10 @@
           "bottom": 0,
           "left": 0
          },
-         "primaryAlign": "MIN",
-         "counterAlign": "CENTER",
+         "primaryAlign": "SPACE_BETWEEN",
+         "counterAlign": "MAX",
          "sizingH": "HUG",
-         "sizingV": "HUG",
+         "sizingV": "FILL",
          "wrap": false
         },
         "opacity": 1,
@@ -7572,9 +7203,6 @@
          "align": "INSIDE"
         },
         "effects": [],
-        "propertyRefs": {
-         "visible": "has icon#6291:57"
-        },
         "role": "container",
         "roleSource": "type"
        }
@@ -8964,955 +8592,6 @@
      ],
      "added": [],
      "removed": []
-    },
-    {
-     "variantId": "6218:7178",
-     "variantProperties": {
-      "type": "banners",
-      "state": "success"
-     },
-     "layers": [
-      {
-       "path": "Alert",
-       "changes": {
-        "size": {
-         "width": 568,
-         "height": 159
-        }
-       }
-      },
-      {
-       "path": "Alert/Left border",
-       "changes": {
-        "size": {
-         "width": 6,
-         "height": 159
-        }
-       }
-      },
-      {
-       "path": "Alert/Left border/border streak",
-       "changes": {
-        "size": {
-         "width": 6,
-         "height": 159
-        },
-        "fills": [
-         {
-          "type": "SOLID",
-          "visible": true,
-          "hex": "#04802e",
-          "alpha": 1,
-          "token": {
-           "styleId": "S:ec4b6c54294c90e5ddee7ea467b5ec75d25f9c56,1897:23",
-           "cssName": "--success-600"
-          }
-         }
-        ]
-       }
-      },
-      {
-       "path": "Alert/Alert Container",
-       "changes": {
-        "size": {
-         "width": 562,
-         "height": 159
-        },
-        "layout": {
-         "mode": "HORIZONTAL",
-         "gap": 16,
-         "padding": {
-          "top": 20,
-          "right": 20,
-          "bottom": 20,
-          "left": 20
-         },
-         "primaryAlign": "MIN",
-         "counterAlign": "MIN",
-         "sizingH": "FILL",
-         "sizingV": "FILL",
-         "wrap": false
-        }
-       }
-      },
-      {
-       "path": "Alert/Alert Container/Misc icon",
-       "changes": {
-        "size": {
-         "width": 32,
-         "height": 32
-        },
-        "fills": [
-         {
-          "type": "SOLID",
-          "visible": true,
-          "hex": "#e7f6ec",
-          "alpha": 1,
-          "token": {
-           "styleId": "S:66ec40615261e95125689750c4a8db00f573417f,1897:20",
-           "cssName": "--success-50"
-          }
-         }
-        ],
-        "strokes": {
-         "paints": [
-          {
-           "type": "SOLID",
-           "visible": true,
-           "hex": "#b5e3c4",
-           "alpha": 1,
-           "token": {
-            "styleId": "S:f4c57b67e21580fbac61dd035b3a33f0209f1379,1897:24",
-            "cssName": "--success-75"
-           }
-          }
-         ],
-         "weight": 1,
-         "align": "INSIDE"
-        },
-        "instanceOf": {
-         "componentId": "6011:145507",
-         "componentName": "Misc icon"
-        }
-       }
-      },
-      {
-       "path": "Alert/Alert Container/Close",
-       "changes": {
-        "size": {
-         "width": 37,
-         "height": 119
-        },
-        "layout": {
-         "mode": "HORIZONTAL",
-         "gap": 16,
-         "padding": {
-          "top": 0,
-          "right": 0,
-          "bottom": 0,
-          "left": 0
-         },
-         "primaryAlign": "MIN",
-         "counterAlign": "MIN",
-         "sizingH": "HUG",
-         "sizingV": "FILL",
-         "wrap": false
-        }
-       }
-      },
-      {
-       "path": "Alert/Alert Container/Close/Dividers",
-       "changes": {
-        "size": {
-         "width": 119,
-         "height": 1
-        }
-       }
-      }
-     ],
-     "added": [
-      {
-       "parentPath": "Alert/Alert Container",
-       "layer": {
-        "id": "6218:7183",
-        "name": "Alert Content",
-        "type": "FRAME",
-        "visible": true,
-        "children": [
-         {
-          "id": "6218:7184",
-          "name": "Text section",
-          "type": "FRAME",
-          "visible": true,
-          "children": [
-           {
-            "id": "6218:7185",
-            "name": "Heading",
-            "type": "TEXT",
-            "visible": true,
-            "children": [],
-            "size": {
-             "width": 421,
-             "height": 23
-            },
-            "opacity": 1,
-            "fills": [
-             {
-              "type": "SOLID",
-              "visible": true,
-              "hex": "#101928",
-              "alpha": 1,
-              "token": {
-               "styleId": "S:c559a82568f320573cd498f093c0c42c5410bcfc,5170:7",
-               "cssName": "--grey-900"
-              }
-             }
-            ],
-            "strokes": {
-             "paints": [],
-             "weight": 0,
-             "align": "INSIDE"
-            },
-            "effects": [],
-            "text": {
-             "fontFamily": "Inter",
-             "fontWeight": 600,
-             "fontSize": 16,
-             "lineHeight": {
-              "value": 145,
-              "unit": "percent"
-             },
-             "letterSpacing": {
-              "value": 0,
-              "unit": "percent"
-             },
-             "textCase": "ORIGINAL",
-             "textDecoration": "NONE",
-             "align": "LEFT",
-             "characters": "Here’s the alert info title"
-            },
-            "propertyRefs": {
-             "visible": "has title#5855:11"
-            },
-            "role": "heading",
-            "roleSource": "name"
-           },
-           {
-            "id": "6218:7186",
-            "name": "Subtext",
-            "type": "TEXT",
-            "visible": true,
-            "children": [],
-            "size": {
-             "width": 421,
-             "height": 40
-            },
-            "opacity": 1,
-            "fills": [
-             {
-              "type": "SOLID",
-              "visible": true,
-              "hex": "#475367",
-              "alpha": 1
-             }
-            ],
-            "strokes": {
-             "paints": [],
-             "weight": 0,
-             "align": "INSIDE"
-            },
-            "effects": [],
-            "text": {
-             "fontFamily": "Inter",
-             "fontWeight": 400,
-             "fontSize": 14,
-             "lineHeight": {
-              "value": 145,
-              "unit": "percent"
-             },
-             "letterSpacing": {
-              "value": 0,
-              "unit": "percent"
-             },
-             "textCase": "ORIGINAL",
-             "textDecoration": "NONE",
-             "align": "LEFT",
-             "characters": "The alert & notifications component is designed to work with the actions buttons. "
-            },
-            "propertyRefs": {
-             "visible": "has subtexts#5855:9"
-            },
-            "role": "text",
-            "roleSource": "type"
-           }
-          ],
-          "size": {
-           "width": 421,
-           "height": 67
-          },
-          "layout": {
-           "mode": "VERTICAL",
-           "gap": 4,
-           "padding": {
-            "top": 0,
-            "right": 0,
-            "bottom": 0,
-            "left": 0
-           },
-           "primaryAlign": "MIN",
-           "counterAlign": "MIN",
-           "sizingH": "FILL",
-           "sizingV": "HUG",
-           "wrap": false
-          },
-          "opacity": 1,
-          "fills": [],
-          "strokes": {
-           "paints": [],
-           "weight": 0,
-           "align": "INSIDE"
-          },
-          "effects": [],
-          "role": "container",
-          "roleSource": "type"
-         },
-         {
-          "id": "6218:7187",
-          "name": "CTAs",
-          "type": "FRAME",
-          "visible": true,
-          "children": [
-           {
-            "id": "6231:2476",
-            "name": "Special Primary Buttons",
-            "type": "INSTANCE",
-            "visible": true,
-            "children": [],
-            "size": {
-             "width": 117,
-             "height": 36
-            },
-            "layout": {
-             "mode": "VERTICAL",
-             "gap": 0,
-             "padding": {
-              "top": 0,
-              "right": 0,
-              "bottom": 0,
-              "left": 0
-             },
-             "primaryAlign": "MIN",
-             "counterAlign": "MIN",
-             "sizingH": "HUG",
-             "sizingV": "HUG",
-             "wrap": false
-            },
-            "opacity": 1,
-            "fills": [
-             {
-              "type": "SOLID",
-              "visible": false,
-              "hex": "#ffffff",
-              "alpha": 1
-             }
-            ],
-            "strokes": {
-             "paints": [],
-             "weight": 0,
-             "align": "INSIDE"
-            },
-            "effects": [],
-            "instanceOf": {
-             "componentId": "6208:3488",
-             "componentName": "Special Primary Buttons"
-            },
-            "role": "unknown",
-            "roleSource": "none"
-           },
-           {
-            "id": "6218:7189",
-            "name": "Button / greys",
-            "type": "INSTANCE",
-            "visible": true,
-            "children": [],
-            "size": {
-             "width": 138,
-             "height": 36
-            },
-            "layout": {
-             "mode": "VERTICAL",
-             "gap": 10,
-             "padding": {
-              "top": 8,
-              "right": 16,
-              "bottom": 8,
-              "left": 16
-             },
-             "primaryAlign": "CENTER",
-             "counterAlign": "CENTER",
-             "sizingH": "HUG",
-             "sizingV": "HUG",
-             "wrap": false
-            },
-            "radius": 8,
-            "opacity": 1,
-            "fills": [
-             {
-              "type": "SOLID",
-              "visible": true,
-              "hex": "#ffffff",
-              "alpha": 1
-             }
-            ],
-            "strokes": {
-             "paints": [
-              {
-               "type": "SOLID",
-               "visible": true,
-               "hex": "#d0d5dd",
-               "alpha": 1
-              }
-             ],
-             "weight": 1,
-             "align": "INSIDE"
-            },
-            "effects": [],
-            "instanceOf": {
-             "componentId": "2002:46039",
-             "componentName": "Button / greys"
-            },
-            "propertyRefs": {
-             "visible": "has secondary CTA#5855:8"
-            },
-            "role": "button",
-            "roleSource": "name"
-           }
-          ],
-          "size": {
-           "width": 421,
-           "height": 36
-          },
-          "layout": {
-           "mode": "HORIZONTAL",
-           "gap": 8,
-           "padding": {
-            "top": 0,
-            "right": 0,
-            "bottom": 0,
-            "left": 0
-           },
-           "primaryAlign": "MIN",
-           "counterAlign": "CENTER",
-           "sizingH": "FILL",
-           "sizingV": "HUG",
-           "wrap": true
-          },
-          "opacity": 1,
-          "fills": [],
-          "strokes": {
-           "paints": [],
-           "weight": 0,
-           "align": "INSIDE"
-          },
-          "effects": [],
-          "propertyRefs": {
-           "visible": "has CTA#5855:12"
-          },
-          "role": "container",
-          "roleSource": "type"
-         }
-        ],
-        "size": {
-         "width": 421,
-         "height": 119
-        },
-        "layout": {
-         "mode": "VERTICAL",
-         "gap": 16,
-         "padding": {
-          "top": 0,
-          "right": 0,
-          "bottom": 0,
-          "left": 0
-         },
-         "primaryAlign": "CENTER",
-         "counterAlign": "MIN",
-         "sizingH": "FILL",
-         "sizingV": "HUG",
-         "wrap": false
-        },
-        "opacity": 1,
-        "fills": [],
-        "strokes": {
-         "paints": [],
-         "weight": 0,
-         "align": "INSIDE"
-        },
-        "effects": [],
-        "role": "container",
-        "roleSource": "type"
-       }
-      }
-     ],
-     "removed": [
-      "Alert/Alert Container/Text section"
-     ]
-    },
-    {
-     "variantId": "6218:7194",
-     "variantProperties": {
-      "type": "banners",
-      "state": "warning"
-     },
-     "layers": [
-      {
-       "path": "Alert",
-       "changes": {
-        "size": {
-         "width": 567,
-         "height": 159
-        }
-       }
-      },
-      {
-       "path": "Alert/Left border",
-       "changes": {
-        "size": {
-         "width": 6,
-         "height": 159
-        }
-       }
-      },
-      {
-       "path": "Alert/Left border/border streak",
-       "changes": {
-        "size": {
-         "width": 6,
-         "height": 159
-        },
-        "fills": [
-         {
-          "type": "SOLID",
-          "visible": true,
-          "hex": "#dd900d",
-          "alpha": 1,
-          "token": {
-           "styleId": "S:99ac5cdf5640e3c4b81ab0a88d34adc98836d75e,2028:9",
-           "cssName": "--warning-500"
-          }
-         }
-        ]
-       }
-      },
-      {
-       "path": "Alert/Alert Container",
-       "changes": {
-        "size": {
-         "width": 561,
-         "height": 159
-        },
-        "layout": {
-         "mode": "HORIZONTAL",
-         "gap": 16,
-         "padding": {
-          "top": 20,
-          "right": 20,
-          "bottom": 20,
-          "left": 20
-         },
-         "primaryAlign": "MIN",
-         "counterAlign": "MIN",
-         "sizingH": "FILL",
-         "sizingV": "FILL",
-         "wrap": false
-        }
-       }
-      },
-      {
-       "path": "Alert/Alert Container/Misc icon",
-       "changes": {
-        "size": {
-         "width": 32,
-         "height": 32
-        },
-        "fills": [
-         {
-          "type": "SOLID",
-          "visible": true,
-          "hex": "#fef6e7",
-          "alpha": 1,
-          "token": {
-           "styleId": "S:829d9ee48ca34e82e6a8e0ca9ddf646d8811e0f3,5161:3",
-           "cssName": "--warning-50"
-          }
-         }
-        ],
-        "strokes": {
-         "paints": [
-          {
-           "type": "SOLID",
-           "visible": true,
-           "hex": "#fbe2b7",
-           "alpha": 1,
-           "token": {
-            "styleId": "S:dccf6640487b83c4e057c530579548265dee1c1e,2028:4",
-            "cssName": "--warning-75"
-           }
-          }
-         ],
-         "weight": 1,
-         "align": "INSIDE"
-        },
-        "instanceOf": {
-         "componentId": "6011:145507",
-         "componentName": "Misc icon"
-        }
-       }
-      },
-      {
-       "path": "Alert/Alert Container/Close",
-       "changes": {
-        "size": {
-         "width": 37,
-         "height": 119
-        },
-        "layout": {
-         "mode": "HORIZONTAL",
-         "gap": 16,
-         "padding": {
-          "top": 0,
-          "right": 0,
-          "bottom": 0,
-          "left": 0
-         },
-         "primaryAlign": "MIN",
-         "counterAlign": "MIN",
-         "sizingH": "HUG",
-         "sizingV": "FILL",
-         "wrap": false
-        }
-       }
-      },
-      {
-       "path": "Alert/Alert Container/Close/Dividers",
-       "changes": {
-        "size": {
-         "width": 119,
-         "height": 1
-        }
-       }
-      }
-     ],
-     "added": [
-      {
-       "parentPath": "Alert/Alert Container",
-       "layer": {
-        "id": "6218:7199",
-        "name": "Alert Content",
-        "type": "FRAME",
-        "visible": true,
-        "children": [
-         {
-          "id": "6218:7200",
-          "name": "Text section",
-          "type": "FRAME",
-          "visible": true,
-          "children": [
-           {
-            "id": "6218:7201",
-            "name": "Heading",
-            "type": "TEXT",
-            "visible": true,
-            "children": [],
-            "size": {
-             "width": 420,
-             "height": 23
-            },
-            "opacity": 1,
-            "fills": [
-             {
-              "type": "SOLID",
-              "visible": true,
-              "hex": "#101928",
-              "alpha": 1,
-              "token": {
-               "styleId": "S:c559a82568f320573cd498f093c0c42c5410bcfc,5170:7",
-               "cssName": "--grey-900"
-              }
-             }
-            ],
-            "strokes": {
-             "paints": [],
-             "weight": 0,
-             "align": "INSIDE"
-            },
-            "effects": [],
-            "text": {
-             "fontFamily": "Inter",
-             "fontWeight": 600,
-             "fontSize": 16,
-             "lineHeight": {
-              "value": 145,
-              "unit": "percent"
-             },
-             "letterSpacing": {
-              "value": 0,
-              "unit": "percent"
-             },
-             "textCase": "ORIGINAL",
-             "textDecoration": "NONE",
-             "align": "LEFT",
-             "characters": "Here’s the alert info title"
-            },
-            "propertyRefs": {
-             "visible": "has title#5855:11"
-            },
-            "role": "heading",
-            "roleSource": "name"
-           },
-           {
-            "id": "6218:7202",
-            "name": "Subtext",
-            "type": "TEXT",
-            "visible": true,
-            "children": [],
-            "size": {
-             "width": 420,
-             "height": 40
-            },
-            "opacity": 1,
-            "fills": [
-             {
-              "type": "SOLID",
-              "visible": true,
-              "hex": "#475367",
-              "alpha": 1
-             }
-            ],
-            "strokes": {
-             "paints": [],
-             "weight": 0,
-             "align": "INSIDE"
-            },
-            "effects": [],
-            "text": {
-             "fontFamily": "Inter",
-             "fontWeight": 400,
-             "fontSize": 14,
-             "lineHeight": {
-              "value": 145,
-              "unit": "percent"
-             },
-             "letterSpacing": {
-              "value": 0,
-              "unit": "percent"
-             },
-             "textCase": "ORIGINAL",
-             "textDecoration": "NONE",
-             "align": "LEFT",
-             "characters": "The alert & notifications component is designed to work with the actions buttons. "
-            },
-            "propertyRefs": {
-             "visible": "has subtexts#5855:9"
-            },
-            "role": "text",
-            "roleSource": "type"
-           }
-          ],
-          "size": {
-           "width": 420,
-           "height": 67
-          },
-          "layout": {
-           "mode": "VERTICAL",
-           "gap": 4,
-           "padding": {
-            "top": 0,
-            "right": 0,
-            "bottom": 0,
-            "left": 0
-           },
-           "primaryAlign": "MIN",
-           "counterAlign": "MIN",
-           "sizingH": "FILL",
-           "sizingV": "HUG",
-           "wrap": false
-          },
-          "opacity": 1,
-          "fills": [],
-          "strokes": {
-           "paints": [],
-           "weight": 0,
-           "align": "INSIDE"
-          },
-          "effects": [],
-          "role": "container",
-          "roleSource": "type"
-         },
-         {
-          "id": "6218:7203",
-          "name": "CTAs",
-          "type": "FRAME",
-          "visible": true,
-          "children": [
-           {
-            "id": "6218:7204",
-            "name": "Special Primary Buttons",
-            "type": "INSTANCE",
-            "visible": true,
-            "children": [],
-            "size": {
-             "width": 117,
-             "height": 36
-            },
-            "layout": {
-             "mode": "VERTICAL",
-             "gap": 0,
-             "padding": {
-              "top": 0,
-              "right": 0,
-              "bottom": 0,
-              "left": 0
-             },
-             "primaryAlign": "MIN",
-             "counterAlign": "MIN",
-             "sizingH": "HUG",
-             "sizingV": "HUG",
-             "wrap": false
-            },
-            "opacity": 1,
-            "fills": [
-             {
-              "type": "SOLID",
-              "visible": false,
-              "hex": "#ffffff",
-              "alpha": 1
-             }
-            ],
-            "strokes": {
-             "paints": [],
-             "weight": 0,
-             "align": "INSIDE"
-            },
-            "effects": [],
-            "instanceOf": {
-             "componentId": "6208:3494",
-             "componentName": "Special Primary Buttons"
-            },
-            "propertyRefs": {
-             "visible": "has primary CTA#5855:13"
-            },
-            "role": "unknown",
-            "roleSource": "none"
-           },
-           {
-            "id": "6218:7205",
-            "name": "Button / greys",
-            "type": "INSTANCE",
-            "visible": true,
-            "children": [],
-            "size": {
-             "width": 138,
-             "height": 36
-            },
-            "layout": {
-             "mode": "VERTICAL",
-             "gap": 10,
-             "padding": {
-              "top": 8,
-              "right": 16,
-              "bottom": 8,
-              "left": 16
-             },
-             "primaryAlign": "CENTER",
-             "counterAlign": "CENTER",
-             "sizingH": "HUG",
-             "sizingV": "HUG",
-             "wrap": false
-            },
-            "radius": 8,
-            "opacity": 1,
-            "fills": [
-             {
-              "type": "SOLID",
-              "visible": true,
-              "hex": "#ffffff",
-              "alpha": 1
-             }
-            ],
-            "strokes": {
-             "paints": [
-              {
-               "type": "SOLID",
-               "visible": true,
-               "hex": "#d0d5dd",
-               "alpha": 1
-              }
-             ],
-             "weight": 1,
-             "align": "INSIDE"
-            },
-            "effects": [],
-            "instanceOf": {
-             "componentId": "2002:46039",
-             "componentName": "Button / greys"
-            },
-            "propertyRefs": {
-             "visible": "has secondary CTA#5855:8"
-            },
-            "role": "button",
-            "roleSource": "name"
-           }
-          ],
-          "size": {
-           "width": 420,
-           "height": 36
-          },
-          "layout": {
-           "mode": "HORIZONTAL",
-           "gap": 8,
-           "padding": {
-            "top": 0,
-            "right": 0,
-            "bottom": 0,
-            "left": 0
-           },
-           "primaryAlign": "MIN",
-           "counterAlign": "CENTER",
-           "sizingH": "FILL",
-           "sizingV": "HUG",
-           "wrap": true
-          },
-          "opacity": 1,
-          "fills": [],
-          "strokes": {
-           "paints": [],
-           "weight": 0,
-           "align": "INSIDE"
-          },
-          "effects": [],
-          "propertyRefs": {
-           "visible": "has CTA#5855:12"
-          },
-          "role": "container",
-          "roleSource": "type"
-         }
-        ],
-        "size": {
-         "width": 420,
-         "height": 119
-        },
-        "layout": {
-         "mode": "VERTICAL",
-         "gap": 16,
-         "padding": {
-          "top": 0,
-          "right": 0,
-          "bottom": 0,
-          "left": 0
-         },
-         "primaryAlign": "CENTER",
-         "counterAlign": "MIN",
-         "sizingH": "FILL",
-         "sizingV": "HUG",
-         "wrap": false
-        },
-        "opacity": 1,
-        "fills": [],
-        "strokes": {
-         "paints": [],
-         "weight": 0,
-         "align": "INSIDE"
-        },
-        "effects": [],
-        "role": "container",
-        "roleSource": "type"
-       }
-      }
-     ],
-     "removed": [
-      "Alert/Alert Container/Text section"
-     ]
     }
    ],
    "treeTruncated": false

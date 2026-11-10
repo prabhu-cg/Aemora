@@ -36,3 +36,12 @@ export function highlightXml(xml: string): string {
     .replace(/(&lt;\/?)([\w:.-]+)((?:\s+[\w:.-]+\s*=\s*"[^"]*")*)\s*(\/?&gt;)/g, (_m, open, tag, attrs, close) =>
       `<span class="xml-punct">${open}</span><span class="xml-tag">${tag}</span>${String(attrs).replace(/([\w:.-]+)(\s*=\s*)("[^"]*")/g, '<span class="xml-attr">$1</span><span class="xml-punct">$2</span><span class="xml-value">$3</span>')}<span class="xml-punct">${close}</span>`)
 }
+
+/** Plain text for the editor overlay: escaped, no highlighting. */
+export const highlightPlain = (text: string) => esc(text)
+
+export type EditorLanguage = 'xml' | 'plain'
+/** The only way editor text becomes HTML. Both routes escape the text first. */
+export function highlight(text: string, language: EditorLanguage): string {
+  return language === 'xml' ? highlightXml(text) : highlightPlain(text)
+}

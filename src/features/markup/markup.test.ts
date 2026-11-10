@@ -1,0 +1,298 @@
+import { describe, expect, it } from 'vitest'
+import { importDesignMd, parseDesignMdText } from '../inputs/designmd/parse'
+import { newId } from '../../lib/id'
+import type { ComponentDef, Property } from '../components/schema'
+import { generateMarkup } from './index'
+import { validateMarkup } from './validate'
+
+const raw = import.meta.glob('../../test/fixtures/designmd-rayna.json', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
+const golden = import.meta.glob('./golden/*', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
+const rayna = Object.values(raw)[0]
+
+const catalog = parseDesignMdText(rayna)
+const imported = (name: string): ComponentDef => importDesignMd(catalog, [catalog.entries.find((e) => e.name === name)!.id]).components[0]
+const file = (c: ComponentDef, kind: string, opts = {}) => generateMarkup(c, opts).files.find((f) => f.kind === kind)!.content
+
+/** Goldens are checked in. To refresh one, delete it and run the tests: it is written from the current output. */
+async function expectGoldens(files: Record<string, string>) {
+  const missing = Object.keys(files).filter((n) => golden[`./golden/${n}.txt`] === undefined)
+  if (missing.length) {
+    const fs = await import(/* @vite-ignore */ 'node:fs' as string)
+    for (const n of missing) fs.writeFileSync(`src/features/markup/golden/${n}.txt`, files[n])
+    throw new Error(`Wrote the missing golden files: ${missing.join(', ')}. Review them, then run the tests again.`)
+  }
+  for (const [n, content] of Object.entries(files)) expect(content, n).toBe(golden[`./golden/${n}.txt`])
+}
+
+const prop = (key: string, type: Property['type'], extra: Partial<Property> = {}): Property => ({
+  id: newId(), key, label: key, type, required: false, defaultValue: null, allowedValues: [], description: '', group: '', origin: { kind: 'json', suggested: false }, ...extra,
+})
+const component = (name: string, design: unknown, properties: Property[], type: ComponentDef['type'] = 'custom'): ComponentDef => ({
+  id: newId(), name, type, description: '', properties, unsupported: [], children: [], meta: design ? { design: { format: 'designmd.components/v1', ...(design as object) } } : {}, origin: { kind: 'json', suggested: false },
+})
+const frame = (name: string, extra: object = {}, children: object[] = []) => ({ id: name, name, type: 'FRAME', role: 'container', visible: true, children, ...extra })
+const text = (name: string, characters: string, extra: object = {}) => ({ id: name, name, type: 'TEXT', role: 'label', visible: true, text: { characters }, ...extra })
+
+describe('golden files for real components', () => {
+  it.each([
+    ['Button / primary', 'button-primary', ['html', 'css', 'java', 'content.xml']],
+    ['Dropdown / menu item', 'dropdown-menu-item', ['html', 'css', 'java']],
+  ] as const)('%s', async (name, base, exts) => {
+    const m = generateMarkup(imported(name))
+    const by = { html: 'htl', css: 'css', java: 'model', 'content.xml': 'component' } as const
+    await expectGoldens(Object.fromEntries(exts.map((ext) => [`${base}.${ext}`, m.files.find((f) => f.kind === by[ext])!.content])))
+  })
+})
+
+describe('markup from the real Rayna file', () => {
+  it('is valid and consistent for every fixture component', () => {
+    for (const e of catalog.entries) {
+      const m = generateMarkup(importDesignMd(catalog, [e.id]).components[0])
+      expect(validateMarkup(m), e.name).toEqual([])
+      expect(m.fallback).toBe(false)
+    }
+  })
+  it('is deterministic', () => {
+    const c = imported('Metrics Card')
+    expect(generateMarkup(c)).toEqual(generateMarkup(c))
+  })
+  it('makes optional icon layers conditional on the option that decides them, in the right place', () => {
+    const html = file(imported('Button / primary'), 'htl')
+    const lines = html.split('\n')
+    const at = (s: string) => lines.findIndex((l) => l.includes(s))
+    expect(html).toMatch(/data-sly-test="\$\{model\.iconStyleModifier == 'leading-icon'\}"/)
+    expect(html).toMatch(/data-sly-test="\$\{model\.iconStyleModifier == 'trailing-icon' \|\| model\.iconStyleModifier == 'icon-only'\}"/)
+    expect(at("== 'leading-icon'")).toBeLessThan(at('__label'))
+    expect(at("== 'trailing-icon'")).toBeGreaterThan(at('__label'))
+  })
+  it('uses spans inside a button so the HTML stays valid', () => {
+    const html = file(imported('Button / primary'), 'htl')
+    expect(html).not.toMatch(/<div/)
+    const card = file(imported('Metrics Card'), 'htl')
+    expect(card).not.toMatch(/<button[^>]*>\s*<button/)
+  })
+  it('turns single-option variants into modifier classes and states into pseudo-classes, with only what differs', () => {
+    const css = file(imported('Button / primary'), 'css')
+    expect(css).toMatch(/\.cmp-button-primary--size-lg \.cmp-button-primary__label \{\n  font-size: 16px;\n\}/)
+    expect(css).toMatch(/\.cmp-button-primary:hover \{\n  background-color: #[0-9a-f]{6};\n\}/)
+    expect(css).toMatch(/\.cmp-button-primary:focus-visible/)
+    expect(css).toMatch(/\.cmp-button-primary:disabled,\n\.cmp-button-primary\[aria-disabled="true"\] \{/)
+    expect(css).toMatch(/--icon-style-icon-only \.cmp-button-primary__label \{\n  display: none;/)
+  })
+  it('gives an icon-only button an accessible name and says so', () => {
+    const m = generateMarkup(imported('Button / primary'))
+    expect(m.files[0].content).toContain('aria-label="${model.label}"')
+    expect(m.notes.some((n) => /accessible name/.test(n.message))).toBe(true)
+  })
+  it('says what it guessed or left out', () => {
+    const notes = generateMarkup(imported('Metrics Card')).notes
+    expect(notes.some((n) => n.level === 'warning' && /no single option/.test(n.message))).toBe(true)
+    expect(notes.some((n) => /guessed from the option names/.test(n.message))).toBe(true)
+  })
+})
+
+describe('options and naming', () => {
+  const c = imported('Button / primary')
+  it('applies the CSS prefix, Java package, group and folder', () => {
+    const m = generateMarkup(c, { cssPrefix: 'acme', javaPackage: 'com.acme.core.models', group: 'Acme - Content', folder: 'cta' })
+    expect(m.blockClass).toBe('acme-cta')
+    expect(m.files.map((f) => f.name)).toEqual(['cta.html', 'cta.css', 'ButtonPrimaryModel.java', '.content.xml', '_cq_editConfig.xml'])
+    expect(m.files[0].content).toContain('data-sly-use.model="com.acme.core.models.ButtonPrimaryModel"')
+    expect(m.files[2].content).toMatch(/^package com\.acme\.core\.models;/)
+    expect(m.files[3].content).toContain('componentGroup="Acme - Content"')
+    expect(m.files[1].content).toContain('.acme-cta {')
+  })
+  it('drops the prefix when it is empty', () => {
+    expect(generateMarkup(c, { cssPrefix: '' }).blockClass).toBe('button-primary')
+  })
+  it('reads dialog fields from the JCR name the dialog uses', () => {
+    const m = generateMarkup(c, {}, { label: 'jcr_label' })
+    expect(m.files[2].content).toContain('@ValueMapValue(name = "jcr_label")')
+  })
+})
+
+describe('Sling Model', () => {
+  it('maps types, defaults and reserved words', () => {
+    const c = component('Teaser', null, [
+      prop('class', 'string', { defaultValue: 'a "quoted" \\ value' }),
+      prop('count', 'number', { defaultValue: 3 }),
+      prop('open', 'boolean', { defaultValue: true }),
+      prop('when', 'date'),
+      prop('topics', 'tags'),
+      prop('layout', 'enum', { defaultValue: 'wide', allowedValues: ['wide', 'narrow'] }),
+    ])
+    const java = file(c, 'model')
+    expect(java).toContain('private String classValue;')
+    expect(java).toContain('@ValueMapValue(name = "class")')
+    expect(java).toContain('@Default(values = "a \\"quoted\\" \\\\ value")')
+    expect(java).toContain('@Default(doubleValues = 3)')
+    expect(java).toContain('private Double count;')
+    expect(java).toContain('@Default(booleanValues = true)')
+    expect(java).toContain('public boolean isOpen()')
+    expect(java).toContain('private Calendar when;')
+    expect(java).toContain('import java.util.Calendar;')
+    expect(java).toContain('private String[] topics;')
+    expect(java).toContain('public String getLayoutModifier()')
+  })
+  it('has no helper or imports it does not use', () => {
+    const java = file(component('Plain', null, [prop('title', 'string')]), 'model')
+    expect(java).not.toContain('toModifier')
+    expect(java).not.toContain('Default;')
+    expect(java).not.toContain('Calendar')
+  })
+  it('makes a valid class name from any component name', () => {
+    expect(generateMarkup(component('3D card / hero', null, [])).modelClass).toBe('Component3DCardHeroModel')
+  })
+})
+
+describe('component XML', () => {
+  it('escapes the title and description', () => {
+    const c = { ...component('Q&A <box>', null, []), description: 'Say "hi" & go' }
+    const xml = file(c, 'component')
+    expect(xml).toContain('jcr:title="Q&amp;A &lt;box&gt;"')
+    expect(xml).toContain('jcr:description="Say &quot;hi&quot; &amp; go"')
+    expect(xml).toContain('jcr:primaryType="cq:Component"')
+  })
+  it('includes a basic edit config', () => {
+    expect(file(component('A', null, []), 'editConfig')).toContain('jcr:primaryType="cq:EditConfig"')
+  })
+})
+
+describe('layer handling', () => {
+  const design = (tree: object, extra: object = {}) => ({ tree, variantDiffs: [], states: [], sizes: [], treeTruncated: false, ...extra })
+
+  it('binds text, visibility and optional text to the right fields, and fixes unbound copy', () => {
+    const tree = frame('Card', { layout: { mode: 'VERTICAL', gap: 8 } }, [
+      text('Title', 'Hello', { role: 'heading', propertyRefs: { characters: 'title#1:1' } }),
+      text('Body', 'Body copy', { role: 'text', propertyRefs: { characters: 'body#1:2', visible: 'show body#1:3' } }),
+      text('Footer', 'Fixed footer <b> ${x}', { role: 'text' }),
+    ])
+    const c = component('Card', design(tree), [prop('title', 'string', { required: true }), prop('body', 'richtext'), prop('showBody', 'boolean')])
+    const html = file(c, 'htl')
+    expect(html).toContain('<h2 class="cmp-card__title">${model.title}</h2>')
+    expect(html).toContain('data-sly-test="${model.showBody && model.body}"')
+    expect(html).toContain("${model.body @ context='html'}")
+    expect(html).toContain('Fixed footer &lt;b&gt; &#36;{x}')
+    expect(validateMarkup(generateMarkup(c))).toEqual([])
+  })
+
+  it('writes flex layout, spacing, fills with tokens, borders, radius, shadows and text styles', () => {
+    const tree = frame('Box', {
+      layout: { mode: 'HORIZONTAL', gap: 12, padding: { top: 8, right: 16, bottom: 8, left: 16 }, primaryAlign: 'SPACE_BETWEEN', counterAlign: 'CENTER', sizingH: 'FILL', sizingV: 'HUG' },
+      size: { width: 300, height: 40 }, radius: { tl: 4, tr: 4, br: 0, bl: 0 }, opacity: 0.5,
+      fills: [{ type: 'SOLID', hex: '#102030', alpha: 0.5, token: { cssName: '--color-surface' } }],
+      strokes: { paints: [{ type: 'SOLID', hex: '#ff0000', alpha: 1 }], weight: 2, align: 'INSIDE' },
+      effects: [{ type: 'DROP_SHADOW', color: { hex: '#000000', alpha: 0.25 }, offsetX: 0, offsetY: 4, radius: 8, spread: -1 }, { type: 'INNER_SHADOW', color: { r: 255, g: 255, b: 255, a: 1 }, offsetX: 1, offsetY: 1, radius: 0, spread: 0 }],
+    }, [
+      text('Name', 'Name', { text: { characters: 'Name', fontFamily: 'Inter', fontSize: 14, fontWeight: 600, lineHeight: { value: 120, unit: 'percent' }, letterSpacing: { value: 5, unit: 'percent' }, textCase: 'UPPER', textDecoration: 'UNDERLINE', align: 'RIGHT' }, fills: [{ type: 'SOLID', hex: '#ffffff', alpha: 1 }] }),
+      frame('Grow', { layout: { mode: 'VERTICAL', sizingH: 'FILL', sizingV: 'FILL' }, size: { width: 10, height: 10 } }),
+    ])
+    const css = file(component('Box', design(tree), []), 'css')
+    expect(css).toContain('display: flex;')
+    expect(css).toContain('flex-direction: row;')
+    expect(css).toContain('gap: 12px;')
+    expect(css).toContain('padding: 8px 16px;')
+    expect(css).toContain('justify-content: space-between;')
+    expect(css).toContain('align-items: center;')
+    expect(css).toContain('width: 100%;')
+    expect(css).toContain('border-radius: 4px 4px 0 0;')
+    expect(css).toContain('opacity: 0.5;')
+    expect(css).toContain('background-color: var(--color-surface, rgba(16, 32, 48, 0.5));')
+    expect(css).toContain('border: 2px solid #ff0000;')
+    expect(css).toContain('box-shadow: 0 4px 8px -1px rgba(0, 0, 0, 0.25), inset 1px 1px 0 0 rgba(255, 255, 255, 1);')
+    expect(css).toContain('font-family: "Inter", sans-serif;')
+    expect(css).toContain('line-height: 1.2;')
+    expect(css).toContain('letter-spacing: 0.05em;')
+    expect(css).toContain('text-transform: uppercase;')
+    expect(css).toContain('text-decoration: underline;')
+    expect(css).toContain('text-align: right;')
+    expect(css).toContain('color: #ffffff;')
+    expect(css).toMatch(/__grow \{[^}]*flex: 1 1 0;[^}]*min-width: 0;[^}]*align-self: stretch;/s)
+  })
+
+  it('reports fills and strokes it cannot reproduce instead of dropping them silently', () => {
+    const tree = frame('Hero', { fills: [{ type: 'GRADIENT_LINEAR', description: 'blue to red' }], strokes: { paints: [{ type: 'SOLID', hex: '#000000' }], weight: 1, align: 'OUTSIDE' } })
+    const m = generateMarkup(component('Hero', design(tree), []))
+    expect(m.notes.some((n) => /gradient linear fill is not reproduced/.test(n.message))).toBe(true)
+    expect(m.notes.some((n) => /outside stroke/.test(n.message))).toBe(true)
+  })
+
+  it('renders images, dividers and slots and tells you what is missing', () => {
+    const tree = frame('Media', {}, [
+      { id: 'i', name: 'Picture', type: 'RECTANGLE', role: 'image', visible: true },
+      { id: 'd', name: 'Line', type: 'LINE', role: 'divider', visible: true },
+      { id: 's', name: 'Extra', type: 'FRAME', role: 'slot', visible: true },
+    ])
+    const withField = generateMarkup(component('Media', design(tree), [prop('image', 'image'), prop('altText', 'string')]))
+    expect(withField.files[0].content).toContain('<img class="cmp-media__picture" src="${model.image}" alt="${model.altText}">')
+    expect(withField.files[0].content).toContain('<hr class="cmp-media__line">')
+    expect(withField.notes.some((n) => /slot/.test(n.message))).toBe(true)
+    const without = generateMarkup(component('Media', design(tree), []))
+    expect(without.notes.some((n) => n.level === 'warning' && /no image field/.test(n.message))).toBe(true)
+  })
+
+  it('names same-name layers apart and keeps each one styled', () => {
+    const tree = frame('List', {}, [text('Item', 'One', { fills: [{ type: 'SOLID', hex: '#111111' }] }), text('Item', 'Two', { fills: [{ type: 'SOLID', hex: '#222222' }] })])
+    const m = generateMarkup(component('List', design(tree), []))
+    expect(m.files[0].content).toContain('cmp-list__item"')
+    expect(m.files[0].content).toContain('cmp-list__item-2"')
+    expect(m.files[1].content).toContain('.cmp-list__item-2 {')
+  })
+
+  it('applies a state change to a nested layer through the root', () => {
+    const tree = frame('Chip', {}, [text('Label', 'Chip', { fills: [{ type: 'SOLID', hex: '#000000' }] })])
+    const d = design(tree, {
+      defaultVariantProperties: { state: 'default' },
+      variantDiffs: [{ variantId: 'v', variantProperties: { state: 'hover' }, layers: [{ path: 'Chip/Label', changes: { fills: [{ type: 'SOLID', hex: '#ffffff' }] } }], added: [], removed: [] }],
+    })
+    expect(file(component('Chip', d, []), 'css')).toContain('.cmp-chip:hover .cmp-chip__label {\n  color: #ffffff;\n}')
+  })
+
+  it('uses a layer position from the plugin when it provides one', () => {
+    const tree = frame('Row', {}, [text('A', 'a'), text('B', 'b')])
+    const d = design(tree, {
+      defaultVariantProperties: { mark: 'none' },
+      variantDiffs: [{ variantId: 'v', variantProperties: { mark: 'dot' }, layers: [], added: [{ parentPath: 'Row', index: 1, layer: { id: 'dot', name: 'Dot', type: 'ELLIPSE', role: 'unknown', visible: true } }], removed: [] }],
+    })
+    const m = generateMarkup(component('Row', d, [prop('mark', 'enum', { defaultValue: 'none', allowedValues: ['none', 'dot'] })]))
+    const lines = m.files[0].content.split('\n')
+    expect(lines.findIndex((l) => l.includes('__dot'))).toBe(lines.findIndex((l) => l.includes('__a')) + 1)
+    expect(m.files[0].content).toContain("data-sly-test=\"${model.markModifier == 'dot'}\"")
+    expect(m.notes.some((n) => /guessed/.test(n.message))).toBe(false)
+  })
+
+  it('hides a layer that some options remove', () => {
+    const tree = frame('Tag', {}, [text('Label', 'Tag'), { id: 'x', name: 'Close', type: 'INSTANCE', role: 'icon', visible: true }])
+    const d = design(tree, {
+      defaultVariantProperties: { closable: 'yes' },
+      variantDiffs: [{ variantId: 'v', variantProperties: { closable: 'no' }, layers: [], added: [], removed: ['Tag/Close'] }],
+    })
+    const m = generateMarkup(component('Tag', d, [prop('closable', 'enum', { defaultValue: 'yes', allowedValues: ['yes', 'no'] })]))
+    expect(m.files[0].content).toContain("data-sly-test=\"${model.closableModifier == 'yes'}\"")
+  })
+
+  it('falls back to a simple wrapper without a layer structure', () => {
+    const m = generateMarkup(component('Quote', null, [prop('quote', 'text'), prop('author', 'string'), prop('source', 'link')]))
+    expect(m.fallback).toBe(true)
+    expect(m.files[0].content).toContain('data-sly-test="${model.quote}"')
+    expect(m.notes[0].message).toMatch(/no layer structure/)
+    expect(validateMarkup(m)).toEqual([])
+  })
+
+  it('warns when the plugin cut the layer structure off', () => {
+    const m = generateMarkup(component('Big', design(frame('Big'), { treeTruncated: true }), []))
+    expect(m.notes.some((n) => /cut off/.test(n.message))).toBe(true)
+  })
+})
+
+describe('validateMarkup', () => {
+  const ok = generateMarkup(imported('Input'))
+  const mutate = (kind: string, fn: (s: string) => string) => ({ ...ok, files: ok.files.map((f) => (f.kind === kind ? { ...f, content: fn(f.content) } : f)) })
+  it('accepts generated output', () => expect(validateMarkup(ok)).toEqual([]))
+  it('finds unbalanced tags, unknown model getters, duplicate attributes and bad CSS', () => {
+    expect(validateMarkup(mutate('htl', (s) => s.replace('</span>', ''))).join()).toMatch(/unexpected|unclosed/)
+    expect(validateMarkup(mutate('htl', (s) => s + '<p>${model.nope}</p>\n')).join()).toMatch(/model\.nope/)
+    expect(validateMarkup(mutate('htl', (s) => s.replace('<div class="cmp-input ', '<div class="a" class="cmp-input '))).join()).toMatch(/"class" twice/)
+    expect(validateMarkup(mutate('css', (s) => s + '.x { color: undefined;')).join()).toMatch(/braces|unresolved/)
+  })
+})

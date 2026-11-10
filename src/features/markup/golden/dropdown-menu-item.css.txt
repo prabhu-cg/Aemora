@@ -1,0 +1,72 @@
+.cmp-dropdown-menu-item {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  padding: 8px 16px;
+  align-items: center;
+  width: 240px;
+}
+
+.cmp-dropdown-menu-item__text {
+  color: #101928;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+.cmp-dropdown-menu-item__command-shortcut {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+}
+
+.cmp-dropdown-menu-item__left-content {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.cmp-dropdown-menu-item__avatars {
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.cmp-dropdown-menu-item__text-2 {
+  color: #101928;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+.cmp-dropdown-menu-item:hover {
+  background-color: #f9fafb;
+}
+
+.cmp-dropdown-menu-item:focus-visible {
+  background-color: #f0f2f5;
+}
+
+.cmp-dropdown-menu-item:disabled,
+.cmp-dropdown-menu-item[aria-disabled="true"] {
+  background-color: #f0f2f5;
+  cursor: not-allowed;
+}
+
+.cmp-dropdown-menu-item:disabled .cmp-dropdown-menu-item__text,
+.cmp-dropdown-menu-item[aria-disabled="true"] .cmp-dropdown-menu-item__text {
+  color: #98a2b3;
+}
+
+.cmp-dropdown-menu-item[aria-selected="true"],
+.cmp-dropdown-menu-item.is-selected {
+  background-color: #f9fafb;
+}

@@ -1,0 +1,58 @@
+package com.example.core.models;
+
+import org.apache.sling.api.resource.Resource;
+import org.apache.sling.models.annotations.Default;
+import org.apache.sling.models.annotations.DefaultInjectionStrategy;
+import org.apache.sling.models.annotations.Model;
+import org.apache.sling.models.annotations.injectorspecific.ValueMapValue;
+
+@Model(adaptables = Resource.class, defaultInjectionStrategy = DefaultInjectionStrategy.OPTIONAL)
+public class DropdownMenuItemModel {
+
+    @ValueMapValue
+    @Default(booleanValues = true)
+    private boolean hasCommandMenu;
+
+    @ValueMapValue
+    @Default(booleanValues = true)
+    private boolean hasCheckbox;
+
+    @ValueMapValue
+    @Default(values = "Account settings")
+    private String menuText;
+
+    @ValueMapValue
+    private String icon;
+
+    @ValueMapValue
+    @Default(values = "default")
+    private String type;
+
+    public boolean isHasCommandMenu() {
+        return hasCommandMenu;
+    }
+
+    public boolean isHasCheckbox() {
+        return hasCheckbox;
+    }
+
+    public String getMenuText() {
+        return menuText;
+    }
+
+    public String getIcon() {
+        return icon;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public String getTypeModifier() {
+        return toModifier(type);
+    }
+
+    private static String toModifier(String value) {
+        return value == null ? "" : value.toLowerCase().replaceAll("[^a-z0-9]+", "-").replaceAll("^-+|-+$", "");
+    }
+}

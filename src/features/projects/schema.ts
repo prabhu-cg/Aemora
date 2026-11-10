@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { AssetSchema, ComponentSchema } from '../components/schema'
 import { MappingSchema } from '../mapping/schema'
 import { DialogStoreSchema } from '../dialog/schema'
+import { DEFAULT_MARKUP_OPTIONS } from '../markup/types'
 
 /** Bump when the stored/exported project shape changes; add a migration in migrate.ts. */
 export const SCHEMA_VERSION = 1
@@ -29,6 +30,26 @@ export const GeneratedXmlSchema = z.object({
 })
 export type GeneratedXml = z.infer<typeof GeneratedXmlSchema>
 
+/** Names the generated markup uses. Chosen once per project. */
+export const MarkupSettingsSchema = z.object({
+  cssPrefix: z.string().max(40).default(DEFAULT_MARKUP_OPTIONS.cssPrefix),
+  javaPackage: z.string().max(200).default(DEFAULT_MARKUP_OPTIONS.javaPackage),
+  group: z.string().max(120).default(DEFAULT_MARKUP_OPTIONS.group),
+})
+export type MarkupSettings = z.infer<typeof MarkupSettingsSchema>
+
+/** Hand-edited markup files of one component, by file kind. Written only when someone edits a file. */
+export const StoredMarkupSchema = z.object({
+  files: z.record(z.string(), z.object({
+    content: z.string().max(2_000_000),
+    /** What Aemora generated at the first hand edit, to tell when the design has moved on since. */
+    base: z.string().max(2_000_000).default(''),
+    edited: z.boolean().default(false),
+    generatedAt: z.string(),
+  })).default({}),
+})
+export type StoredMarkup = z.infer<typeof StoredMarkupSchema>
+
 export const ProjectSchema = z.object({
   schemaVersion: z.literal(SCHEMA_VERSION),
   id: z.string().min(1).max(100),
@@ -42,6 +63,9 @@ export const ProjectSchema = z.object({
   dialog: DialogStoreSchema.default({ components: {} }),
   /** One entry per component, written only when someone edits the XML by hand. Otherwise the XML is derived. */
   generatedXml: z.preprocess((v) => (v == null || Array.isArray(v) ? {} : v), z.record(z.string(), GeneratedXmlSchema)).default({}),
+  markupSettings: MarkupSettingsSchema.default({ cssPrefix: DEFAULT_MARKUP_OPTIONS.cssPrefix, javaPackage: DEFAULT_MARKUP_OPTIONS.javaPackage, group: DEFAULT_MARKUP_OPTIONS.group }),
+  /** HTL, CSS, Sling Model and component XML edits, per component. Otherwise the markup is derived. */
+  markup: z.record(z.string(), StoredMarkupSchema).default({}),
   validation: z.array(loose).default([]),
   createdAt: z.string(),
   updatedAt: z.string(),

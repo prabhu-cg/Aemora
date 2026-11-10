@@ -10,7 +10,7 @@ const MAX_SUGGESTED_TEXT = 8
 /** Aemora keeps at most this many allowed values per field. */
 const MAX_ALLOWED_VALUES = 200
 
-export function isInteractionState(p: DmProperty): boolean {
+export function isInteractionState(p: Pick<DmProperty, 'name' | 'variantOptions'>): boolean {
   return /\b(states?|interaction)\b/i.test(p.name) && (p.variantOptions ?? []).some((o) => INTERACTIVE.has(o.toLowerCase()))
 }
 
@@ -101,6 +101,12 @@ function suggestTextFields(tree: DmLayer | undefined, comp: DmComponent, taken: 
   return out
 }
 
+/** The property values of the variant the layer tree was read from. */
+function defaultVariantProperties(comp: DmComponent): Record<string, string> | undefined {
+  const v = comp.variants.find((x) => typeof x === 'object' && x !== null && (x as { id?: unknown }).id === comp.defaultVariantId) as { variantProperties?: Record<string, string> } | undefined
+  return v?.variantProperties
+}
+
 export function convertDesignMdComponent(comp: DmComponent, tokens: Record<string, unknown>, pluginWarnings: DmWarning[], source: { fileName?: string; pluginVersion?: string }, warnings: Warning[]): ComponentDef {
   const kind = 'figma-plugin' as const
   const origin: Origin = { kind, ref: comp.id, suggested: false }
@@ -152,6 +158,7 @@ export function convertDesignMdComponent(comp: DmComponent, tokens: Record<strin
         states: comp.states,
         sizes: comp.sizes,
         defaultVariantId: comp.defaultVariantId,
+        defaultVariantProperties: defaultVariantProperties(comp),
         treeTruncated: comp.treeTruncated ?? false,
         tree: comp.tree,
         variantDiffs: comp.variantDiffs,

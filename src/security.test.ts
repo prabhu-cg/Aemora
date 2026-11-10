@@ -90,10 +90,10 @@ describe('source code guards', () => {
     const banned = /\beval\s*\(|new Function\s*\(|document\.write\s*\(|\.innerHTML\s*=|\.outerHTML\s*=|insertAdjacentHTML/
     expect(app.filter(([, src]) => banned.test(src)).map(([p]) => p)).toEqual([])
   })
-  it('raw HTML is injected in exactly two places, both fed only by the escaping XML highlighter', () => {
+  it('raw HTML is injected in exactly two places, both fed only by the escaping highlighters', () => {
     const using = app.filter(([, src]) => src.includes('dangerouslySetInnerHTML')).map(([p]) => p.replace('/src/', '')).sort()
     expect(using).toEqual(['features/xml/ui/XmlEditor.tsx', 'marketing/windows.tsx'])
-    for (const [, src] of app.filter(([p]) => /XmlEditor|windows/.test(p))) expect(src).toMatch(/dangerouslySetInnerHTML=\{\{ __html: highlightXml\(/)
+    for (const [, src] of app.filter(([p]) => /XmlEditor|windows/.test(p))) expect(src).toMatch(/dangerouslySetInnerHTML=\{\{ __html: (highlightXml|highlight)\(/)
   })
   it('browser storage is touched only for the theme choice, so a Figma token can never be saved there', () => {
     const storage = /localStorage|sessionStorage|document\.cookie/

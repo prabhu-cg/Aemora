@@ -1,0 +1,9 @@
+<sly data-sly-use.model="com.example.core.models.DropdownMenuItemModel"></sly>
+<div class="cmp-dropdown-menu-item cmp-dropdown-menu-item--type-${model.typeModifier}">
+  <span class="cmp-dropdown-menu-item__text" data-sly-test="${model.typeModifier == 'default' && model.menuText}">${model.menuText}</span>
+  <div class="cmp-dropdown-menu-item__command-shortcut" data-sly-test="${model.hasCommandMenu}"></div>
+  <div class="cmp-dropdown-menu-item__left-content" data-sly-test="${model.typeModifier != 'default'}">
+    <div class="cmp-dropdown-menu-item__avatars"></div>
+    <span class="cmp-dropdown-menu-item__text-2" data-sly-test="${model.menuText}">${model.menuText}</span>
+  </div>
+</div>
