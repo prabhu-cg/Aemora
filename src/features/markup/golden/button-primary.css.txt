@@ -1,5 +1,7 @@
 .cmp-button-primary {
   box-sizing: border-box;
+  border: 0;
+  cursor: pointer;
   display: inline-flex;
   flex-direction: column;
   gap: 10px;

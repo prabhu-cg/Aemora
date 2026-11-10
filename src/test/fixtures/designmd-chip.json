@@ -1,0 +1,1424 @@
+{
+ "$schema": "https://raw.githubusercontent.com/prabhu-cg/Figma-plugins/main/DesignMD/schemas/designmd-components-v1.json",
+ "schema": "designmd.components/v1",
+ "metadata": {
+  "fileName": "Rayna UI v1.0 - Free 550+ Design System Components (Community)",
+  "scope": "file",
+  "generatedAt": "2026-11-10T20:13:13.646Z",
+  "pluginVersion": "1.1.0",
+  "options": {
+   "includeText": true,
+   "includeVariantDiffs": true,
+   "includeInstanceInternals": false
+  },
+  "contentHash": "fixture"
+ },
+ "index": {
+  "componentCount": 1,
+  "components": [
+   {
+    "id": "1602:17932",
+    "name": "Chip"
+   }
+  ]
+ },
+ "tokens": {},
+ "components": [
+  {
+   "id": "1602:17932",
+   "key": "9e28ab7f86bf85f2507668acbe8b771a947ae625",
+   "name": "Chip",
+   "description": "",
+   "isComponentSet": true,
+   "pageName": "      ✤  Chips ",
+   "variants": [
+    {
+     "id": "1602:17931",
+     "name": "Type=Input, state=default, icon=off",
+     "variantProperties": {
+      "Type": "Input",
+      "state": "default",
+      "icon": "off"
+     },
+     "description": ""
+    },
+    {
+     "id": "1602:19396",
+     "name": "Type=Input, state=disabled, icon=off",
+     "variantProperties": {
+      "Type": "Input",
+      "state": "disabled",
+      "icon": "off"
+     },
+     "description": ""
+    },
+    {
+     "id": "1602:19380",
+     "name": "Type=Filter, state=default, icon=off",
+     "variantProperties": {
+      "Type": "Filter",
+      "state": "default",
+      "icon": "off"
+     },
+     "description": ""
+    },
+    {
+     "id": "1602:19392",
+     "name": "Type=Filter, state=disabled, icon=off",
+     "variantProperties": {
+      "Type": "Filter",
+      "state": "disabled",
+      "icon": "off"
+     },
+     "description": ""
+    },
+    {
+     "id": "1602:17937",
+     "name": "Type=Input, state=focused, icon=off",
+     "variantProperties": {
+      "Type": "Input",
+      "state": "focused",
+      "icon": "off"
+     },
+     "description": ""
+    },
+    {
+     "id": "1602:19350",
+     "name": "Type=Filter, state=focused, icon=off",
+     "variantProperties": {
+      "Type": "Filter",
+      "state": "focused",
+      "icon": "off"
+     },
+     "description": ""
+    },
+    {
+     "id": "1602:17928",
+     "name": "Type=Input, state=default, icon=on",
+     "variantProperties": {
+      "Type": "Input",
+      "state": "default",
+      "icon": "on"
+     },
+     "description": ""
+    },
+    {
+     "id": "1602:19401",
+     "name": "Type=Input, state=disabled, icon=on",
+     "variantProperties": {
+      "Type": "Input",
+      "state": "disabled",
+      "icon": "on"
+     },
+     "description": ""
+    },
+    {
+     "id": "1602:19374",
+     "name": "Type=Filter, state=default, icon=on",
+     "variantProperties": {
+      "Type": "Filter",
+      "state": "default",
+      "icon": "on"
+     },
+     "description": ""
+    },
+    {
+     "id": "1602:19412",
+     "name": "Type=Filter, state=disabled, icon=on",
+     "variantProperties": {
+      "Type": "Filter",
+      "state": "disabled",
+      "icon": "on"
+     },
+     "description": ""
+    },
+    {
+     "id": "1602:17945",
+     "name": "Type=Input, state=focused, icon=on",
+     "variantProperties": {
+      "Type": "Input",
+      "state": "focused",
+      "icon": "on"
+     },
+     "description": ""
+    },
+    {
+     "id": "1602:19365",
+     "name": "Type=Filter, state=focused, icon=on",
+     "variantProperties": {
+      "Type": "Filter",
+      "state": "focused",
+      "icon": "on"
+     },
+     "description": ""
+    }
+   ],
+   "properties": [
+    {
+     "key": "select icon#3846:454",
+     "name": "select icon",
+     "type": "INSTANCE_SWAP",
+     "defaultValue": "3253:139559",
+     "defaultResolved": {
+      "id": "3253:139559",
+      "name": "icon / home-alt"
+     },
+     "preferredValues": [
+      {
+       "type": "COMPONENT_SET",
+       "key": "d9298fa53025f4f36638e19aa779738bb36a8f26"
+      }
+     ]
+    },
+    {
+     "key": "has close button#3846:498",
+     "name": "has close button",
+     "type": "BOOLEAN",
+     "defaultValue": "true"
+    },
+    {
+     "key": "Type",
+     "name": "Type",
+     "type": "VARIANT",
+     "defaultValue": "Input",
+     "variantOptions": [
+      "Input",
+      "Filter"
+     ]
+    },
+    {
+     "key": "state",
+     "name": "state",
+     "type": "VARIANT",
+     "defaultValue": "default",
+     "variantOptions": [
+      "default",
+      "focused",
+      "disabled"
+     ]
+    },
+    {
+     "key": "icon",
+     "name": "icon",
+     "type": "VARIANT",
+     "defaultValue": "off",
+     "variantOptions": [
+      "off",
+      "on"
+     ]
+    }
+   ],
+   "states": [
+    "default",
+    "disabled",
+    "focused"
+   ],
+   "sizes": [],
+   "relatedComponentNames": [],
+   "boundVariableIds": [],
+   "styleIds": [],
+   "layout": {
+    "measuredFrom": "Type=Input, state=default, icon=off",
+    "width": 69,
+    "height": 32,
+    "layoutMode": "HORIZONTAL",
+    "gap": 8,
+    "padding": {
+     "top": 6,
+     "right": 8,
+     "bottom": 6,
+     "left": 12
+    },
+    "cornerRadius": 8
+   },
+   "defaultVariantId": "1602:17931",
+   "tree": {
+    "id": "1602:17931",
+    "name": "Chip",
+    "type": "COMPONENT",
+    "visible": true,
+    "children": [
+     {
+      "id": "1602:17899",
+      "name": "Text",
+      "type": "TEXT",
+      "visible": true,
+      "children": [],
+      "size": {
+       "width": 49,
+       "height": 20
+      },
+      "opacity": 1,
+      "fills": [
+       {
+        "type": "SOLID",
+        "visible": true,
+        "hex": "#667185",
+        "alpha": 1
+       }
+      ],
+      "strokes": {
+       "paints": [],
+       "weight": 0,
+       "align": "INSIDE"
+      },
+      "effects": [],
+      "text": {
+       "fontFamily": "Inter",
+       "fontWeight": 500,
+       "fontSize": 14,
+       "lineHeight": {
+        "value": 145,
+        "unit": "percent"
+       },
+       "letterSpacing": {
+        "value": 0,
+        "unit": "percent"
+       },
+       "textCase": "ORIGINAL",
+       "textDecoration": "NONE",
+       "align": "LEFT",
+       "characters": "Default"
+      },
+      "role": "text",
+      "roleSource": "type"
+     }
+    ],
+    "size": {
+     "width": 69,
+     "height": 32
+    },
+    "layout": {
+     "mode": "HORIZONTAL",
+     "gap": 8,
+     "padding": {
+      "top": 6,
+      "right": 8,
+      "bottom": 6,
+      "left": 12
+     },
+     "primaryAlign": "CENTER",
+     "counterAlign": "CENTER",
+     "sizingH": "HUG",
+     "sizingV": "HUG",
+     "wrap": false
+    },
+    "radius": 8,
+    "opacity": 1,
+    "fills": [
+     {
+      "type": "SOLID",
+      "visible": true,
+      "hex": "#ffffff",
+      "alpha": 1
+     }
+    ],
+    "strokes": {
+     "paints": [
+      {
+       "type": "SOLID",
+       "visible": true,
+       "hex": "#d0d5dd",
+       "alpha": 1
+      }
+     ],
+     "weight": 1,
+     "align": "INSIDE"
+    },
+    "effects": [],
+    "role": "root",
+    "roleSource": "type"
+   },
+   "variantDiffs": [
+    {
+     "variantId": "1602:19396",
+     "variantProperties": {
+      "Type": "Input",
+      "state": "disabled",
+      "icon": "off"
+     },
+     "layers": [
+      {
+       "path": "Chip",
+       "changes": {
+        "size": {
+         "width": 79,
+         "height": 32
+        }
+       }
+      },
+      {
+       "path": "Chip/Text",
+       "changes": {
+        "size": {
+         "width": 59,
+         "height": 20
+        },
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": true,
+          "hex": "#98a2b3",
+          "alpha": 1
+         }
+        ],
+        "text": {
+         "fontFamily": "Inter",
+         "fontWeight": 500,
+         "fontSize": 14,
+         "lineHeight": {
+          "value": 145,
+          "unit": "percent"
+         },
+         "letterSpacing": {
+          "value": 0,
+          "unit": "percent"
+         },
+         "textCase": "ORIGINAL",
+         "textDecoration": "NONE",
+         "align": "LEFT",
+         "characters": "Disabled"
+        }
+       }
+      }
+     ],
+     "added": [],
+     "removed": []
+    },
+    {
+     "variantId": "1602:19380",
+     "variantProperties": {
+      "Type": "Filter",
+      "state": "default",
+      "icon": "off"
+     },
+     "layers": [
+      {
+       "path": "Chip",
+       "changes": {
+        "size": {
+         "width": 95,
+         "height": 32
+        }
+       }
+      }
+     ],
+     "added": [
+      {
+       "parentPath": "Chip",
+       "layer": {
+        "id": "3788:181379",
+        "name": "icon / chevron-down",
+        "type": "INSTANCE",
+        "visible": true,
+        "children": [],
+        "size": {
+         "width": 18,
+         "height": 18
+        },
+        "opacity": 1,
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": false,
+          "hex": "#ffffff",
+          "alpha": 1
+         }
+        ],
+        "strokes": {
+         "paints": [],
+         "weight": 0,
+         "align": "INSIDE"
+        },
+        "effects": [],
+        "instanceOf": {
+         "componentId": "3287:134088",
+         "componentName": "icon / chevron-down"
+        },
+        "role": "icon",
+        "roleSource": "name"
+       }
+      }
+     ],
+     "removed": []
+    },
+    {
+     "variantId": "1602:19392",
+     "variantProperties": {
+      "Type": "Filter",
+      "state": "disabled",
+      "icon": "off"
+     },
+     "layers": [
+      {
+       "path": "Chip",
+       "changes": {
+        "size": {
+         "width": 105,
+         "height": 32
+        }
+       }
+      },
+      {
+       "path": "Chip/Text",
+       "changes": {
+        "size": {
+         "width": 59,
+         "height": 20
+        },
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": true,
+          "hex": "#98a2b3",
+          "alpha": 1
+         }
+        ],
+        "text": {
+         "fontFamily": "Inter",
+         "fontWeight": 500,
+         "fontSize": 14,
+         "lineHeight": {
+          "value": 145,
+          "unit": "percent"
+         },
+         "letterSpacing": {
+          "value": 0,
+          "unit": "percent"
+         },
+         "textCase": "ORIGINAL",
+         "textDecoration": "NONE",
+         "align": "LEFT",
+         "characters": "Disabled"
+        }
+       }
+      }
+     ],
+     "added": [
+      {
+       "parentPath": "Chip",
+       "layer": {
+        "id": "1602:19394",
+        "name": "Icon-right",
+        "type": "INSTANCE",
+        "visible": true,
+        "children": [],
+        "size": {
+         "width": 18,
+         "height": 18
+        },
+        "opacity": 1,
+        "fills": [],
+        "strokes": {
+         "paints": [],
+         "weight": 0,
+         "align": "INSIDE"
+        },
+        "effects": [],
+        "instanceOf": {
+         "componentId": "1405:628",
+         "componentName": "Media / Icon"
+        },
+        "role": "icon",
+        "roleSource": "name"
+       }
+      }
+     ],
+     "removed": []
+    },
+    {
+     "variantId": "1602:17937",
+     "variantProperties": {
+      "Type": "Input",
+      "state": "focused",
+      "icon": "off"
+     },
+     "layers": [
+      {
+       "path": "Chip",
+       "changes": {
+        "size": {
+         "width": 103,
+         "height": 32
+        },
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": true,
+          "hex": "#fbf1f1",
+          "alpha": 1
+         }
+        ],
+        "strokes": {
+         "paints": [
+          {
+           "type": "SOLID",
+           "visible": true,
+           "hex": "#cc400c",
+           "alpha": 1
+          }
+         ],
+         "weight": 1,
+         "align": "INSIDE"
+        }
+       }
+      },
+      {
+       "path": "Chip/Text",
+       "changes": {
+        "size": {
+         "width": 57,
+         "height": 20
+        },
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": true,
+          "hex": "#475367",
+          "alpha": 1
+         }
+        ],
+        "text": {
+         "fontFamily": "Inter",
+         "fontWeight": 500,
+         "fontSize": 14,
+         "lineHeight": {
+          "value": 145,
+          "unit": "percent"
+         },
+         "letterSpacing": {
+          "value": 0,
+          "unit": "percent"
+         },
+         "textCase": "ORIGINAL",
+         "textDecoration": "NONE",
+         "align": "LEFT",
+         "characters": "Focused"
+        }
+       }
+      }
+     ],
+     "added": [
+      {
+       "parentPath": "Chip",
+       "layer": {
+        "id": "3788:181360",
+        "name": "icon / multiply",
+        "type": "INSTANCE",
+        "visible": true,
+        "children": [],
+        "size": {
+         "width": 18,
+         "height": 18
+        },
+        "opacity": 1,
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": false,
+          "hex": "#ffffff",
+          "alpha": 1
+         }
+        ],
+        "strokes": {
+         "paints": [],
+         "weight": 0,
+         "align": "INSIDE"
+        },
+        "effects": [],
+        "instanceOf": {
+         "componentId": "3253:139739",
+         "componentName": "icon / multiply"
+        },
+        "propertyRefs": {
+         "visible": "has close button#3846:498"
+        },
+        "role": "icon",
+        "roleSource": "name"
+       }
+      }
+     ],
+     "removed": []
+    },
+    {
+     "variantId": "1602:19350",
+     "variantProperties": {
+      "Type": "Filter",
+      "state": "focused",
+      "icon": "off"
+     },
+     "layers": [
+      {
+       "path": "Chip",
+       "changes": {
+        "size": {
+         "width": 103,
+         "height": 32
+        },
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": true,
+          "hex": "#fbf1f1",
+          "alpha": 1
+         }
+        ],
+        "strokes": {
+         "paints": [
+          {
+           "type": "SOLID",
+           "visible": true,
+           "hex": "#cc400c",
+           "alpha": 1
+          }
+         ],
+         "weight": 1,
+         "align": "INSIDE"
+        }
+       }
+      },
+      {
+       "path": "Chip/Text",
+       "changes": {
+        "size": {
+         "width": 57,
+         "height": 20
+        },
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": true,
+          "hex": "#475367",
+          "alpha": 1
+         }
+        ],
+        "text": {
+         "fontFamily": "Inter",
+         "fontWeight": 500,
+         "fontSize": 14,
+         "lineHeight": {
+          "value": 145,
+          "unit": "percent"
+         },
+         "letterSpacing": {
+          "value": 0,
+          "unit": "percent"
+         },
+         "textCase": "ORIGINAL",
+         "textDecoration": "NONE",
+         "align": "LEFT",
+         "characters": "Focused"
+        }
+       }
+      }
+     ],
+     "added": [
+      {
+       "parentPath": "Chip",
+       "layer": {
+        "id": "3788:181381",
+        "name": "icon / chevron-down",
+        "type": "INSTANCE",
+        "visible": true,
+        "children": [],
+        "size": {
+         "width": 18,
+         "height": 18
+        },
+        "opacity": 1,
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": false,
+          "hex": "#ffffff",
+          "alpha": 1
+         }
+        ],
+        "strokes": {
+         "paints": [],
+         "weight": 0,
+         "align": "INSIDE"
+        },
+        "effects": [],
+        "instanceOf": {
+         "componentId": "3287:134088",
+         "componentName": "icon / chevron-down"
+        },
+        "role": "icon",
+        "roleSource": "name"
+       }
+      }
+     ],
+     "removed": []
+    },
+    {
+     "variantId": "1602:17928",
+     "variantProperties": {
+      "Type": "Input",
+      "state": "default",
+      "icon": "on"
+     },
+     "layers": [
+      {
+       "path": "Chip",
+       "changes": {
+        "size": {
+         "width": 95,
+         "height": 32
+        }
+       }
+      }
+     ],
+     "added": [
+      {
+       "parentPath": "Chip",
+       "layer": {
+        "id": "3788:181415",
+        "name": "icon / home-alt",
+        "type": "INSTANCE",
+        "visible": true,
+        "children": [],
+        "size": {
+         "width": 18,
+         "height": 18
+        },
+        "opacity": 1,
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": false,
+          "hex": "#ffffff",
+          "alpha": 1
+         }
+        ],
+        "strokes": {
+         "paints": [],
+         "weight": 0,
+         "align": "INSIDE"
+        },
+        "effects": [],
+        "instanceOf": {
+         "componentId": "3253:139559",
+         "componentName": "icon / home-alt"
+        },
+        "propertyRefs": {
+         "mainComponent": "select icon#3846:454"
+        },
+        "role": "icon",
+        "roleSource": "property"
+       }
+      }
+     ],
+     "removed": []
+    },
+    {
+     "variantId": "1602:19401",
+     "variantProperties": {
+      "Type": "Input",
+      "state": "disabled",
+      "icon": "on"
+     },
+     "layers": [
+      {
+       "path": "Chip",
+       "changes": {
+        "size": {
+         "width": 105,
+         "height": 32
+        }
+       }
+      },
+      {
+       "path": "Chip/Text",
+       "changes": {
+        "size": {
+         "width": 59,
+         "height": 20
+        },
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": true,
+          "hex": "#98a2b3",
+          "alpha": 1
+         }
+        ],
+        "text": {
+         "fontFamily": "Inter",
+         "fontWeight": 500,
+         "fontSize": 14,
+         "lineHeight": {
+          "value": 145,
+          "unit": "percent"
+         },
+         "letterSpacing": {
+          "value": 0,
+          "unit": "percent"
+         },
+         "textCase": "ORIGINAL",
+         "textDecoration": "NONE",
+         "align": "LEFT",
+         "characters": "Disabled"
+        }
+       }
+      }
+     ],
+     "added": [
+      {
+       "parentPath": "Chip",
+       "layer": {
+        "id": "3788:181426",
+        "name": "icon / home-alt",
+        "type": "INSTANCE",
+        "visible": true,
+        "children": [],
+        "size": {
+         "width": 18,
+         "height": 18
+        },
+        "opacity": 1,
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": false,
+          "hex": "#ffffff",
+          "alpha": 1
+         }
+        ],
+        "strokes": {
+         "paints": [],
+         "weight": 0,
+         "align": "INSIDE"
+        },
+        "effects": [],
+        "instanceOf": {
+         "componentId": "3253:139559",
+         "componentName": "icon / home-alt"
+        },
+        "propertyRefs": {
+         "mainComponent": "select icon#3846:454"
+        },
+        "role": "icon",
+        "roleSource": "property"
+       }
+      }
+     ],
+     "removed": []
+    },
+    {
+     "variantId": "1602:19374",
+     "variantProperties": {
+      "Type": "Filter",
+      "state": "default",
+      "icon": "on"
+     },
+     "layers": [
+      {
+       "path": "Chip",
+       "changes": {
+        "size": {
+         "width": 121,
+         "height": 32
+        }
+       }
+      }
+     ],
+     "added": [
+      {
+       "parentPath": "Chip",
+       "layer": {
+        "id": "3788:181406",
+        "name": "icon / home-alt",
+        "type": "INSTANCE",
+        "visible": true,
+        "children": [],
+        "size": {
+         "width": 18,
+         "height": 18
+        },
+        "opacity": 1,
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": false,
+          "hex": "#ffffff",
+          "alpha": 1
+         }
+        ],
+        "strokes": {
+         "paints": [],
+         "weight": 0,
+         "align": "INSIDE"
+        },
+        "effects": [],
+        "instanceOf": {
+         "componentId": "3253:139559",
+         "componentName": "icon / home-alt"
+        },
+        "propertyRefs": {
+         "mainComponent": "select icon#3846:454"
+        },
+        "role": "icon",
+        "roleSource": "property"
+       }
+      },
+      {
+       "parentPath": "Chip",
+       "layer": {
+        "id": "3788:181370",
+        "name": "icon / chevron-down",
+        "type": "INSTANCE",
+        "visible": true,
+        "children": [],
+        "size": {
+         "width": 18,
+         "height": 18
+        },
+        "opacity": 1,
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": false,
+          "hex": "#ffffff",
+          "alpha": 1
+         }
+        ],
+        "strokes": {
+         "paints": [],
+         "weight": 0,
+         "align": "INSIDE"
+        },
+        "effects": [],
+        "instanceOf": {
+         "componentId": "3287:134088",
+         "componentName": "icon / chevron-down"
+        },
+        "role": "icon",
+        "roleSource": "name"
+       }
+      }
+     ],
+     "removed": []
+    },
+    {
+     "variantId": "1602:19412",
+     "variantProperties": {
+      "Type": "Filter",
+      "state": "disabled",
+      "icon": "on"
+     },
+     "layers": [
+      {
+       "path": "Chip",
+       "changes": {
+        "size": {
+         "width": 131,
+         "height": 32
+        }
+       }
+      },
+      {
+       "path": "Chip/Text",
+       "changes": {
+        "size": {
+         "width": 59,
+         "height": 20
+        },
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": true,
+          "hex": "#98a2b3",
+          "alpha": 1
+         }
+        ],
+        "text": {
+         "fontFamily": "Inter",
+         "fontWeight": 500,
+         "fontSize": 14,
+         "lineHeight": {
+          "value": 145,
+          "unit": "percent"
+         },
+         "letterSpacing": {
+          "value": 0,
+          "unit": "percent"
+         },
+         "textCase": "ORIGINAL",
+         "textDecoration": "NONE",
+         "align": "LEFT",
+         "characters": "Disabled"
+        }
+       }
+      }
+     ],
+     "added": [
+      {
+       "parentPath": "Chip",
+       "layer": {
+        "id": "3846:186403",
+        "name": "icon / home-alt",
+        "type": "INSTANCE",
+        "visible": true,
+        "children": [],
+        "size": {
+         "width": 18,
+         "height": 18
+        },
+        "opacity": 1,
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": false,
+          "hex": "#ffffff",
+          "alpha": 1
+         }
+        ],
+        "strokes": {
+         "paints": [],
+         "weight": 0,
+         "align": "INSIDE"
+        },
+        "effects": [],
+        "instanceOf": {
+         "componentId": "3253:139559",
+         "componentName": "icon / home-alt"
+        },
+        "propertyRefs": {
+         "mainComponent": "select icon#3846:454"
+        },
+        "role": "icon",
+        "roleSource": "property"
+       }
+      },
+      {
+       "parentPath": "Chip",
+       "layer": {
+        "id": "1602:19415",
+        "name": "Icon-right",
+        "type": "INSTANCE",
+        "visible": true,
+        "children": [],
+        "size": {
+         "width": 18,
+         "height": 18
+        },
+        "opacity": 1,
+        "fills": [],
+        "strokes": {
+         "paints": [],
+         "weight": 0,
+         "align": "INSIDE"
+        },
+        "effects": [],
+        "instanceOf": {
+         "componentId": "1405:628",
+         "componentName": "Media / Icon"
+        },
+        "role": "icon",
+        "roleSource": "name"
+       }
+      }
+     ],
+     "removed": []
+    },
+    {
+     "variantId": "1602:17945",
+     "variantProperties": {
+      "Type": "Input",
+      "state": "focused",
+      "icon": "on"
+     },
+     "layers": [
+      {
+       "path": "Chip",
+       "changes": {
+        "size": {
+         "width": 129,
+         "height": 32
+        },
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": true,
+          "hex": "#fbf1f1",
+          "alpha": 1
+         }
+        ],
+        "strokes": {
+         "paints": [
+          {
+           "type": "SOLID",
+           "visible": true,
+           "hex": "#cc400c",
+           "alpha": 1
+          }
+         ],
+         "weight": 1,
+         "align": "INSIDE"
+        }
+       }
+      },
+      {
+       "path": "Chip/Text",
+       "changes": {
+        "size": {
+         "width": 57,
+         "height": 20
+        },
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": true,
+          "hex": "#475367",
+          "alpha": 1
+         }
+        ],
+        "text": {
+         "fontFamily": "Inter",
+         "fontWeight": 500,
+         "fontSize": 14,
+         "lineHeight": {
+          "value": 145,
+          "unit": "percent"
+         },
+         "letterSpacing": {
+          "value": 0,
+          "unit": "percent"
+         },
+         "textCase": "ORIGINAL",
+         "textDecoration": "NONE",
+         "align": "LEFT",
+         "characters": "Focused"
+        }
+       }
+      }
+     ],
+     "added": [
+      {
+       "parentPath": "Chip",
+       "layer": {
+        "id": "3788:181419",
+        "name": "icon / home-alt",
+        "type": "INSTANCE",
+        "visible": true,
+        "children": [],
+        "size": {
+         "width": 18,
+         "height": 18
+        },
+        "opacity": 1,
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": false,
+          "hex": "#ffffff",
+          "alpha": 1
+         }
+        ],
+        "strokes": {
+         "paints": [],
+         "weight": 0,
+         "align": "INSIDE"
+        },
+        "effects": [],
+        "instanceOf": {
+         "componentId": "3253:139559",
+         "componentName": "icon / home-alt"
+        },
+        "propertyRefs": {
+         "mainComponent": "select icon#3846:454"
+        },
+        "role": "icon",
+        "roleSource": "property"
+       }
+      },
+      {
+       "parentPath": "Chip",
+       "layer": {
+        "id": "3788:181366",
+        "name": "icon / multiply",
+        "type": "INSTANCE",
+        "visible": true,
+        "children": [],
+        "size": {
+         "width": 18,
+         "height": 18
+        },
+        "opacity": 1,
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": false,
+          "hex": "#ffffff",
+          "alpha": 1
+         }
+        ],
+        "strokes": {
+         "paints": [],
+         "weight": 0,
+         "align": "INSIDE"
+        },
+        "effects": [],
+        "instanceOf": {
+         "componentId": "3253:139739",
+         "componentName": "icon / multiply"
+        },
+        "propertyRefs": {
+         "visible": "has close button#3846:498"
+        },
+        "role": "icon",
+        "roleSource": "name"
+       }
+      }
+     ],
+     "removed": []
+    },
+    {
+     "variantId": "1602:19365",
+     "variantProperties": {
+      "Type": "Filter",
+      "state": "focused",
+      "icon": "on"
+     },
+     "layers": [
+      {
+       "path": "Chip",
+       "changes": {
+        "size": {
+         "width": 129,
+         "height": 32
+        },
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": true,
+          "hex": "#fbf1f1",
+          "alpha": 1
+         }
+        ],
+        "strokes": {
+         "paints": [
+          {
+           "type": "SOLID",
+           "visible": true,
+           "hex": "#cc400c",
+           "alpha": 1
+          }
+         ],
+         "weight": 1,
+         "align": "INSIDE"
+        }
+       }
+      },
+      {
+       "path": "Chip/Text",
+       "changes": {
+        "size": {
+         "width": 57,
+         "height": 20
+        },
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": true,
+          "hex": "#475367",
+          "alpha": 1
+         }
+        ],
+        "text": {
+         "fontFamily": "Inter",
+         "fontWeight": 500,
+         "fontSize": 14,
+         "lineHeight": {
+          "value": 145,
+          "unit": "percent"
+         },
+         "letterSpacing": {
+          "value": 0,
+          "unit": "percent"
+         },
+         "textCase": "ORIGINAL",
+         "textDecoration": "NONE",
+         "align": "LEFT",
+         "characters": "Focused"
+        }
+       }
+      }
+     ],
+     "added": [
+      {
+       "parentPath": "Chip",
+       "layer": {
+        "id": "3788:181413",
+        "name": "icon / home-alt",
+        "type": "INSTANCE",
+        "visible": true,
+        "children": [],
+        "size": {
+         "width": 18,
+         "height": 18
+        },
+        "opacity": 1,
+        "fills": [
+         {
+          "type": "SOLID",
+          "visible": false,
+          "hex": "#ffffff",
+          "alpha": 1
+         }
+        ],
+        "strokes": {
+         "paints": [],
+         "weight": 0,
+         "align": "INSIDE"
+        },
+        "effects": [],
+        "instanceOf": {
+         "componentId": "3253:139559",
+         "componentName": "icon / home-alt"
+        },
+        "propertyRefs": {
+         "mainComponent": "select icon#3846:454"
+        },
+        "role": "icon",
+        "roleSource": "property"
+       }
+      },
+      {
+       "parentPath": "Chip",
+       "layer": {
+        "id": "1602:19368",
+        "name": "Icon-right",
+        "type": "INSTANCE",
+        "visible": true,
+        "children": [],
+        "size": {
+         "width": 18,
+         "height": 18
+        },
+        "opacity": 1,
+        "fills": [],
+        "strokes": {
+         "paints": [],
+         "weight": 0,
+         "align": "INSIDE"
+        },
+        "effects": [],
+        "instanceOf": {
+         "componentId": "1405:628",
+         "componentName": "Media / Icon"
+        },
+        "role": "icon",
+        "roleSource": "name"
+       }
+      }
+     ],
+     "removed": []
+    }
+   ],
+   "treeTruncated": false
+  }
+ ],
+ "warnings": []
+}

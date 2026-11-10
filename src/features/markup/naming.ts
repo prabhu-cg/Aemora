@@ -2,6 +2,12 @@ import { kebab } from '../../lib/kebab'
 
 export const slug = (s: string) => kebab(s, 'x')
 
+/**
+ * The class-name form of an option value. Must match toModifier() in the generated Sling Model exactly,
+ * so the CSS and the class the model produces at runtime agree: lowercase, runs of other characters become one hyphen.
+ */
+export const modifier = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+
 /** "Button / primary" -> "ButtonPrimary". Always a valid Java type name. */
 export function pascal(s: string): string {
   const out = s.replace(/([a-z0-9])([A-Z])/g, '$1 $2').split(/[^A-Za-z0-9]+/).filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join('')
@@ -21,3 +27,16 @@ export const cap = (s: string) => s[0].toUpperCase() + s.slice(1)
 export const xmlEscape = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 export const htmlText = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\$\{/g, '&#36;{')
 export const javaString = (s: string) => `"${s.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '')}"`
+
+/** The model name (Java field and HTL getter) for each property key. Same-name collisions get a number. Shared by the model and the HTL. */
+export function modelNames(keys: string[]): Record<string, string> {
+  const used = new Set<string>()
+  const out: Record<string, string> = {}
+  for (const key of keys) {
+    let name = javaName(key)
+    for (let i = 2; used.has(name); i++) name = `${javaName(key)}${i}`
+    used.add(name)
+    out[key] = name
+  }
+  return out
+}

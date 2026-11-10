@@ -12,9 +12,13 @@ export interface Node {
   el: string | null
   parent: Node | null
   children: Node[]
-  /** The layer only shows when the factor has one of these values. */
-  presence?: { factor: Factor; values: string[] }
+  /** When the layer shows. Absent means always. */
+  presence?: Presence
 }
+
+export interface Term { factor: Factor; value: string }
+/** Shows when any term holds (a term holds when each of its options has the given value), or when none holds if negated. */
+export interface Presence { terms: Term[][]; negate: boolean }
 
 export interface Factor {
   /** Figma variant property name, e.g. "icon-style". */
@@ -97,14 +101,28 @@ export function buildStructure(design: DesignData, props: Property[], notes: Mar
 
   // Which factor value decides whether a layer is there? Uniform across every known variant, and not constant.
   const allVariants: Record<string, string>[] = [defaults, ...design.variantDiffs.map((d) => ({ ...defaults, ...d.variantProperties }))]
-  const decide = (presentIn: boolean[]): { factor: Factor; values: string[] } | null => {
-    for (const f of factors) {
-      if (!f.key) continue
-      const seen = new Map<string, Set<boolean>>()
-      allVariants.forEach((v, i) => { const s = seen.get(v[f.name]) ?? new Set<boolean>(); s.add(presentIn[i]); seen.set(v[f.name], s) })
-      if ([...seen.values()].some((s) => s.size > 1)) continue
-      const present = [...seen.entries()].filter(([, s]) => s.has(true)).map(([v]) => v)
-      if (present.length && present.length < seen.size) return { factor: f, values: present }
+  // Interaction states (hover, focus, disabled) are not chosen by authors, so what decides a layer is judged in the default state only.
+  const stateFactors = factors.filter((f) => f.isState)
+  const isBase = (v: Record<string, string>) => stateFactors.every((f) => v[f.name] === f.default)
+  const usable = factors.filter((f) => f.key)
+  const subsetsOf = <T,>(items: T[], size: number, from = 0): T[][] =>
+    size === 0 ? [[]] : items.slice(from).flatMap((item, i) => subsetsOf(items, size - 1, from + i + 1).map((rest) => [item, ...rest]))
+  /**
+   * The option combinations where a layer exists, reduced to the fewest options that still tell them apart from
+   * the combinations where it does not. One option often decides (icon style), sometimes two do (type and variant).
+   */
+  const decide = (presentIn: boolean[]): { positive: Term[][]; negative: Term[][] } | null => {
+    const base = allVariants.map((v, i) => ({ v, present: presentIn[i] })).filter(({ v }) => isBase(v))
+    if (!base.some((b) => b.present) || base.every((b) => b.present)) return null
+    for (let size = 1; size <= usable.length; size++) {
+      for (const used of subsetsOf(usable, size)) {
+        const key = (v: Record<string, string>) => used.map((f) => v[f.name]).join('\u0001')
+        const yes = new Set(base.filter((b) => b.present).map((b) => key(b.v)))
+        if (base.some((b) => !b.present && yes.has(key(b.v)))) continue
+        const no = new Set(base.filter((b) => !b.present).map((b) => key(b.v)))
+        const terms = (keys: Set<string>): Term[][] => [...keys].map((k) => k.split('\u0001').map((value, i) => ({ factor: used[i], value })))
+        return { positive: terms(yes), negative: terms(no) }
+      }
     }
     return null
   }
@@ -112,34 +130,80 @@ export function buildStructure(design: DesignData, props: Property[], notes: Mar
   // Layers that exist only in some variants.
   type Group = { parentPath: string; layer: Layer; index?: number; present: boolean[] }
   const groups = new Map<string, Group>()
+  // The same layer can look different from one option to the next (an alert's banner content per state).
+  // Each distinct look is its own conditional copy. Layer ids differ per variant, so they are left out of the comparison.
+  const look = (l: Layer) => JSON.stringify(l, (k, v) => (k === 'id' ? undefined : v))
+  const MAX_LOOKS = 12
+  const looksOf = new Map<string, string[]>()
   design.variantDiffs.forEach((d, i) => {
     for (const a of d.added) {
-      const key = `${a.parentPath}|${a.layer.name}`
+      const name = `${a.parentPath}|${a.layer.name}`
+      const l = look(a.layer)
+      const known = looksOf.get(name) ?? []
+      if (!known.includes(l)) {
+        if (known.length >= MAX_LOOKS) {
+          if (known.length === MAX_LOOKS) { known.push('overflow'); notes.push({ level: 'warning', layer: a.layer.name, message: `This layer looks different in more than ${MAX_LOOKS} options. Only the first ${MAX_LOOKS} looks are in the markup.` }) }
+          continue
+        }
+        known.push(l)
+      }
+      looksOf.set(name, known)
+      const key = `${name}|${known.indexOf(l)}`
       const g = groups.get(key) ?? { parentPath: a.parentPath, layer: a.layer, index: a.index, present: [false, ...design.variantDiffs.map(() => false)] }
       g.present[i + 1] = true
       groups.set(key, g)
     }
   })
+  for (const [name, known] of looksOf) {
+    const count = known.filter((x) => x !== 'overflow').length
+    if (count > 1) notes.push({ level: 'info', layer: name.split('|')[1], message: `This layer looks different in ${count} options, so the markup has one copy for each look.` })
+  }
   for (const g of groups.values()) {
     const parent = byPath.get(g.parentPath)
-    const rule = decide(g.present)
     if (!parent) { notes.push({ level: 'warning', layer: g.layer.name, message: 'This layer appears in some variants, but its parent layer was not found, so it was left out.' }); continue }
-    if (!rule) { notes.push({ level: 'warning', layer: g.layer.name, message: 'This layer appears in some variants, but no single option of the component decides when, so it was left out.' }); continue }
-    // Values that put it before or after its siblings. Without a position from the plugin, the option's words decide.
-    const groupsByPos = new Map<'before' | 'after', string[]>()
-    for (const v of rule.values) {
-      const pos: 'before' | 'after' = BEFORE.test(v) && !AFTER.test(v) ? 'before' : 'after'
-      groupsByPos.set(pos, [...(groupsByPos.get(pos) ?? []), v])
+
+    // A layer that only exists in an interaction state (a focus icon, a disabled badge) cannot be chosen by authors.
+    // If a yes/no property controls it, that property is the switch. Otherwise it is left out, and the note says so.
+    if (!g.present.some((p, i) => p && isBase(allVariants[i]))) {
+      const states = [...new Set(design.variantDiffs.flatMap((d, i) => (g.present[i + 1] ? stateFactors.flatMap((f) => { const v = d.variantProperties[f.name]; return v && v !== f.default ? [v] : [] }) : [])))]
+      const ref = g.layer.propertyRefs?.visible
+      const switchProp = ref ? props.find((p) => p.type === 'boolean' && p.key === toKey(ref)) : undefined
+      if (switchProp) {
+        const path = childPath(g.parentPath, g.layer, [...(parent.layer.children ?? []), g.layer])
+        const node: Node = { layer: g.layer, path, el: elName(g.layer), parent, children: [] }
+        const kids = g.layer.children ?? []
+        node.children = kids.map((c) => make(c, childPath(path, c, kids), node, elName(c)))
+        nodes.push(node)
+        if (typeof g.index === 'number') parent.children.splice(Math.min(g.index, parent.children.length), 0, node)
+        else parent.children.push(node)
+        notes.push({ level: 'info', layer: g.layer.name, message: `In the design this only shows in the ${states.join(' and ')} state. The markup shows it whenever "${switchProp.label}" is on, and puts it last because the plugin did not say where it sits.` })
+      } else {
+        notes.push({ level: 'info', layer: g.layer.name, message: `In the design this only exists in the ${states.join(' and ')} state, so it is not in the generated markup.` })
+      }
+      continue
     }
-    if (typeof g.index !== 'number' && rule.values.length > 1 && !groupsByPos.has('before') && groupsByPos.get('after')!.length === rule.values.length) {
+
+    const rule = decide(g.present)
+    if (!rule) { notes.push({ level: 'warning', layer: g.layer.name, message: 'This layer appears in some variants, but the options of the component do not tell when, so it was left out.' }); continue }
+    // Terms that put it before or after its siblings. Without a position from the plugin, the option's words decide.
+    const text = (t: Term[]) => t.map((x) => x.value).join(' ')
+    const byPosition = new Map<'before' | 'after', Term[][]>()
+    for (const t of rule.positive) {
+      const pos: 'before' | 'after' = BEFORE.test(text(t)) && !AFTER.test(text(t)) ? 'before' : 'after'
+      byPosition.set(pos, [...(byPosition.get(pos) ?? []), t])
+    }
+    if (typeof g.index !== 'number' && rule.positive.length > 1 && !byPosition.has('before') && byPosition.get('after')!.length === rule.positive.length) {
       // No hint at all: it goes last.
     } else if (typeof g.index !== 'number') {
-      notes.push({ level: 'info', layer: g.layer.name, message: `Its position among its siblings was guessed from the option names (${rule.values.join(', ')}). The plugin did not say where it sits.` })
+      notes.push({ level: 'info', layer: g.layer.name, message: `Its position among its siblings was guessed from the option names (${rule.positive.map(text).join(', ')}). The plugin did not say where it sits.` })
     }
     const el = elName(g.layer)
-    for (const [pos, values] of groupsByPos) {
+    const single = byPosition.size === 1
+    for (const [pos, terms] of byPosition) {
       const path = childPath(g.parentPath, g.layer, [...(parent.layer.children ?? []), g.layer])
-      const node: Node = { layer: g.layer, path, el, parent, children: [], presence: { factor: rule.factor, values } }
+      // Saying where it does not show is shorter when it shows almost everywhere. That only holds when one copy covers every place it shows.
+      const presence: Presence = single && rule.negative.length < rule.positive.length ? { terms: rule.negative, negate: true } : { terms, negate: false }
+      const node: Node = { layer: g.layer, path, el, parent, children: [], presence }
       const kids = g.layer.children ?? []
       node.children = kids.map((c) => make(c, childPath(path, c, kids), node, elName(c)))
       nodes.push(node)
@@ -160,9 +224,13 @@ export function buildStructure(design: DesignData, props: Property[], notes: Mar
   })
   for (const [path, present] of removedBy) {
     const node = byPath.get(path)
+    if (present.every((p, i) => p || !isBase(allVariants[i]))) {
+      notes.push({ level: 'info', layer: path.split('/').pop(), message: 'In the design this is hidden in some interaction states. The markup always includes it.' })
+      continue
+    }
     const rule = decide(present)
-    if (node && rule) node.presence = rule
-    else notes.push({ level: 'warning', layer: path.split('/').pop(), message: `This layer is missing in some variants, but no single option of the component decides when, so it is always shown. (${path})` })
+    if (node && rule) node.presence = rule.negative.length < rule.positive.length ? { terms: rule.negative, negate: true } : { terms: rule.positive, negate: false }
+    else notes.push({ level: 'warning', layer: path.split('/').pop(), message: `This layer is missing in some variants, but the options of the component do not tell when, so it is always shown. (${path})` })
   }
 
   // Order nodes parents-first in document order, with the conditional copies in place.

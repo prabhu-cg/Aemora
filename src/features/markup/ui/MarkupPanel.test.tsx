@@ -149,7 +149,7 @@ describe('tabs', () => {
     screen.getByRole('tab', { name: 'Markup' }).focus()
     await user.keyboard('{ArrowRight}')
     await waitFor(() => expect(screen.getByRole('tab', { name: 'Preview' }).getAttribute('aria-selected')).toBe('true'))
-    expect(document.activeElement).toBe(screen.getByRole('tab', { name: 'Preview' }))
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('tab', { name: 'Preview' })))
     await user.keyboard('{End}')
     await waitFor(() => expect(screen.getByRole('tab', { name: 'XML' }).getAttribute('aria-selected')).toBe('true'))
     await user.keyboard('{ArrowRight}')

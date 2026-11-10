@@ -8,6 +8,7 @@ import { validateMarkup } from './validate'
 const raw = import.meta.glob('../../test/fixtures/designmd-rayna.json', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
 const golden = import.meta.glob('./golden/*', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
 const rayna = Object.values(raw)[0]
+const chipRaw = import.meta.glob('../../test/fixtures/designmd-chip.json', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
 
 const catalog = parseDesignMdText(rayna)
 const imported = (name: string): ComponentDef => importDesignMd(catalog, [catalog.entries.find((e) => e.name === name)!.id]).components[0]
@@ -86,8 +87,29 @@ describe('markup from the real Rayna file', () => {
   })
   it('says what it guessed or left out', () => {
     const notes = generateMarkup(imported('Metrics Card')).notes
-    expect(notes.some((n) => n.level === 'warning' && /no single option/.test(n.message))).toBe(true)
     expect(notes.some((n) => /guessed from the option names/.test(n.message))).toBe(true)
+    expect(notes.filter((n) => n.level === 'warning')).toEqual([])
+  })
+})
+
+describe('the real Chip from the Rayna file', () => {
+  const chipCatalog = parseDesignMdText(Object.values(chipRaw)[0])
+  const m = generateMarkup(importDesignMd(chipCatalog, [chipCatalog.entries[0].id]).components[0])
+  it('shows the chevron for the Filter type, the home icon for icon=on, and the close icon when the property is on', () => {
+    const html = m.files[0].content
+    expect(html).toMatch(/__icon-chevron-down" data-sly-test="\$\{model\.typeModifier == 'filter'\}"/)
+    expect(html).toMatch(/__icon-home-alt" data-sly-test="\$\{model\.iconModifier == 'on'\}"/)
+    expect(html).toMatch(/__icon-multiply" data-sly-test="\$\{model\.hasCloseButton\}"/)
+  })
+  it('keeps the name of each fixed icon, and binds the one an option swaps', () => {
+    const html = m.files[0].content
+    expect(html).toContain('data-icon="chevron-down"')
+    expect(html).toContain('data-icon="multiply"')
+    expect(html).toContain('data-icon="${model.selectIcon}"')
+  })
+  it('does not warn that it left layers out because nothing decides them', () => {
+    expect(m.notes.filter((n) => n.level === 'warning')).toEqual([])
+    expect(validateMarkup(m)).toEqual([])
   })
 })
 
@@ -174,6 +196,18 @@ describe('layer handling', () => {
     expect(html).toContain("${model.body @ context='html'}")
     expect(html).toContain('Fixed footer &lt;b&gt; &#36;{x}')
     expect(validateMarkup(generateMarkup(c))).toEqual([])
+  })
+
+  it('resets the browser border on a button and the underline on a link, unless the design draws one', () => {
+    const tree = frame('Cta', { strokes: { paints: [{ type: 'SOLID', hex: '#ff0000', alpha: 1 }], weight: 2, align: 'INSIDE' } })
+    const plain = frame('Cta', {})
+    const asButton = (t: object) => file(component('Cta', design(t), [], 'button'), 'css')
+    expect(asButton(plain)).toMatch(/\.cmp-cta \{[^}]*border: 0;[^}]*cursor: pointer;/s)
+    expect(asButton(tree)).toMatch(/border: 2px solid #ff0000;/)
+    expect(asButton(tree)).not.toMatch(/border: 0;/)
+    const asLink = file(component('Cta', design(plain), [prop('link', 'link')], 'button'), 'css')
+    expect(asLink).toContain('text-decoration: none;')
+    expect(file(component('Cta', design(plain), [], 'custom'), 'css')).not.toContain('cursor: pointer')
   })
 
   it('writes flex layout, spacing, fills with tokens, borders, radius, shadows and text styles', () => {
@@ -269,6 +303,54 @@ describe('layer handling', () => {
     })
     const m = generateMarkup(component('Tag', d, [prop('closable', 'enum', { defaultValue: 'yes', allowedValues: ['yes', 'no'] })]))
     expect(m.files[0].content).toContain("data-sly-test=\"${model.closableModifier == 'yes'}\"")
+  })
+
+  it('writes the same modifier class in the CSS, the HTL conditions and the model, even for camelCase values', () => {
+    const tree = frame('Tab', {}, [text('Label', 'Tab')])
+    const d = design(tree, {
+      defaultVariantProperties: { Look: 'plainText' },
+      variantDiffs: [{ variantId: 'v', variantProperties: { Look: 'iconOnly' }, layers: [{ path: 'Tab', changes: { fills: [{ type: 'SOLID', hex: '#111111' }] } }, { path: 'Tab/Label', changes: { visible: false } }], added: [{ parentPath: 'Tab', layer: { id: 'i', name: 'Mark', type: 'INSTANCE', role: 'icon', visible: true } }], removed: [] }],
+    })
+    const c = component('Tab', d, [prop('look', 'enum', { defaultValue: 'plainText', allowedValues: ['plainText', 'iconOnly'] })])
+    const m = generateMarkup(c)
+    expect(m.files[1].content).toContain('.cmp-tab--look-icononly {')
+    expect(m.files[0].content).toContain("model.lookModifier == 'icononly'")
+    expect(m.files[2].content).toContain('toLowerCase().replaceAll("[^a-z0-9]+", "-")')
+  })
+
+  it('uses the same model name in the HTL and the model for keys that are Java keywords or collide', () => {
+    const tree = frame('Tile', {}, [text('Name', 'x', { role: 'heading', propertyRefs: { characters: 'class#1:1' } }), text('Sub', 'y', { role: 'text', propertyRefs: { characters: 'classValue#1:2' } })])
+    const c = component('Tile', design(tree), [prop('class', 'string', { required: true }), prop('classValue', 'string', { required: true })])
+    const m = generateMarkup(c)
+    expect(m.files[0].content).toContain('${model.classValue}')
+    expect(m.files[0].content).toContain('${model.classValue2}')
+    expect(m.files[2].content).toContain('private String classValue2;')
+    expect(validateMarkup(m)).toEqual([])
+  })
+
+  it('judges a layer by the default look, and uses a yes/no property for layers that only exist in a state (the Chip)', () => {
+    const tree = frame('Chip', {}, [text('Text', 'Default', { role: 'text' })])
+    const icon = (name: string, extra: object = {}) => ({ id: name, name, type: 'INSTANCE', role: 'icon', visible: true, ...extra })
+    const diff = (variantProperties: Record<string, string>, added: object[]) => ({ variantId: JSON.stringify(variantProperties), variantProperties, layers: [], added: added.map((layer) => ({ parentPath: 'Chip', layer })), removed: [] })
+    const d = design(tree, {
+      defaultVariantProperties: { Type: 'Input', state: 'default' },
+      variantDiffs: [
+        diff({ Type: 'Filter', state: 'default' }, [icon('chevron')]),
+        diff({ Type: 'Input', state: 'focused' }, [icon('close', { propertyRefs: { visible: 'has close button#1:1' } })]),
+        diff({ Type: 'Filter', state: 'focused' }, [icon('chevron')]),
+        diff({ Type: 'Input', state: 'disabled' }, []),
+        diff({ Type: 'Filter', state: 'disabled' }, [icon('chevron-disabled')]),
+      ],
+    })
+    const m = generateMarkup(component('Chip', d, [prop('hasCloseButton', 'boolean', { defaultValue: true }), prop('type', 'enum', { defaultValue: 'Input', allowedValues: ['Input', 'Filter'] }), prop('text', 'string', { defaultValue: 'Default' })]))
+    const html = m.files[0].content
+    expect(html).toContain('class="cmp-chip__chevron" data-sly-test="${model.typeModifier == \'filter\'}"')
+    expect(html).toContain('class="cmp-chip__close" data-sly-test="${model.hasCloseButton}"')
+    expect(html).not.toContain('chevron-disabled')
+    expect(m.notes.some((n) => n.layer === 'close' && /focused state.*whenever "hasCloseButton" is on/s.test(n.message))).toBe(true)
+    expect(m.notes.some((n) => n.layer === 'chevron-disabled' && n.level === 'info' && /only exists in the disabled state/.test(n.message))).toBe(true)
+    expect(m.notes.some((n) => /no single option/.test(n.message))).toBe(false)
+    expect(validateMarkup(m)).toEqual([])
   })
 
   it('falls back to a simple wrapper without a layer structure', () => {

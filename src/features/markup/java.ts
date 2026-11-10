@@ -1,5 +1,5 @@
 import type { Property, PropertyType } from '../components/schema'
-import { cap, javaName, javaString } from './naming'
+import { cap, javaString, modelNames } from './naming'
 
 const JAVA_TYPE: Record<PropertyType, string> = {
   string: 'String', text: 'String', richtext: 'String', link: 'String', image: 'String', color: 'String', enum: 'String', hidden: 'String',
@@ -16,13 +16,8 @@ function defaultAnnotation(p: Property): string | null {
 }
 
 export function generateModel(props: Property[], jcrNames: Record<string, string>, pkg: string, className: string): string {
-  const used = new Set<string>()
-  const fields = props.map((p) => {
-    let name = javaName(p.key)
-    for (let i = 2; used.has(name); i++) name = `${javaName(p.key)}${i}`
-    used.add(name)
-    return { p, name, type: JAVA_TYPE[p.type], jcr: jcrNames[p.key] ?? p.key }
-  })
+  const names = modelNames(props.map((p) => p.key))
+  const fields = props.map((p) => ({ p, name: names[p.key], type: JAVA_TYPE[p.type], jcr: jcrNames[p.key] ?? p.key }))
   const imports = new Set(['org.apache.sling.api.resource.Resource', 'org.apache.sling.models.annotations.DefaultInjectionStrategy', 'org.apache.sling.models.annotations.Model'])
   if (fields.length) imports.add('org.apache.sling.models.annotations.injectorspecific.ValueMapValue')
   if (fields.some(({ p }) => defaultAnnotation(p))) imports.add('org.apache.sling.models.annotations.Default')

@@ -1,5 +1,5 @@
 import type { Layer, LayerChanges, Paint, Radii } from './layers'
-import { slug } from './naming'
+import { modifier, slug } from './naming'
 import { withChanges, type Factor, type Node, type Structure } from './structure'
 import type { MarkupNote } from './types'
 
@@ -176,7 +176,7 @@ const STATE_SELECTORS: { match: RegExp; rank: number; selector: (root: string) =
 ]
 const isDefaultState = (v: string) => /^(default|enabled|rest|normal)$/i.test(v)
 
-export function generateCss(st: Structure, block: string, notes: MarkupNote[]): string {
+export function generateCss(st: Structure, block: string, notes: MarkupNote[], rootTag = 'div'): string {
   const rootSel = `.${block}`
   const sel = (n: Node) => (n.el ? `${rootSel}__${n.el}` : rootSel)
   const rules: Rule[] = []
@@ -192,6 +192,9 @@ export function generateCss(st: Structure, block: string, notes: MarkupNote[]): 
     for (const k of KEYS) if (n.layer[k] !== undefined) (attrs as Record<string, unknown>)[k] = n.layer[k]
     const decls: Decl[] = []
     if (n.layer.type !== 'TEXT') decls.push(['box-sizing', 'border-box'])
+    // Browsers draw their own border and underline on buttons and links. The design has none unless it says so.
+    if (!n.parent && rootTag === 'button') decls.push(['border', '0'], ['cursor', 'pointer'])
+    if (!n.parent && rootTag === 'a') decls.push(['text-decoration', 'none'], ['cursor', 'pointer'])
     decls.push(...declsFor(attrs, n.layer, ctx, false))
     rules.push({ selectors: [sel(n)], decls: dedupe(decls) })
   }
@@ -237,5 +240,5 @@ function prefixesFor(factor: Factor, value: string, rootSel: string): { list: st
     // A state authors cannot pick (error, loading ...): a class that scripts or server code can set.
     return { list: [`${rootSel}.is-${slug(value)}`], disabled: false }
   }
-  return { list: [`${rootSel}--${slug(factor.name)}-${slug(value)}`], disabled: false }
+  return { list: [`${rootSel}--${slug(factor.name)}-${modifier(value)}`], disabled: false }
 }

@@ -2,13 +2,12 @@ import { useMemo, useRef, useState } from 'react'
 import { AlertTriangle, CheckCircle2, CircleAlert, ClipboardCopy, Download, FileCode2, Info, RotateCcw, Settings2 } from 'lucide-react'
 import { Button } from '../../../components/ui/Button'
 import { downloadText } from '../../../lib/download'
-import { kebab } from '../../../lib/kebab'
 import type { ComponentDef } from '../../components/schema'
 import type { ResolvedField } from '../../mapping/engine'
 import type { MarkupSettings, Project } from '../../projects/schema'
 import type { EditorLanguage } from '../../xml/format'
 import { XmlEditor } from '../../xml/ui/XmlEditor'
-import { generateMarkup } from '../index'
+import { generateForProject } from '../effective'
 import { markupTarget } from '../paths'
 import type { MarkupFileKind } from '../types'
 import { validateMarkup } from '../validate'
@@ -50,9 +49,7 @@ export function MarkupPanel({ project, component, fields, readOnly = false, onSt
 
   const settings: MarkupSettings = project.markupSettings
   const stored = useMemo(() => project.markup?.[component.id]?.files ?? {}, [project.markup, component.id])
-  const folder = project.components.length === 1 && project.aemComponentName ? project.aemComponentName : kebab(component.name, 'component')
-  const jcrNames = useMemo(() => Object.fromEntries(fields.map((f) => [f.key, f.name.replace(/^\.\//, '')])), [fields])
-  const generated = useMemo(() => generateMarkup(component, { ...settings, folder }, jcrNames), [component, settings, folder, jcrNames])
+  const { result: generated, folder } = useMemo(() => generateForProject(project, component, fields), [project, component, fields])
 
   const contentOf = (k: MarkupFileKind) => {
     const g = generated.files.find((f) => f.kind === k)!
