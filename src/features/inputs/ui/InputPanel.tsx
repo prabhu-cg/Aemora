@@ -5,6 +5,7 @@ import { parseComponentJson } from '../json'
 import { SAMPLES } from '../samples'
 import { Button } from '../../../components/ui/Button'
 import type { ImportResult } from '../types'
+import { DesignMdPanel } from './DesignMdPanel'
 import { FigmaPanel } from './FigmaPanel'
 import { PluginPanel } from './PluginPanel'
 import { ReviewPanel } from './ReviewPanel'
@@ -17,6 +18,7 @@ export const SHOW_PLUGIN_TAB = false
 const ALL_TABS = [
   { id: 'json', label: 'JSON' },
   { id: 'clipboard', label: 'Clipboard' },
+  { id: 'designmd', label: 'DesignMD' },
   { id: 'figma', label: 'Figma API' },
   { id: 'plugin', label: 'Figma plugin' },
   { id: 'screenshot', label: 'Screenshot' },
@@ -66,6 +68,7 @@ export function InputPanel({ onAdd, busy }: { onAdd: (r: ImportResult) => Promis
             parse={parseClipboard} onResult={onResult} allowClipboardRead submitLabel="Parse and review"
           />
         )}
+        {tab === 'designmd' && <DesignMdPanel onResult={onResult} />}
         {tab === 'figma' && <FigmaPanel onResult={onResult} />}
         {tab === 'plugin' && <PluginPanel onResult={onResult} />}
         {tab === 'screenshot' && <ScreenshotPanel onResult={onResult} incoming={incoming} />}

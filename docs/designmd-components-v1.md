@@ -180,8 +180,9 @@ Aemora reads `designmd.components/v1` and maps it like this:
 | `properties` of type `TEXT` | `string` field, default from the property |
 | `properties` of type `BOOLEAN` | `boolean` field |
 | `properties` of type `INSTANCE_SWAP` | `image` or icon reference field |
-| `properties` of type `VARIANT` | `enum` modifier (HTL class or conditional), not a dialog field, unless it is a state |
-| `state` variants | CSS (`:hover`, `:focus-visible`, `:disabled`) |
+| `properties` of type `VARIANT` | `enum` field (authors choose size, style, icon position). The chosen value becomes a modifier class in the markup. A list of more than 200 options is cut at 200 with a warning. |
+| `state` variant made of interaction words (default, hover, focused, disabled) | CSS (`:hover`, `:focus-visible`, `:disabled`), no dialog field |
+| `TEXT` layers with no property behind them | suggested string fields, marked as suggested |
 | `tree`, `role`, `layout` | HTL structure and CSS |
 | `token.cssName` | CSS custom properties |
 

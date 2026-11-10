@@ -1,0 +1,190 @@
+{
+  "$schema": "https://raw.githubusercontent.com/prabhu-cg/Figma-plugins/main/DesignMD/schemas/designmd-components-v1.json",
+  "schema": "designmd.components/v1",
+  "metadata": {
+    "fileName": "Example UI",
+    "fileKey": "AbC123exampleKey",
+    "scope": "file",
+    "generatedAt": "2026-11-09T10:00:00.000Z",
+    "pluginVersion": "1.1.0",
+    "options": {
+      "includeText": true,
+      "includeVariantDiffs": true,
+      "includeInstanceInternals": true
+    },
+    "contentHash": "2b8ae64d7c0a948245face254839bc39a6da8fddbe4cd104e958ba1e044565cc"
+  },
+  "index": {
+    "componentCount": 1,
+    "components": [{ "id": "1:2", "name": "Button" }]
+  },
+  "tokens": {
+    "VariableID:1:2": {
+      "cssName": "--color-primary-500",
+      "type": "color",
+      "value": { "hex": "#1252f7", "alpha": 1, "r": 18, "g": 82, "b": 247 }
+    },
+    "VariableID:1:3": {
+      "cssName": "--color-primary-600",
+      "type": "color",
+      "value": { "hex": "#0d3fc4", "alpha": 1, "r": 13, "g": 63, "b": 196 }
+    },
+    "VariableID:1:9": {
+      "cssName": "--radius-md",
+      "type": "dimension",
+      "value": 8
+    }
+  },
+  "components": [
+    {
+      "id": "1:2",
+      "key": "a1b2c3",
+      "name": "Button",
+      "description": "Primary call-to-action button.",
+      "isComponentSet": true,
+      "pageName": "Components",
+      "variants": [
+        {
+          "id": "1:10",
+          "name": "state=default",
+          "variantProperties": { "state": "default" },
+          "description": ""
+        },
+        {
+          "id": "1:11",
+          "name": "state=hover",
+          "variantProperties": { "state": "hover" },
+          "description": ""
+        }
+      ],
+      "properties": [
+        {
+          "key": "state",
+          "name": "state",
+          "type": "VARIANT",
+          "defaultValue": "default",
+          "variantOptions": ["default", "hover"]
+        },
+        { "key": "label#12:0", "name": "label", "type": "TEXT", "defaultValue": "Learn more" },
+        { "key": "show-icon#12:1", "name": "show-icon", "type": "BOOLEAN", "defaultValue": "true" },
+        {
+          "key": "icon#3287:0",
+          "name": "icon",
+          "type": "INSTANCE_SWAP",
+          "defaultValue": "3253:139749",
+          "defaultResolved": { "id": "3253:139749", "name": "icon/arrow-right" },
+          "preferredValues": [{ "type": "COMPONENT", "key": "ff00aa" }]
+        }
+      ],
+      "states": ["default", "hover"],
+      "sizes": [],
+      "relatedComponentNames": [],
+      "boundVariableIds": ["VariableID:1:2", "VariableID:1:9"],
+      "styleIds": [],
+      "layout": {
+        "measuredFrom": "state=default",
+        "width": 124,
+        "height": 36,
+        "layoutMode": "HORIZONTAL",
+        "gap": 8,
+        "padding": { "top": 8, "right": 16, "bottom": 8, "left": 16 },
+        "cornerRadius": 8
+      },
+      "defaultVariantId": "1:10",
+      "tree": {
+        "id": "1:10",
+        "name": "Button",
+        "type": "FRAME",
+        "role": "root",
+        "roleSource": "type",
+        "visible": true,
+        "size": { "width": 124, "height": 36 },
+        "layout": {
+          "mode": "HORIZONTAL",
+          "gap": 8,
+          "padding": { "top": 8, "right": 16, "bottom": 8, "left": 16 },
+          "primaryAlign": "CENTER",
+          "counterAlign": "CENTER",
+          "sizingH": "HUG",
+          "sizingV": "HUG",
+          "wrap": false
+        },
+        "radius": 8,
+        "opacity": 1,
+        "fills": [
+          {
+            "type": "SOLID",
+            "visible": true,
+            "hex": "#1252f7",
+            "alpha": 1,
+            "token": { "variableId": "VariableID:1:2", "cssName": "--color-primary-500" }
+          }
+        ],
+        "strokes": { "paints": [], "weight": 0, "align": "INSIDE" },
+        "effects": [],
+        "children": [
+          {
+            "id": "1:12",
+            "name": "Label",
+            "type": "TEXT",
+            "role": "label",
+            "roleSource": "property",
+            "visible": true,
+            "size": { "width": 68, "height": 20 },
+            "text": {
+              "characters": "Learn more",
+              "fontFamily": "Inter",
+              "fontWeight": 600,
+              "fontSize": 14,
+              "lineHeight": { "value": 20, "unit": "px" },
+              "letterSpacing": { "value": 0, "unit": "px" },
+              "textCase": "ORIGINAL",
+              "textDecoration": "NONE",
+              "align": "LEFT"
+            },
+            "propertyRefs": { "characters": "label#12:0" },
+            "children": []
+          },
+          {
+            "id": "1:13",
+            "name": "Icon",
+            "type": "INSTANCE",
+            "role": "icon",
+            "roleSource": "property",
+            "visible": true,
+            "size": { "width": 16, "height": 16 },
+            "instanceOf": { "componentId": "3253:139749", "componentName": "icon/arrow-right" },
+            "propertyRefs": { "visible": "show-icon#12:1", "mainComponent": "icon#3287:0" },
+            "children": []
+          }
+        ]
+      },
+      "variantDiffs": [
+        {
+          "variantId": "1:11",
+          "variantProperties": { "state": "hover" },
+          "layers": [
+            {
+              "path": "Button",
+              "changes": {
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#0d3fc4",
+                    "alpha": 1,
+                    "token": { "variableId": "VariableID:1:3", "cssName": "--color-primary-600" }
+                  }
+                ]
+              }
+            }
+          ],
+          "added": [],
+          "removed": []
+        }
+      ],
+      "treeTruncated": false
+    }
+  ],
+  "warnings": []
+}

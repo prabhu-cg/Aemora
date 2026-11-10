@@ -194,9 +194,9 @@ describe('screenshots from the clipboard', () => {
 })
 
 describe('input methods', () => {
-  it('hides the Figma plugin tab for now and keeps the other four', async () => {
+  it('hides the old Figma plugin tab for now and shows the DesignMD tab with the others', async () => {
     await open()
     const names = within(screen.getByRole('tablist', { name: 'Input method' })).getAllByRole('tab').map((t) => t.textContent)
-    expect(names).toEqual(['JSON', 'Clipboard', 'Figma API', 'Screenshot'])
+    expect(names).toEqual(['JSON', 'Clipboard', 'DesignMD', 'Figma API', 'Screenshot'])
   })
 })

@@ -3,6 +3,7 @@ import { convertJsonComponent } from './convert'
 import { JsonComponentsSchema } from './jsonSchema'
 import { InputError, MAX_INPUT_CHARS, safeReviver, type ImportResult, type Warning } from './types'
 import type { Origin } from '../components/schema'
+import { DESIGNMD_SCHEMA } from './designmd/schema'
 
 /** "components.0.properties.2.type" -> "components[0].properties[2].type" */
 export function formatPath(path: PropertyKey[]): string {
@@ -38,6 +39,10 @@ export function parseComponentJson(text: string, kind: Extract<Origin['kind'], '
   } else if (isObj(data) && !('schema' in data) && 'name' in data) {
     data = { schema: 'aemora.components/v1', components: [data] }
     warnings.push({ level: 'info', message: 'Input was a single component. Wrapped it in the aemora.components/v1 envelope.' })
+  }
+
+  if (isObj(data) && data.schema === DESIGNMD_SCHEMA) {
+    throw new InputError('This is a DesignMD components file. Use the DesignMD tab to choose it, so you can pick which components to import.')
   }
 
   const parsed = JsonComponentsSchema.safeParse(data)
