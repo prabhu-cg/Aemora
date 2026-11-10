@@ -2,6 +2,7 @@ import { describeZodError } from '../json'
 import { InputError, safeReviver, type ImportResult, type Warning } from '../types'
 import type { ComponentDef } from '../../components/schema'
 import { convertDesignMdComponent, walkLayers } from './convert'
+import type { Library } from './resolve'
 import { DESIGNMD_SCHEMA, DmComponentSchema, DmEnvelopeSchema, type DmLayer, type DmWarning } from './schema'
 
 /** A DesignMD file can hold a whole design system (tens of MB), so it is read as a file, not pasted. */
@@ -19,6 +20,8 @@ export interface CatalogEntry {
 }
 
 export interface DesignMdCatalog {
+  /** Component or variant id -> the component it belongs to and the variant it is. Used to fill in nested components. */
+  byAnyId: Map<string, { compId: string; variantId: string }>
   fileName?: string
   pluginVersion?: string
   entries: CatalogEntry[]
@@ -26,6 +29,9 @@ export interface DesignMdCatalog {
   tokens: Record<string, unknown>
   warnings: DmWarning[]
 }
+
+/** The file is the index of a split export. Its components are in the files of the "components" folder next to it. */
+export class DesignMdIndexError extends InputError {}
 
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v)
 
@@ -50,17 +56,22 @@ export function parseDesignMdText(text: string): DesignMdCatalog {
   if (!env.success) throw new InputError('The DesignMD file has problems and could not be read.', describeZodError(env.error))
   const file = env.data
   if (file.components.length === 0) {
-    throw new InputError(file.index?.componentCount
-      ? 'This components.json is only the index of a large export. The components are in separate files in the "components" folder next to it. Choose those files instead (you can select several).'
-      : 'This file has no components.')
+    if (file.index?.componentCount) {
+      throw new DesignMdIndexError('This components.json is only the index of a large export. The components are in separate files in the "components" folder next to it. Choose the whole export folder, or select those files (you can select several).')
+    }
+    throw new InputError('This file has no components.')
   }
 
   const components = new Map<string, unknown>()
+  const byAnyId = new Map<string, { compId: string; variantId: string }>()
   const entries: CatalogEntry[] = []
   for (const c of file.components) {
     if (!isObj(c) || typeof c.id !== 'string' || typeof c.name !== 'string') continue
     if (components.has(c.id)) continue
     components.set(c.id, c)
+    const defaultVariant = typeof c.defaultVariantId === 'string' ? c.defaultVariantId : c.id
+    byAnyId.set(c.id, { compId: c.id, variantId: defaultVariant })
+    for (const v of Array.isArray(c.variants) ? c.variants : []) if (isObj(v) && typeof v.id === 'string') byAnyId.set(v.id, { compId: c.id, variantId: v.id })
     let layers = 0
     walkLayers(c.tree as DmLayer | undefined, () => { layers++ })
     entries.push({
@@ -73,22 +84,36 @@ export function parseDesignMdText(text: string): DesignMdCatalog {
     })
   }
   if (!entries.length) throw new InputError('No readable components were found in this file.')
-  return { fileName: file.metadata?.fileName, pluginVersion: file.metadata?.pluginVersion, entries, components, tokens: file.tokens, warnings: file.warnings }
+  return { byAnyId, fileName: file.metadata?.fileName, pluginVersion: file.metadata?.pluginVersion, entries, components, tokens: file.tokens, warnings: file.warnings }
 }
 
 /** Several files (for example the per-component files of a split export) become one catalog. */
 export function mergeCatalogs(list: DesignMdCatalog[]): DesignMdCatalog {
   const [first, ...rest] = list
-  const merged: DesignMdCatalog = { ...first, entries: [...first.entries], components: new Map(first.components), tokens: { ...first.tokens }, warnings: [...first.warnings] }
+  const merged: DesignMdCatalog = { ...first, byAnyId: new Map(first.byAnyId), entries: [...first.entries], components: new Map(first.components), tokens: { ...first.tokens }, warnings: [...first.warnings] }
   for (const c of rest) {
     for (const e of c.entries) if (!merged.components.has(e.id)) { merged.entries.push(e); merged.components.set(e.id, c.components.get(e.id)) }
+    for (const [k, v] of c.byAnyId) if (!merged.byAnyId.has(k)) merged.byAnyId.set(k, v)
     Object.assign(merged.tokens, c.tokens)
     merged.warnings.push(...c.warnings)
   }
   return merged
 }
 
+/** Looks components of the file up by id, reading each one once. */
+function libraryOf(cat: DesignMdCatalog): Library {
+  const cache = new Map<string, ReturnType<typeof DmComponentSchema.safeParse>>()
+  return (id) => {
+    const hit = cat.byAnyId.get(id)
+    if (!hit) return undefined
+    let parsed = cache.get(hit.compId)
+    if (!parsed) { parsed = DmComponentSchema.safeParse(cat.components.get(hit.compId)); cache.set(hit.compId, parsed) }
+    return parsed.success ? { comp: parsed.data, variantId: hit.variantId } : undefined
+  }
+}
+
 export function importDesignMd(cat: DesignMdCatalog, ids: string[]): ImportResult {
+  const library = libraryOf(cat)
   const warnings: Warning[] = []
   const components: ComponentDef[] = []
   for (const id of ids.slice(0, MAX_DESIGNMD_IMPORT)) {
@@ -98,7 +123,7 @@ export function importDesignMd(cat: DesignMdCatalog, ids: string[]): ImportResul
       warnings.push({ level: 'warning', where: name, message: `Could not be read and was skipped: ${describeZodError(parsed.error, 2).join('; ')}` })
       continue
     }
-    components.push(convertDesignMdComponent(parsed.data, cat.tokens, cat.warnings, { fileName: cat.fileName, pluginVersion: cat.pluginVersion }, warnings))
+    components.push(convertDesignMdComponent(parsed.data, cat.tokens, cat.warnings, { fileName: cat.fileName, pluginVersion: cat.pluginVersion }, warnings, library))
   }
   if (ids.length > MAX_DESIGNMD_IMPORT) warnings.push({ level: 'warning', message: `Only the first ${MAX_DESIGNMD_IMPORT} selected components were read. Import the rest in another round.` })
   if (!components.length) throw new InputError('None of the selected components could be read.', warnings.map((w) => w.message))

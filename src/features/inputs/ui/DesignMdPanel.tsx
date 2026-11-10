@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
-import { FileUp } from 'lucide-react'
+import { FileUp, FolderOpen } from 'lucide-react'
 import { Button } from '../../../components/ui/Button'
-import { importDesignMd, mergeCatalogs, parseDesignMdText, MAX_DESIGNMD_CHARS, MAX_DESIGNMD_IMPORT, type DesignMdCatalog } from '../designmd/parse'
+import { DesignMdIndexError, importDesignMd, mergeCatalogs, parseDesignMdText, MAX_DESIGNMD_CHARS, MAX_DESIGNMD_IMPORT, type DesignMdCatalog } from '../designmd/parse'
 import { InputError, type ImportResult } from '../types'
 
 /** Reads components.json from the DesignMD Figma plugin, then lets the user pick which components to bring in. */
@@ -10,31 +10,49 @@ export function DesignMdPanel({ onResult }: { onResult: (r: ImportResult) => voi
   const [picked, setPicked] = useState<Set<string>>(new Set())
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState('')
-  const [error, setError] = useState<{ message: string; issues: string[] } | null>(null)
+  const [error, setError] = useState<{ message: string; issues: string[]; index?: boolean } | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+  const folderRef = useRef<HTMLInputElement>(null)
 
   const fail = (e: unknown) => {
     setStatus('')
-    setError(e instanceof InputError ? { message: e.message, issues: e.issues } : { message: 'Something went wrong reading that file. Nothing was imported.', issues: [] })
+    setError(e instanceof InputError ? { message: e.message, issues: e.issues, index: e instanceof DesignMdIndexError } : { message: 'Something went wrong reading that file. Nothing was imported.', issues: [] })
   }
 
-  const readFiles = async (files: FileList | null) => {
-    if (!files?.length) return
+  /**
+   * Reads one or many files. A split export has an index file next to a folder of component files: the index is
+   * skipped when there is anything else to read, and files that are not DesignMD components are left out and counted.
+   */
+  const readFiles = async (list: FileList | null, fromFolder = false) => {
+    const files = Array.from(list ?? []).filter((f) => !fromFolder || /\.json$/i.test(f.name))
+    if (!files.length) {
+      if (fromFolder && list?.length) fail(new InputError('That folder has no .json files. Choose the folder DesignMD exported, the one that holds components.json.'))
+      return
+    }
     setError(null); setCatalog(null); setPicked(new Set())
     try {
       const parts: DesignMdCatalog[] = []
-      for (const f of Array.from(files)) {
-        if (f.size > MAX_DESIGNMD_CHARS) throw new InputError(`${f.name} is larger than 64 MB.`)
-        setStatus(`Reading ${f.name}…`)
-        await new Promise((r) => setTimeout(r, 0)) // let the status paint before the synchronous parse
-        parts.push(parseDesignMdText(await f.text()))
+      let index = 0, ignored = 0
+      let firstError: unknown
+      for (const [i, f] of files.entries()) {
+        if (f.size > MAX_DESIGNMD_CHARS) { ignored++; firstError ??= new InputError(`${f.name} is larger than 64 MB.`); continue }
+        if (i % 8 === 0) {
+          setStatus(files.length > 1 ? `Reading ${i + 1} of ${files.length} files…` : `Reading ${f.name}…`)
+          await new Promise((r) => setTimeout(r, 0)) // let the status paint between files
+        }
+        try { parts.push(parseDesignMdText(await f.text())) } catch (e) {
+          if (e instanceof DesignMdIndexError) { index++; firstError ??= e } else { ignored++; firstError ??= e }
+        }
       }
+      if (!parts.length) throw firstError ?? new InputError('No DesignMD components were found.')
       const merged = mergeCatalogs(parts)
       setCatalog(merged)
-      setStatus(`Found ${merged.entries.length} component${merged.entries.length === 1 ? '' : 's'}.`)
+      const skipped = [index ? `the index file` : '', ignored ? (ignored === 1 ? '1 file that is not a DesignMD component' : `${ignored} files that are not DesignMD components`) : ''].filter(Boolean)
+      setStatus(`Found ${merged.entries.length} component${merged.entries.length === 1 ? '' : 's'}${files.length > 1 ? ` in ${parts.length} file${parts.length === 1 ? '' : 's'}` : ''}${skipped.length ? `. Skipped ${skipped.join(' and ')}.` : '.'}`)
       if (merged.entries.length === 1) setPicked(new Set([merged.entries[0].id]))
     } catch (e) { fail(e) }
     if (fileRef.current) fileRef.current.value = ''
+    if (folderRef.current) folderRef.current.value = ''
   }
 
   const shown = useMemo(() => {
@@ -54,17 +72,21 @@ export function DesignMdPanel({ onResult }: { onResult: (r: ImportResult) => voi
   return (
     <div>
       <p className="mb-3 max-w-[70ch] text-[13px] text-ink-muted">
-        Choose <code>components.json</code> from the DesignMD Figma plugin (format <code>designmd.components/v1</code>). It carries each component's properties, layer structure, layout, styles and variants. Large exports are split into files in a <code>components</code> folder, and you can choose several of those at once.
+        Choose <code>components.json</code> from the DesignMD Figma plugin (format <code>designmd.components/v1</code>). It carries each component's properties, layer structure, layout, styles and variants. Large exports are split into a <code>components</code> folder: choose the whole export folder, or select those files.
       </p>
       <div className="flex flex-wrap items-center gap-2">
         <Button onClick={() => fileRef.current?.click()}><FileUp size={16} aria-hidden="true" />Choose DesignMD file</Button>
         <input ref={fileRef} type="file" multiple accept=".json,application/json" className="sr-only" aria-label="Choose DesignMD components file" onChange={(e) => readFiles(e.target.files)} />
+        <Button variant="outline" onClick={() => folderRef.current?.click()}><FolderOpen size={16} aria-hidden="true" />Choose export folder</Button>
+        {/* A folder picker is not in React's types. It reads every file in the folder, which is how a split export is chosen in one go. */}
+        <input ref={(el) => { folderRef.current = el; el?.setAttribute('webkitdirectory', '') }} type="file" multiple className="sr-only" aria-label="Choose DesignMD export folder" onChange={(e) => readFiles(e.target.files, true)} />
         {status && <span role="status" className="text-[13px] text-ink-muted">{status}</span>}
       </div>
       {error && (
         <div role="alert" className="mt-3 rounded-lg bg-danger-soft p-3 text-[13px] text-danger">
           <p className="font-bold">{error.message}</p>
           {error.issues.length > 0 && <ul className="mt-1 list-disc space-y-0.5 pl-5">{error.issues.map((i, k) => <li key={k}><code>{i}</code></li>)}</ul>}
+          {error.index && <Button size="sm" variant="outline" className="mt-2" onClick={() => folderRef.current?.click()}><FolderOpen size={14} aria-hidden="true" />Choose export folder</Button>}
         </div>
       )}
       {catalog && (

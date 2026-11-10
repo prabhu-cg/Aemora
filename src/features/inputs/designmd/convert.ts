@@ -2,7 +2,9 @@ import { newId } from '../../../lib/id'
 import { classifyComponent, inferPropertyType, toKey, toLabel } from '../../components/detect'
 import type { ComponentDef, Origin, Property, PropertyType, Unsupported } from '../../components/schema'
 import type { Warning } from '../types'
+import { resolveInstances, type Library } from './resolve'
 import { DESIGNMD_SCHEMA, type DmComponent, type DmLayer, type DmProperty, type DmWarning } from './schema'
+import type { Layer } from '../../markup/layers'
 
 /** Interaction words. A "state" property made only of these is styled in CSS, not chosen by authors. */
 const INTERACTIVE = new Set(['default', 'hover', 'hovered', 'focus', 'focused', 'pressed', 'active', 'disabled', 'de-activated', 'deactivated', 'inactive', 'enabled'])
@@ -107,7 +109,7 @@ function defaultVariantProperties(comp: DmComponent): Record<string, string> | u
   return v?.variantProperties
 }
 
-export function convertDesignMdComponent(comp: DmComponent, tokens: Record<string, unknown>, pluginWarnings: DmWarning[], source: { fileName?: string; pluginVersion?: string }, warnings: Warning[]): ComponentDef {
+export function convertDesignMdComponent(comp: DmComponent, tokens: Record<string, unknown>, pluginWarnings: DmWarning[], source: { fileName?: string; pluginVersion?: string }, warnings: Warning[], library?: Library): ComponentDef {
   const kind = 'figma-plugin' as const
   const origin: Origin = { kind, ref: comp.id, suggested: false }
   const unsupported: Unsupported[] = []
@@ -119,7 +121,20 @@ export function convertDesignMdComponent(comp: DmComponent, tokens: Record<strin
     const mapped = mapProperty(p, comp, taken, origin, warnings, unsupported, notes)
     if (mapped) properties.push(mapped)
   }
-  const tree = (comp.tree && typeof comp.tree === 'object' ? comp.tree : undefined) as DmLayer | undefined
+  let tree = (comp.tree && typeof comp.tree === 'object' ? comp.tree : undefined) as DmLayer | undefined
+  // Components used inside this one come through empty unless the export asked for their insides. Fill them in from the same file.
+  if (tree && library) {
+    const copy = structuredClone(tree)
+    const res = resolveInstances(copy as unknown as Layer, library)
+    if (res.filled.length) {
+      tree = copy
+      comp = { ...comp, tree: copy }
+      const names = [...new Set(res.filled)]
+      warnings.push({ level: 'info', where: comp.name, message: `${res.filled.length} nested component${res.filled.length === 1 ? ' was' : 's were'} filled in from the same file (${names.slice(0, 4).join(', ')}${names.length > 4 ? `, +${names.length - 4} more` : ''}). Anything changed in this use of them, such as a different label, is not applied. Export from DesignMD with "Include layers inside nested instances" for exact contents.` })
+    }
+    if (res.icons) warnings.push({ level: 'info', where: comp.name, message: `${res.icons} icon${res.icons === 1 ? '' : 's'} inside nested components are shown as boxes. The export has no shape for them.` })
+    if (res.missing) warnings.push({ level: 'info', where: comp.name, message: `${res.missing} nested component${res.missing === 1 ? '' : 's'} could not be filled in, because the file does not hold ${res.missing === 1 ? 'it' : 'them'} or a size limit was reached.` })
+  }
   properties.push(...suggestTextFields(tree, comp, taken, kind, warnings))
 
   if (notes.states.length) {

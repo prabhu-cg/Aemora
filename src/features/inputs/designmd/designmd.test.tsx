@@ -156,6 +156,10 @@ describe('DesignMD components.json adapter', () => {
 
 beforeEach(async () => { await Promise.all([db.projects.clear(), db.previous.clear(), db.quarantine.clear()]) })
 
+const splitIndex = JSON.stringify({ schema: 'designmd.components/v1', index: { componentCount: 2, components: [{ id: 'a', name: 'Alpha', file: 'components/Alpha.json' }, { id: 'b', name: 'Beta', file: 'components/Beta.json' }] }, tokens: {}, components: [], warnings: [] })
+const one = (id: string, name: string) => JSON.stringify({ schema: 'designmd.components/v1', index: { componentCount: 1 }, tokens: {}, warnings: [], components: [{ id, key: id, name, isComponentSet: false, pageName: 'P', properties: [], states: [], sizes: [], variants: [], tree: { id, name, type: 'FRAME', visible: true, children: [] }, variantDiffs: [], treeTruncated: false }] })
+const json = (name: string, text: string) => new File([text], name, { type: 'application/json' })
+
 describe('DesignMD tab', () => {
   it('picks components from a file, reviews them, and adds them to the project', async () => {
     const user = userEvent.setup()
@@ -196,5 +200,49 @@ describe('DesignMD tab', () => {
     await user.upload(screen.getByLabelText('Choose DesignMD components file'), new File(['{"hello":1}'], 'x.json', { type: 'application/json' }))
     expect((await screen.findByRole('alert')).textContent).toMatch(/not a DesignMD components file/)
     expect(screen.queryByRole('region', { name: 'Choose components' })).toBeNull()
+  })
+
+  async function openTab() {
+    const user = userEvent.setup()
+    const p = await createProject({ name: 'Split' })
+    render(<MemoryRouter initialEntries={[`/app/generator/${p.id}`]}><AppRoutes /></MemoryRouter>)
+    await user.click(await screen.findByRole('button', { name: 'Bring in a design' }))
+    await user.click(await screen.findByRole('tab', { name: 'DesignMD' }))
+    return user
+  }
+
+  it('explains an index-only file and offers to choose the export folder', async () => {
+    const user = await openTab()
+    await user.upload(screen.getByLabelText('Choose DesignMD components file'), json('components.json', splitIndex))
+    const alert = await screen.findByRole('alert')
+    expect(alert.textContent).toMatch(/only the index of a large export/)
+    expect(within(alert).getByRole('button', { name: 'Choose export folder' })).toBeTruthy()
+    expect(screen.queryByRole('region', { name: 'Choose components' })).toBeNull()
+  })
+
+  it('skips the index when it is selected together with component files', async () => {
+    const user = await openTab()
+    await user.upload(screen.getByLabelText('Choose DesignMD components file'), [json('components.json', splitIndex), json('Alpha.json', one('a', 'Alpha')), json('Beta.json', one('b', 'Beta'))])
+    const picker = await screen.findByRole('region', { name: 'Choose components' })
+    expect(within(picker).getAllByRole('checkbox')).toHaveLength(2)
+    expect(screen.getByRole('status').textContent).toMatch(/Found 2 components in 2 files\. Skipped the index file\./)
+    expect(screen.queryByRole('alert')).toBeNull()
+  })
+
+  it('reads a whole export folder, ignoring the index and files that are not components', async () => {
+    const user = await openTab()
+    await user.upload(screen.getByLabelText('Choose DesignMD export folder'), [
+      json('components.json', splitIndex), json('Alpha.json', one('a', 'Alpha')), json('Beta.json', one('b', 'Beta')), json('tokens.json', '{"color":{}}'),
+      new File(['# doc'], 'Alpha.md'), new File([''], '.DS_Store'),
+    ])
+    const picker = await screen.findByRole('region', { name: 'Choose components' })
+    expect(within(picker).getAllByRole('checkbox')).toHaveLength(2)
+    expect(screen.getByRole('status').textContent).toMatch(/Found 2 components in 2 files\. Skipped the index file and 1 file that is not a DesignMD component\./)
+  })
+
+  it('says so when a folder holds nothing it can read', async () => {
+    const user = await openTab()
+    await user.upload(screen.getByLabelText('Choose DesignMD export folder'), [new File(['# doc'], 'README.md')])
+    expect((await screen.findByRole('alert')).textContent).toMatch(/no \.json files/)
   })
 })
