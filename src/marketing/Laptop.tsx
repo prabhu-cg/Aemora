@@ -15,8 +15,8 @@ export function Laptop({ alt, caption, children }: { alt: string; caption: React
           <div className="relative rounded-[19px] bg-[#0b0b0c] px-[2.2%] pb-[2.2%] pt-[3.4%]">
             <span aria-hidden="true" className="absolute left-1/2 top-[1.3%] size-[0.6%] min-h-1 min-w-1 -translate-x-1/2 rounded-full bg-[#2a2a30] ring-1 ring-[#3a3a42]" />
             <div className="relative aspect-[8/5] overflow-hidden rounded-[6px] bg-surface">
-              <img src={appLight} alt={alt} width={1120} height={700} className="shot-light absolute inset-0 size-full object-cover object-top" decoding="async" />
-              <img src={appDark} alt="" aria-hidden="true" width={1120} height={700} className="shot-dark absolute inset-0 size-full object-cover object-top" decoding="async" />
+              <img src={appLight} alt={alt} width={2240} height={1400} className="shot-light absolute inset-0 size-full object-cover object-top" decoding="async" />
+              <img src={appDark} alt="" aria-hidden="true" width={2240} height={1400} className="shot-dark absolute inset-0 size-full object-cover object-top" decoding="async" />
               <span aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent" />
             </div>
           </div>
