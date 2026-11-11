@@ -133,7 +133,7 @@ export function FieldForm({ property, field, issues, groups, actions, inline = f
         <input type="checkbox" checked={field.required} onChange={(e) => actions.setOverrides({ required: e.target.checked })} />Required
       </label>
 
-      <Field label="Description" hint="Helper text shown under the field.">
+      <Field label="Description" hint="Shown as a (?) icon next to the label. Authors read it on hover or focus. Leave it empty for no icon.">
         {(id, by) => <textarea id={id} aria-describedby={by} className={area} rows={2} value={desc} onChange={(e) => { setDesc(e.target.value); actions.setOverrides({ description: e.target.value }) }} />}
       </Field>
 

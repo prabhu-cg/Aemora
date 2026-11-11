@@ -126,7 +126,7 @@ function PropertyForm({ component, property, issues, onChange, onRemove, readOnl
           )}
         </Field>
 
-        <Field label="Description" hint="Helper text shown under the field.">
+        <Field label="Description" hint="Shown as a (?) icon next to the label. Authors read it on hover or focus. Leave it empty for no icon.">
           {(id, by) => <textarea id={id} aria-describedby={by} className={area} rows={3} value={d.description} onChange={(e) => edit({ description: e.target.value })} />}
         </Field>
         <Field label="Group" hint="The tab this field appears on. Use “Tab › Section” to place it in a section.">
