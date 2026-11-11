@@ -1,7 +1,7 @@
 import { childPath, type Layer, type LayerChanges, type VariantDiff } from '../../markup/layers'
 
 /** What is compared between variants. Identity, roles and children are not attributes. */
-const ATTRIBUTES = ['visible', 'size', 'sizing', 'layout', 'radius', 'opacity', 'fills', 'strokes', 'effects', 'text', 'instanceOf', 'propertyRefs', 'position', 'layoutPositioning', 'transform', 'clipsContent', 'blendMode', 'graphic'] as const
+const ATTRIBUTES = ['visible', 'size', 'sizing', 'layout', 'radius', 'opacity', 'fills', 'strokes', 'effects', 'text', 'instanceOf', 'propertyRefs', 'position', 'layoutPositioning', 'transform', 'clipsContent', 'blendMode', 'graphic', 'sizeLimits'] as const
 
 interface Entry { layer: Layer; parentPath: string | undefined }
 
@@ -38,7 +38,7 @@ function changesBetween(base: Layer, other: Layer): LayerChanges {
  * How `variant` differs from `base`. A layer whose type changed counts as removed plus added. Only the top-most added or
  * removed layers are listed, their children come along inside them.
  */
-export function diffVariant(base: Layer, variant: Layer, info: { variantId: string; variantProperties: Record<string, string> }): VariantDiff {
+export function diffVariant(base: Layer, variant: Layer, info: { variantId: string; variantProperties: Record<string, string>; onAmbiguous?: () => void }): VariantDiff {
   const baseIndex = index(base)
   const variantIndex = index(variant)
   const layers: VariantDiff['layers'] = []
@@ -60,5 +60,21 @@ export function diffVariant(base: Layer, variant: Layer, info: { variantId: stri
   for (const [path, entry] of baseIndex) {
     if (!isMatch(path) && (entry.parentPath === undefined || isMatch(entry.parentPath))) removed.push(path)
   }
-  return { variantId: info.variantId, variantProperties: info.variantProperties, layers, added, removed }
+  // The order of the children of each layer that both variants have, and same-name siblings that are not as many here as in the default.
+  const reordered: NonNullable<VariantDiff['reordered']> = []
+  for (const [path, entry] of variantIndex) {
+    const b = baseIndex.get(path)
+    if (!b || !isMatch(path)) continue
+    const kids = entry.layer.children ?? []
+    const baseKids = b.layer.children ?? []
+    const names = (list: Layer[]) => list.reduce<Record<string, number>>((acc, c) => ({ ...acc, [c.name]: (acc[c.name] ?? 0) + 1 }), {})
+    const nv = names(kids), nb = names(baseKids)
+    if (Object.keys(nv).some((k) => nv[k] > 1 && nv[k] !== nb[k])) info.onAmbiguous?.()
+    const vPaths = kids.map((c) => childPath(path, c, kids))
+    const bPaths = baseKids.map((c) => childPath(path, c, baseKids))
+    const shared = (list: string[], other: string[]) => list.filter((p) => other.includes(p))
+    const a = shared(vPaths, bPaths), c = shared(bPaths, vPaths)
+    if (a.some((p, i) => p !== c[i])) reordered.push({ parentPath: path, order: vPaths })
+  }
+  return { variantId: info.variantId, variantProperties: info.variantProperties, layers, added, removed, ...(reordered.length ? { reordered } : {}) }
 }

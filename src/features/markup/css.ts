@@ -1,4 +1,4 @@
-import type { Gradient, Layer, LayerChanges, Paint, Radii } from './layers'
+import type { Gradient, Layer, LayerChanges, Layout, Paint, Radii } from './layers'
 import { toKey } from '../components/detect'
 import { modifier, slug } from './naming'
 import { withChanges, type Factor, type Node, type Structure } from './structure'
@@ -10,7 +10,7 @@ interface Rule { selectors: string[]; decls: Decl[] }
 
 const round = (n: number) => Math.round(n * 100) / 100
 const px = (n: number) => (n === 0 ? '0' : `${round(n)}px`)
-const KEYS = ['position', 'transform', 'layout', 'size', 'clipsContent', 'blendMode', 'fills', 'strokes', 'radius', 'effects', 'opacity', 'text', 'visible'] as const
+const KEYS = ['position', 'transform', 'layout', 'size', 'sizeLimits', 'clipsContent', 'blendMode', 'fills', 'strokes', 'radius', 'effects', 'opacity', 'text', 'visible'] as const
 
 function rgba(r: number, g: number, b: number, a: number) { return `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}, ${round(a)})` }
 
@@ -246,6 +246,24 @@ function turnDecls(eff: Layer): Decl[] {
   return out
 }
 
+/**
+ * `order` rules for the layers a variant puts in another order (the export says so in `reordered`). Items that overlap (a negative gap)
+ * take their margin on the second one as drawn, which is not the second in the markup any more.
+ */
+function reorderRules(entry: { parentPath: string; order: string[] }, nodes: Node[], selectorOf: (n: Node) => string[], layout: Layout | undefined): Rule[] {
+  const out: Rule[] = []
+  const side = layout?.mode === 'HORIZONTAL' ? 'margin-left' : 'margin-top'
+  const overlap = layout?.gap && layout.gap < 0 ? layout.gap : 0
+  entry.order.forEach((path, i) => {
+    for (const n of nodes.filter((x) => x.path === path)) {
+      const decls: Decl[] = [['order', String(i)]]
+      if (overlap) decls.push(['margin-left', '0'], ['margin-top', '0'], ...(i > 0 ? [[side, px(overlap)] as Decl] : []))
+      out.push({ selectors: selectorOf(n), decls })
+    }
+  })
+  return out
+}
+
 const BLEND: Record<string, string> = { MULTIPLY: 'multiply', SCREEN: 'screen', OVERLAY: 'overlay', DARKEN: 'darken', LIGHTEN: 'lighten', COLOR_DODGE: 'color-dodge', COLOR_BURN: 'color-burn', HARD_LIGHT: 'hard-light', SOFT_LIGHT: 'soft-light', DIFFERENCE: 'difference', EXCLUSION: 'exclusion', HUE: 'hue', SATURATION: 'saturation', COLOR: 'color', LUMINOSITY: 'luminosity' }
 
 function displayFor(eff: Layer): string {
@@ -269,11 +287,24 @@ function declsFor(attrs: LayerChanges, eff: Layer, ctx: Ctx, explicit: boolean):
         // A text box that is placed by coordinates keeps the width it has in the design, unless it follows its text.
         if (ctx.absolute && eff.type === 'TEXT' && eff.size) { out.push(['width', px(eff.size.width)], ['flex-shrink', '0']); if (eff.text?.autoResize === 'WIDTH_AND_HEIGHT') out.push(['white-space', 'nowrap']) }
         break
+      case 'sizeLimits': {
+        const lim = eff.sizeLimits
+        if (lim) for (const [key, prop] of [['minWidth', 'min-width'], ['maxWidth', 'max-width'], ['minHeight', 'min-height'], ['maxHeight', 'max-height']] as const) if (lim[key]) out.push([prop, px(lim[key]!)])
+        break
+      }
       case 'fills': out.push(...fillDecls(eff, ctx, explicit)); break
       case 'strokes': case 'effects': if (!out.some(([p]) => p === 'box-shadow')) out.push(...shadowDecls(eff, ctx, explicit)); if (k === 'strokes') out.push(...dashDecls(eff, ctx)); if (k === 'effects') out.push(...blurDecls(eff)); break
       case 'radius': out.push(...radiusDecls(eff)); break
       case 'opacity': if (eff.opacity !== undefined && (explicit || eff.opacity < 1)) out.push(['opacity', String(round(eff.opacity))]); break
-      case 'text': out.push(...textDecls(eff, ctx)); break
+      case 'text': {
+        out.push(...textDecls(eff, ctx))
+        // Text in a box taller than it is, set to sit in the middle or at the bottom, needs that box.
+        const av = eff.text?.alignVertical
+        if ((av === 'CENTER' || av === 'BOTTOM') && eff.text?.autoResize === 'NONE' && eff.size && !ctx.absolute) {
+          out.push(['display', 'flex'], ['flex-direction', 'column'], ['justify-content', av === 'CENTER' ? 'center' : 'flex-end'], ['width', px(eff.size.width)], ['height', px(eff.size.height)], ['flex-shrink', '0'])
+        }
+        break
+      }
       // A layer that a yes/no property switches is shown or hidden by the HTL, so the CSS must not hide it for good.
       case 'visible':
         if (eff.visible === false) {
@@ -385,7 +416,12 @@ export function generateCss(st: Structure, block: string, notes: MarkupNote[], t
     const extra: Decl[] = factor.isState && prefixes.disabled ? [['cursor', 'not-allowed']] : []
     // The export does not say that a layer changes places between options. A layer named for the option (a "pointer" for "pointer position")
     // sits after the others when the option starts with right or bottom.
-    if (!factor.isState && /^(right|bottom|end|after|below)\b/i.test(value.trim())) {
+    if (diff.reordered?.length) {
+      for (const entry of diff.reordered) {
+        const layout = diff.layers.find((l) => l.path === entry.parentPath)?.changes.layout ?? st.byPath.get(entry.parentPath)?.layer.layout
+        rules.push(...reorderRules(entry, st.nodes, (n) => prefixes.list.map((p) => (n.el ? `${p} ${sel(n)}` : p)), layout))
+      }
+    } else if (!factor.isState && /^(right|bottom|end|after|below)\b/i.test(value.trim())) {
       const words = (x: string) => x.toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length > 2)
       const fw = words(factor.name)
       for (const n of unique) {
@@ -445,6 +481,10 @@ export function generateCss(st: Structure, block: string, notes: MarkupNote[], t
     if (state && !prefixes) continue
     // Without a state the options are classes on the root. With one, the state's selectors come first and the classes follow.
     const roots = prefixes ? prefixes.list.map((p) => `${p}${looks}`) : [looks]
+    for (const entry of diff.reordered ?? []) {
+      const layout = diff.layers.find((l) => l.path === entry.parentPath)?.changes.layout ?? st.byPath.get(entry.parentPath)?.layer.layout
+      rules.push(...reorderRules(entry, st.nodes, (n) => roots.map((r) => (n.el ? `${r} ${rootSel}__${n.el}` : r)), layout))
+    }
     for (const node of unique) {
       const change = diff.layers.find((l) => l.path === node.path)?.changes
       const eff = change ? withChanges(node.layer, change) : node.layer

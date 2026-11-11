@@ -99,6 +99,7 @@ function layoutOf(n: Json, sizing: { h?: Sizing; v?: Sizing }): Layout | undefin
   l.sizingH = sizing.h as Layout['sizingH']
   l.sizingV = sizing.v as Layout['sizingV']
   if (str(n.layoutWrap) === 'WRAP') l.wrap = true
+  if (n.itemReverseZIndex === true) l.reverseZIndex = true
   return l
 }
 
@@ -136,6 +137,7 @@ function textOf(n: Json): Layer['text'] | undefined {
   if (str(s.textDecoration)) t.textDecoration = str(s.textDecoration)
   if (str(s.textAlignHorizontal)) t.align = str(s.textAlignHorizontal)
   if (str(s.textAutoResize)) t.autoResize = str(s.textAutoResize)
+  if (['TOP', 'CENTER', 'BOTTOM'].includes(str(s.textAlignVertical))) t.alignVertical = str(s.textAlignVertical) as 'TOP' | 'CENTER' | 'BOTTOM'
   if (s.italic === true) t.italic = true
   if (Array.isArray(n.characterStyleOverrides) && n.characterStyleOverrides.some((x) => x !== 0)) t.mixed = true
   return t
@@ -189,6 +191,9 @@ function layerOf(n: Json, parent: Json | null, container: Json | null, w: Walk, 
   }
 
   if (n.clipsContent === true) layer.clipsContent = true
+  const limits: NonNullable<Layer['sizeLimits']> = {}
+  for (const k of ['minWidth', 'maxWidth', 'minHeight', 'maxHeight'] as const) { const v = num(n[k]); if (v !== undefined && v > 0) limits[k] = round(v) }
+  if (Object.keys(limits).length) layer.sizeLimits = limits
   const opacity = num(n.opacity)
   if (opacity !== undefined && opacity < 1) layer.opacity = round(opacity, 3)
   const blend = str(n.blendMode)
@@ -310,6 +315,7 @@ export function buildDesign(node: Json, kind: 'set' | 'single', opts: DesignOpti
   assignRoles(tree)
 
   const variantDiffs: VariantDiff[] = []
+  let ambiguous = 0
   if (kind === 'set') {
     for (const v of variants) {
       if (v === defaultNode) continue
@@ -317,10 +323,12 @@ export function buildDesign(node: Json, kind: 'set' | 'single', opts: DesignOpti
       const t = layerOf(v, null, v, w2, rootName)
       if (!t) continue
       assignRoles(t)
-      variantDiffs.push(diffVariant(tree, t, { variantId: str(v.id), variantProperties: variantPropsOf(str(v.name)) }))
+      variantDiffs.push(diffVariant(tree, t, { variantId: str(v.id), variantProperties: variantPropsOf(str(v.name)), onAmbiguous: () => ambiguous++ }))
       if (w2.truncated) walk.truncated = true
     }
   }
+
+  if (ambiguous) opts.warn?.(`In ${ambiguous} place${ambiguous === 1 ? '' : 's'}, a variant has a different number of layers with the same name than the default has (for example several layers called "Vector"). Layers are matched across variants by name, so those variants may change the wrong layer. Rename the layers to be unique in Figma to avoid this.`)
 
   const optionsOf = (re: RegExp) => [...new Set(Object.entries(defs).flatMap(([name, d]) => (re.test(name) && isObj(d) && Array.isArray(d.variantOptions) ? (d.variantOptions as unknown[]).map(String) : [])))]
   return {

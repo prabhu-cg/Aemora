@@ -333,3 +333,44 @@ describe('a tab with a Line and a Pill look, and states', () => {
     expect(s.find((x) => x.targetLabel === 'Footer')).toMatchObject({ controllerLabel: 'Show footer', source: 'names' })
   })
 })
+
+describe('what the API route reads beyond the basics', () => {
+  const row = (id: string, order: string[], extra: object = {}) => node(id, 'Tip', 'COMPONENT', {
+    layoutMode: 'HORIZONTAL', itemSpacing: -2, itemReverseZIndex: true, primaryAxisSizingMode: 'AUTO', counterAxisSizingMode: 'AUTO',
+    children: order.map((n) => node(`${id}:${n}`, n, 'FRAME', { layoutSizingHorizontal: 'HUG', layoutSizingVertical: 'HUG', ...(n === 'Box' ? { minWidth: 80, maxWidth: 200 } : {}) })), ...extra,
+  })
+  const set = () => ({
+    id: 'set:2', name: 'Tip', type: 'COMPONENT_SET',
+    componentPropertyDefinitions: { side: { type: 'VARIANT', defaultValue: 'left', variantOptions: ['left', 'right'] } },
+    children: [row('v1', ['Pointer', 'Box'], { name: 'side=left' }), row('v2', ['Box', 'Pointer'], { name: 'side=right' })],
+  })
+
+  it('reads reverse stacking, minimum and maximum sizes, and vertical text alignment', () => {
+    const d = buildDesign(set() as never, 'set')!
+    expect(d.tree.layout?.reverseZIndex).toBe(true)
+    expect(d.tree.layout?.gap).toBe(-2)
+    expect(d.tree.children?.find((c) => c.name === 'Box')?.sizeLimits).toEqual({ minWidth: 80, maxWidth: 200 })
+    const t = buildDesign(node('t', 'Label', 'COMPONENT', { children: [text('x', 'Words', 'hi', { style: { textAutoResize: 'NONE', textAlignVertical: 'CENTER' } })] }) as never, 'single')!
+    expect(t.tree.children?.[0].text?.alignVertical).toBe('CENTER')
+  })
+
+  it('notices a variant that puts the same layers in another order', () => {
+    const d = buildDesign(set() as never, 'set')!
+    expect(d.variantDiffs[0].reordered).toEqual([{ parentPath: 'Tip', order: ['Tip/Box', 'Tip/Pointer'] }])
+  })
+
+  it('writes the order into the CSS for that option, with the overlap margin on the item drawn second', () => {
+    const res = parseFigmaResponse({ nodes: { '1:1': { document: set() } } }, { fileKey: 'K', requestedNodeId: '1:1' })
+    const css = generateMarkup(res.components[0]).files[1].content
+    expect(css).toMatch(/--side-right \.cmp-tip__box \{[^}]*order: 0;/s)
+    expect(css).toMatch(/--side-right \.cmp-tip__pointer \{[^}]*order: 1;[^}]*margin-left: -2px;/s)
+    expect(css).toMatch(/min-width: 80px;[^}]*max-width: 200px;|min-width: 80px;/s)
+  })
+
+  it('warns when a variant has a different number of same-named layers than the default', () => {
+    const many = (id: string, count: number, extra: object) => node(id, 'Flag', 'COMPONENT', { children: Array.from({ length: count }, (_, i) => node(`${id}:${i}`, 'Vector', 'VECTOR')), ...extra })
+    const warnings: string[] = []
+    buildDesign({ id: 's', name: 'Flag', type: 'COMPONENT_SET', componentPropertyDefinitions: { c: { type: 'VARIANT', defaultValue: 'a', variantOptions: ['a', 'b'] } }, children: [many('a', 2, { name: 'c=a' }), many('b', 3, { name: 'c=b' })] } as never, 'set', { warn: (m) => warnings.push(m) })
+    expect(warnings.some((w) => /same name/.test(w))).toBe(true)
+  })
+})

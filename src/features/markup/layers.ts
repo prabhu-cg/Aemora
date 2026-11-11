@@ -34,6 +34,8 @@ export interface TextProps {
   /** NONE, WIDTH_AND_HEIGHT, HEIGHT or TRUNCATE: how the text box follows its text. */
   autoResize?: string
   italic?: boolean
+  /** Where the text sits in a box taller than it is. */
+  alignVertical?: 'TOP' | 'CENTER' | 'BOTTOM'
 }
 export interface Radii { tl: number; tr: number; br: number; bl: number }
 
@@ -57,6 +59,8 @@ export interface LayerAttrs {
   /** The 2x2 part of the layer's transform [a, b, c, d], only when it is not the identity (rotation, flip, skew). */
   transform?: [number, number, number, number]
   clipsContent?: boolean
+  /** Minimum and maximum size in px, when the design sets them. */
+  sizeLimits?: { minWidth?: number; maxWidth?: number; minHeight?: number; maxHeight?: number }
   blendMode?: string
   graphic?: Graphic
 }
@@ -70,6 +74,8 @@ export interface VariantDiff {
   /** `index` is the position among the parent's children, when the plugin provides it. */
   added: { parentPath: string; index?: number; layer: Layer }[]
   removed: string[]
+  /** Parents whose children come in another order in this variant. `order` lists the name paths of all their children, first to last. */
+  reordered?: { parentPath: string; order: string[] }[]
 }
 
 export interface DesignData {
