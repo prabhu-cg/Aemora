@@ -17,7 +17,7 @@ function condExpr(presence: Presence, names: Record<string, string>): string {
   return `!(${presence.terms.map((t) => `(${all(t)})`).join(' || ')})`
 }
 
-interface Ctx { tags: Map<Node, string>; names: Record<string, string>; block: string; props: Property[]; component: ComponentDef; modelFqn: string; notes: MarkupNote[]; rootTag: string; hiddenLabels: Node[] }
+interface Ctx { tags: Map<Node, string>; names: Record<string, string>; block: string; props: Property[]; component: ComponentDef; modelFqn: string; notes: MarkupNote[]; rootTag: string; hiddenLabels: Node[]; linkUsed?: boolean }
 
 function propFor(ctx: Ctx, ref?: string, layerId?: string, layer?: Layer): Property | undefined {
   if (ref) { const k = toKey(ref); const p = ctx.props.find((x) => x.key === k); if (p) return p }
@@ -69,13 +69,17 @@ function describeTag(n: Node, ctx: Ctx): { tag: string; attrs: string[] } {
     }
     case 'image': {
       const img = ctx.props.find((p) => p.type === 'image' && /image|img|photo|picture|src/i.test(p.key)) ?? ctx.props.find((p) => p.type === 'image')
-      const alt = ctx.props.find((p) => /^alt/i.test(p.key))
+      const alt = ctx.props.find((p) => /^alt|alt(text)?$/i.test(p.key))
       if (!img) ctx.notes.push({ level: 'warning', layer: l.name, message: 'This is an image, but the component has no image field, so its source is empty.' })
       return { tag: 'img', attrs: [`src="${img ? `\${model.${ctx.names[img.key]}}` : ''}"`, `alt="${alt ? `\${model.${ctx.names[alt.key]}}` : ''}"`] }
     }
     case 'divider': return { tag: 'hr', attrs: [] }
-    case 'button': return { tag: 'button', attrs: ['type="button"'] }
-    case 'link': return { tag: 'a', attrs: ['href="#"'] }
+    case 'button': case 'link': {
+      // The first button or link in a component that has a link field opens that link. Later ones keep a plain target.
+      const field = ctx.rootTag === 'a' || ctx.linkUsed ? undefined : ctx.props.find((p) => p.type === 'link')
+      if (field) { ctx.linkUsed = true; return { tag: 'a', attrs: [`href="\${model.${ctx.names[field.key]}}"`] } }
+      return l.role === 'button' ? { tag: 'button', attrs: ['type="button"'] } : { tag: 'a', attrs: ['href="#"'] }
+    }
     case 'input':
       if (n.children.length) {
         ctx.notes.push({ level: 'info', layer: l.name, message: 'This looks like an input field, but it has layers inside. A plain container was generated, so add the real <input> by hand.' })

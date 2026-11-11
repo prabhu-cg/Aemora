@@ -16,6 +16,7 @@ import { validateFields } from '../../mapping/validate'
 import { FieldPanel, type FieldActions } from '../../mapping/ui/FieldPanel'
 import { MappingView } from '../../mapping/ui/MappingView'
 import type { Mapping } from '../../mapping/schema'
+import { readDesign } from '../../markup/layers'
 import { resolveDialog, placeField, validateDialog, pruneDialogs } from '../../dialog/ops'
 import type { ComponentDialog } from '../../dialog/schema'
 import { DialogEditor, type Target } from '../../dialog/ui/DialogEditor'
@@ -46,7 +47,8 @@ export function ComponentWorkspace({ project, readOnly = false, focus }: { proje
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [confirmDeleteAll, setConfirmDeleteAll] = useState(false)
   const [view, setView] = useState<WorkspaceView>('properties')
-  const [previewMode, setPreviewMode] = useState<'dialog' | 'component'>('component')
+  // The component preview is the way in, except for a component with no layers to draw: that opens on the dialog preview.
+  const [previewChoice, setPreviewChoice] = useState<'dialog' | 'component' | null>(null)
   const [fieldPropId, setFieldPropId] = useState('')
   const [dialogSelected, setDialogSelected] = useState('')
   const [lastFieldProp, setLastFieldProp] = useState<Property | undefined>(undefined)
@@ -115,6 +117,7 @@ export function ComponentWorkspace({ project, readOnly = false, focus }: { proje
   const fieldErrors = fieldIssues.filter((i) => i.level === 'error').length
   const storedDialog = project.dialog?.components?.[component.id]
   const dialog = resolveDialog(component, storedDialog)
+  const previewMode = previewChoice ?? (readDesign(component)?.tree ? 'component' : 'dialog')
   const dialogErrors = validateDialog(dialog).filter((i) => i.level === 'error').length
 
   /** Apply a change to the freshly stored dialog. The first edit stores the layout the user was looking at. */
@@ -290,7 +293,7 @@ export function ComponentWorkspace({ project, readOnly = false, focus }: { proje
           <div role="tabpanel" className="mt-4">
             <div role="group" aria-label="Preview type" className="mb-4 inline-flex rounded-lg border border-hairline-strong p-0.5">
               {([['component', 'Component'], ['dialog', 'Dialog']] as const).map(([id, label]) => (
-                <button key={id} type="button" aria-pressed={previewMode === id} onClick={() => setPreviewMode(id)}
+                <button key={id} type="button" aria-pressed={previewMode === id} onClick={() => setPreviewChoice(id)}
                   className={`h-8 cursor-pointer rounded-md px-3 text-[13px] font-bold ${previewMode === id ? 'bg-ink-strong/10 text-ink-strong' : 'text-ink-muted hover:text-ink-strong'}`}>{label}</button>
               ))}
             </div>

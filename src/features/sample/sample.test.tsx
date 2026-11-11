@@ -10,6 +10,10 @@ import { resolveDialog } from '../dialog/ops'
 import { generateXml } from '../xml/build'
 import { checkAem, checkGenerator, parseXml } from '../xml/validate'
 import { sampleProject } from './sample'
+import { generateMarkup } from '../markup'
+import { readDesign } from '../markup/layers'
+import { validateMarkup } from '../markup/validate'
+import { suggestShowWhen } from '../mapping/showhide'
 
 // Controls disabled through a parent <fieldset> do not report .disabled in jsdom, but they match :disabled, as in a browser.
 const off = (el: Element) => el.matches(':disabled')
@@ -45,6 +49,31 @@ describe('sample project data', () => {
     expect(d.tabs.map((t) => t.title)).toEqual(['Content', 'Style'])
     expect(d.tabs[0].items.some((i) => i.kind === 'section' && i.title === 'Media')).toBe(true)
     expect(Object.keys(p.dialog.components)).toEqual([card.id])
+  })
+  it('gives the Button and the Card real layers, and the other three none', () => {
+    expect(p.components.map((c) => !!readDesign(c)?.tree)).toEqual([true, true, false, false, false])
+  })
+  it.each(['Button', 'Card'])('%s generates real markup: HTL, CSS with options and states, and no problems', (name) => {
+    const c = p.components.find((x) => x.name === name)!
+    const m = generateMarkup(c)
+    expect(m.fallback).toBe(false)
+    expect(validateMarkup(m)).toEqual([])
+    expect(m.notes.filter((n) => n.level === 'warning')).toEqual([])
+    const css = m.files[1].content
+    expect(css).toContain(`.cmp-${name.toLowerCase()}:hover`)
+    expect(css).toMatch(/--(variant|background-variant)-/)
+  })
+  it('binds the card\'s image description and button link, and the button\'s icon position', () => {
+    const [button, card] = p.components
+    const html = generateMarkup(card).files[0].content
+    expect(html).toContain('alt="${model.imageAlt}"')
+    expect(html).toContain('href="${model.ctaLink}"')
+    expect(generateMarkup(button).files[1].content).toMatch(/--icon-position-left \.cmp-button__icon-left \{\s*display: block/)
+  })
+  it('suggests showing the card\'s description only while "Show description" is on, from the design', () => {
+    const card = p.components[1]
+    const s = suggestShowWhen(resolveComponent(card, p.mappings), card)
+    expect(s.map((x) => [x.controllerLabel, x.targetLabel, x.source])).toEqual([['Show description', 'Description', 'design']])
   })
   it.each(['Button', 'Card', 'Image', 'Text', 'Container'])('%s generates clean XML: well-formed, no structural problems, no generator errors', (name) => {
     const c = p.components.find((x) => x.name === name)!
@@ -137,6 +166,16 @@ describe('sample project page', () => {
     expect(off(screen.getByLabelText('Edit XML'))).toBe(true)
     expect(off(screen.getByRole('button', { name: 'Regenerate' }))).toBe(true)
     expect((editor as HTMLTextAreaElement).value).toContain('sling:resourceType="cq/gui/components/authoring/dialog"')
+  })
+
+  it('opens the preview on the component for a component with layers, and on the dialog for one without', async () => {
+    const user = userEvent.setup()
+    await open()
+    await user.click(screen.getByRole('tab', { name: 'Preview' }))
+    expect(await screen.findByRole('region', { name: 'Component preview' })).toBeTruthy()
+    expect(screen.queryByText(/This preview is not the design/)).toBeNull()
+    await user.click(screen.getByRole('button', { name: /^Image/ }))
+    expect(await screen.findByRole('region', { name: 'Simulated dialog preview' })).toBeTruthy()
   })
 
   it('writes nothing to storage, however much you click around', async () => {

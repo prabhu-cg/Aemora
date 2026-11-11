@@ -4,6 +4,7 @@ import { buildDialog } from '../dialog/ops'
 import { setConstraint, setFieldType, setMultifield, patchSubfield, addSubfield } from '../mapping/ops'
 import type { Mapping } from '../mapping/schema'
 import { ProjectSchema, SCHEMA_VERSION, type Project } from '../projects/schema'
+import { buttonDesign, cardDesign } from './sampleDesign'
 
 export const SAMPLE_ID = 'sample'
 const T = '2025-01-01T09:00:00.000Z'
@@ -74,7 +75,8 @@ function build(): Project {
     }],
   })
 
-  const components = [button, card, image, text, container]
+  // Button and Card come with layers, so the sample has a real component preview and real HTL and CSS. The other three have none.
+  const components = [{ ...button, meta: { design: buttonDesign() } }, { ...card, meta: { design: cardDesign() } }, image, text, container]
   const find = (c: ComponentDef, key: string) => c.properties.find((p) => p.key === key)!
 
   let mappings: Mapping[] = []
@@ -92,7 +94,7 @@ function build(): Project {
 
   return ProjectSchema.parse({
     schemaVersion: SCHEMA_VERSION, id: SAMPLE_ID, name: 'Sample: component library',
-    description: 'A read-only tour: five components, with mappings, a laid-out dialog and generated XML. Open any tab to see how it works.',
+    description: 'A read-only tour: five components, with mappings, a laid-out dialog and generated XML. The Button and Card also have layers, so their Preview and Markup tabs show a real component with options and states. Open any tab to see how it works.',
     aemComponentName: '', inputSource: { kind: 'json', label: 'Built-in sample' },
     components, mappings,
     dialog: { components: { [card.id]: buildDialog(card) } },
