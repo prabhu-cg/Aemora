@@ -7,6 +7,7 @@ import { db } from '../../projects/db'
 import { createProject, mutateProject } from '../../projects/repo'
 import { applyImport } from '../../inputs/apply'
 import { parseComponentJson } from '../../inputs/json'
+import { parseFigmaResponse } from '../../inputs/figma/parse'
 
 const samples = import.meta.glob('../../inputs/samples/*.json', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
 const sample = (n: string) => samples[`../../inputs/samples/${n}.json`]
@@ -151,6 +152,25 @@ describe('AEM fields view', () => {
     await waitFor(async () => expect((await stored(p.id)).mappings[0].overrides.showWhen).toBeTruthy())
     await waitFor(() => expect(screen.queryByRole('region', { name: 'Suggested show-only-when rules' })).toBeNull())
     expect(await screen.findByText('Shown when show icon left is checked')).toBeTruthy()
+  })
+
+  it('offers rules the design itself implies, and says they come from the design', async () => {
+    const user = userEvent.setup()
+    const p = await createProject({ name: 'Teaser' })
+    // A chip whose count sits in a badge that the yes/no property "has count" switches.
+    const doc = { id: '1:1', name: 'Chip', type: 'COMPONENT', size: { x: 60, y: 20 }, layoutMode: 'HORIZONTAL',
+      componentPropertyDefinitions: { 'has count#9:1': { type: 'BOOLEAN', defaultValue: true } },
+      children: [{ id: '2:1', name: 'Badge', type: 'FRAME', size: { x: 24, y: 17 }, layoutMode: 'HORIZONTAL', componentPropertyReferences: { visible: 'has count#9:1' },
+        children: [{ id: '2:3', name: 'Count', type: 'TEXT', characters: '0', size: { x: 8, y: 17 }, style: { fontSize: 12 } }] }] }
+    await mutateProject(p.id, (x) => applyImport(x, parseFigmaResponse({ name: 'F', nodes: { '1:1': { document: doc } } }, { fileKey: 'K', requestedNodeId: '1:1' })).project)
+    render(<MemoryRouter initialEntries={[`/app/generator/${p.id}`]}><AppRoutes /></MemoryRouter>)
+    await user.click(await screen.findByRole('tab', { name: /AEM fields/ }))
+    const box = await screen.findByRole('region', { name: 'Suggested show-only-when rules' })
+    expect(box.textContent).toMatch(/Show Count only when has count is checked/)
+    expect(box.textContent).toMatch(/as in the design/)
+    await user.click(within(box).getByRole('button', { name: 'Show Count only when has count is checked' }))
+    await waitFor(async () => expect((await stored(p.id)).mappings[0].overrides.showWhen).toBeTruthy())
+    expect(await screen.findByText('Shown when has count is checked')).toBeTruthy()
   })
 
   it('builds a composite multifield for repeated links with named item fields', async () => {

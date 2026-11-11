@@ -23,7 +23,7 @@ export function MappingView({ component, fields, issues, selectedId, onSelect, o
   const [dismissed, setDismissed] = useState(false)
   if (!fields.length) return <p className="rounded-lg border border-dashed border-hairline-strong p-4 text-ink-muted">Add properties first. Each one becomes an AEM field.</p>
   const edited = fields.filter((f) => f.edited).length
-  const suggestions = readOnly || dismissed ? [] : suggestShowWhen(fields)
+  const suggestions = readOnly || dismissed ? [] : suggestShowWhen(fields, component)
   return (
     <div>
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
@@ -37,7 +37,7 @@ export function MappingView({ component, fields, issues, selectedId, onSelect, o
           <ul className="mt-2 space-y-1.5">
             {suggestions.map((s) => (
               <li key={s.targetId} className="flex flex-wrap items-center gap-2">
-                <span className="min-w-0 flex-1 basis-56">Show <strong>{s.targetLabel}</strong> only when <strong>{s.controllerLabel}</strong> is checked</span>
+                <span className="min-w-0 flex-1 basis-56">Show <strong>{s.targetLabel}</strong> only when <strong>{s.controllerLabel}</strong> is checked{s.source === 'design' && <span className="ml-2 rounded-md border border-hairline px-1.5 py-0.5 text-[11px] text-ink-muted">as in the design</span>}</span>
                 <Button size="sm" variant="outline" onClick={() => onShowWhen(s.targetId, s.controllerId)} aria-label={`Show ${s.targetLabel} only when ${s.controllerLabel} is checked`}>Apply</Button>
               </li>
             ))}

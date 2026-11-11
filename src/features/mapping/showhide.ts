@@ -1,5 +1,8 @@
 import { node, s, type AemNode } from '../aem/nodes'
 import { kebab } from '../../lib/kebab'
+import { toKey } from '../components/detect'
+import type { ComponentDef } from '../components/schema'
+import { readDesign, type Layer } from '../markup/layers'
 import type { ResolvedField } from './engine'
 
 /**
@@ -57,18 +60,57 @@ export function applyShowHide(n: AemNode, propertyId: string, plan: ShowHidePlan
   return { ...n, props: { ...n.props, 'granite:class': s(classes) }, children: [...n.children, data] }
 }
 
-export interface ShowWhenSuggestion { targetId: string; controllerId: string; targetLabel: string; controllerLabel: string }
+export interface ShowWhenSuggestion {
+  targetId: string
+  controllerId: string
+  targetLabel: string
+  controllerLabel: string
+  /** The design says so (the layer sits inside one that the checkbox switches), or only the names suggest it. */
+  source: 'design' | 'names'
+}
 
 const LEAD = /^(?:show|display|enable|use|has|with|include)\s+/i
 const words = (t: string) => t.replace(/([a-z0-9])([A-Z])/g, '$1 $2').toLowerCase().split(/[^a-z0-9]+/).filter(Boolean)
 
 /**
+ * What the design itself says. A field made from a layer (its text, its swapped icon) is shown only while the layer is, and a
+ * layer is shown only while the yes/no property that switches it, or any layer around it, is on.
+ */
+function fromDesign(fields: ResolvedField[], component: ComponentDef): ShowWhenSuggestion[] {
+  const design = readDesign(component)
+  if (!design?.tree) return []
+  const byKey = new Map(fields.map((f) => [f.key, f]))
+  const byId = new Map(fields.map((f) => [f.propertyId, f]))
+  const byLayer = new Map<string, ResolvedField>()
+  for (const p of component.properties) { const f = byId.get(p.id); if (p.origin.ref && f) byLayer.set(p.origin.ref, f) }
+  const isSwitch = (f?: ResolvedField): f is ResolvedField => !!f && (f.fieldType === 'checkbox' || f.fieldType === 'switch')
+  const out = new Map<string, ShowWhenSuggestion>()
+  const visit = (l: Layer, around: ResolvedField | undefined) => {
+    const own = l.propertyRefs?.visible ? byKey.get(toKey(l.propertyRefs.visible)) : undefined
+    const sw = isSwitch(own) ? own : around
+    if (sw) {
+      const driven = [l.propertyRefs?.characters, l.propertyRefs?.mainComponent].flatMap((r) => (r ? [byKey.get(toKey(r))] : []))
+      const made = byLayer.get(l.id)
+      for (const t of [...driven, made]) {
+        if (!t || t.propertyId === sw.propertyId || t.showWhen || out.has(t.propertyId)) continue
+        if (t.fieldType === 'checkbox' || t.fieldType === 'switch' || t.fieldType === 'hidden') continue
+        out.set(t.propertyId, { targetId: t.propertyId, controllerId: sw.propertyId, targetLabel: t.label, controllerLabel: sw.label, source: 'design' })
+      }
+    }
+    for (const c of l.children ?? []) visit(c, sw)
+  }
+  visit(design.tree, undefined)
+  return [...out.values()]
+}
+
+/**
  * Obvious pairs only: a checkbox or switch labelled "Show icon left" and another field labelled "Left icon" (same words, any order).
  * These are offered, never applied by themselves, and skipped once a field already has a condition.
  */
-export function suggestShowWhen(fields: ResolvedField[]): ShowWhenSuggestion[] {
-  const out: ShowWhenSuggestion[] = []
-  const used = new Set<string>()
+export function suggestShowWhen(fields: ResolvedField[], component?: ComponentDef): ShowWhenSuggestion[] {
+  // What the design says comes first. The names are asked only about fields the design said nothing about.
+  const out: ShowWhenSuggestion[] = component ? fromDesign(fields, component) : []
+  const used = new Set<string>(out.map((x) => x.targetId))
   for (const c of fields) {
     if (c.fieldType !== 'checkbox' && c.fieldType !== 'switch') continue
     if (!LEAD.test(c.label.trim())) continue
@@ -80,7 +122,7 @@ export function suggestShowWhen(fields: ResolvedField[]): ShowWhenSuggestion[] {
       if (t.fieldType === 'checkbox' || t.fieldType === 'switch' || t.fieldType === 'hidden') continue
       if ([...words(t.label)].sort().join(' ') !== key) continue
       used.add(t.propertyId)
-      out.push({ targetId: t.propertyId, controllerId: c.propertyId, targetLabel: t.label, controllerLabel: c.label })
+      out.push({ targetId: t.propertyId, controllerId: c.propertyId, targetLabel: t.label, controllerLabel: c.label, source: 'names' })
       break
     }
   }
