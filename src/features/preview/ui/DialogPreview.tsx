@@ -4,6 +4,7 @@ import type { ComponentDef } from '../../components/schema'
 import type { ComponentDialog } from '../../dialog/schema'
 import type { ResolvedField } from '../../mapping/engine'
 import { coerceValue, toSaved, validateValue, type Value } from '../values'
+import { Button } from '../../../components/ui/Button'
 import { PreviewField } from './widgets'
 
 interface Props { component: ComponentDef; dialog: ComponentDialog; fields: ResolvedField[]; /** Opens the Dialog tab, where left-out properties can be added back. */ onShowDialog?: () => void }
@@ -97,8 +98,8 @@ export function DialogPreview({ component, dialog, fields, onShowDialog }: Props
                 {submitted && errors.size > 0 && <span className="flex items-center gap-1 text-danger"><CircleAlert size={14} aria-hidden="true" />Fix {errors.size} {errors.size === 1 ? 'field' : 'fields'} before Done will work.</span>}
                 {saved && <span className="flex items-center gap-1 text-success"><CheckCircle2 size={14} aria-hidden="true" />Valid. In AEM the dialog would close and save these values.</span>}
               </p>
-              <button type="button" onClick={cancel} aria-label="Cancel" title="Cancel: clears what you typed in this preview" className="inline-flex size-8 cursor-pointer items-center justify-center rounded-full text-ink hover:bg-sand"><X size={18} aria-hidden="true" /></button>
-              <button type="button" onClick={done} aria-label="Done" title="Done" className="inline-flex size-8 cursor-pointer items-center justify-center rounded-full bg-accent text-on-accent hover:bg-accent-hover"><Check size={18} aria-hidden="true" /></button>
+              <button type="button" onClick={cancel} aria-label="Close without saving" title="Cancel: clears what you typed in this preview" className="inline-flex size-8 cursor-pointer items-center justify-center rounded-full text-ink hover:bg-sand"><X size={18} aria-hidden="true" /></button>
+              <button type="button" onClick={done} aria-label="Save and close" title="Done" className="inline-flex size-8 cursor-pointer items-center justify-center rounded-full bg-accent text-on-accent hover:bg-accent-hover"><Check size={18} aria-hidden="true" /></button>
             </div>
 
             <div role="tablist" aria-label="Dialog tabs" className="flex flex-wrap border-b border-hairline bg-sand">
@@ -124,6 +125,12 @@ export function DialogPreview({ component, dialog, fields, onShowDialog }: Props
                   {it.fieldIds.map(renderField)}
                 </fieldset>
               ))}
+            </div>
+
+            {/* The action buttons at the bottom of the dialog, as in AEM. They do what the icons at the top do. */}
+            <div role="group" aria-label="Dialog actions" className="flex justify-end gap-2 border-t border-hairline bg-sand px-5 py-3">
+              <Button type="button" variant="outline" onClick={cancel} title="Clears what you typed in this preview">Cancel</Button>
+              <Button type="button" onClick={done}>Done</Button>
             </div>
           </div>
         </div>
@@ -159,7 +166,7 @@ export function DialogPreview({ component, dialog, fields, onShowDialog }: Props
           <ul className="mt-2 list-disc space-y-1 pl-5 text-ink">
             <li>Authors select the component in the page editor and choose the configure (wrench) icon. The dialog opens over the page, as above.</li>
             <li>Each tab here becomes a tab in the dialog; each section becomes a titled group of fields.</li>
-            <li>The cross cancels and the tick saves (Done). Required fields are marked, and Done will not save until they are filled in correctly.</li>
+            <li>The cross at the top, or the Cancel button at the bottom, cancels. The tick, or the Done button, saves. Required fields are marked, and Done will not save until they are filled in correctly.</li>
             <li>Hover the (?) next to a label to read its description.</li>
             <li>Path, tag and file fields open AEM's own pickers. Here they show made-up sample paths.</li>
           </ul>

@@ -117,6 +117,23 @@ describe('simulated dialog preview', () => {
     expect(screen.getByText('This must be switched on.')).toBeTruthy()
   })
 
+  it('has Cancel and Done buttons at the bottom of the dialog, as AEM does, below the fields', async () => {
+    const user = userEvent.setup()
+    await open()
+    const actions = screen.getByRole('group', { name: 'Dialog actions' })
+    expect(within(actions).getAllByRole('button').map((b) => b.textContent)).toEqual(['Cancel', 'Done'])
+    // At the bottom: after the fields of the open tab.
+    expect(within(screen.getByRole('group', { name: 'Dialog' })).getByRole('tabpanel').compareDocumentPosition(actions) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    // Cancel clears what was typed.
+    await user.type(field(/^Heading/), 'Hello')
+    expect((field(/^Heading/) as HTMLInputElement).value).toBe('Hello')
+    await user.click(within(actions).getByRole('button', { name: 'Cancel' }))
+    expect((field(/^Heading/) as HTMLInputElement).value).toBe('')
+    // Done checks the dialog, the same as the tick at the top.
+    await user.click(within(actions).getByRole('button', { name: 'Done' }))
+    expect(await screen.findByText(/Fix \d+ fields? before Done will work/)).toBeTruthy()
+  })
+
   it('a valid Done shows the values the dialog would save, typed, with hidden defaults', async () => {
     const user = userEvent.setup()
     await open()
