@@ -3,7 +3,7 @@ import type { ComponentDef } from '../../components/schema'
 import { Button } from '../../../components/ui/Button'
 import { checkFidelity, type FidelityReport, type MismatchKind } from '../check'
 
-const KIND_LABEL: Record<MismatchKind, string> = { size: 'Size', color: 'Colour', order: 'Order', missing: 'Present' }
+const KIND_LABEL: Record<MismatchKind, string> = { size: 'Size', position: 'Position', color: 'Colour', order: 'Order', missing: 'Present' }
 
 /** Draws the component off screen, in a frame of its own, for the check. */
 function offscreenDocument(): { doc: Document; done: () => void } | null {

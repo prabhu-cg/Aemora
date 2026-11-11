@@ -173,14 +173,19 @@ export function buildStructure(rawDesign: DesignData, props: Property[], notes: 
   // Layers that exist only in some variants. The same layer can have a copy for each look it has (an icon that is grey, then orange);
   // the copies sit side by side, so the order of the layers around them is the order of the design.
   const addedNodes: Node[] = []
-  const place = (parent: Node, node: Node, index: number | undefined) => {
+  // `index` is the place among the layers the variant has: the ones it keeps, in order. The markup also holds the ones it removes, so those do not count.
+  const place = (parent: Node, node: Node, index: number | undefined, removed?: Set<string>) => {
     const twin = parent.children.find((c) => addedNodes.includes(c) && c.layer.name === node.layer.name)
     if (twin) parent.children.splice(parent.children.indexOf(twin), 0, node)
-    else if (typeof index === 'number') parent.children.splice(Math.min(index, parent.children.length), 0, node)
-    else parent.children.push(node)
+    else if (typeof index === 'number') {
+      const keeps = parent.children.filter((c) => !addedNodes.includes(c) && !removed?.has(c.path))
+      const before = keeps[index]
+      const at = before ? parent.children.indexOf(before) : keeps.length ? parent.children.indexOf(keeps[keeps.length - 1]) + 1 : parent.children.length
+      parent.children.splice(at, 0, node)
+    } else parent.children.push(node)
     addedNodes.push(node)
   }
-  type Group = { parentPath: string; layer: Layer; index?: number; present: boolean[] }
+  type Group = { parentPath: string; layer: Layer; index?: number; removed?: Set<string>; present: boolean[] }
   const groups = new Map<string, Group>()
   // The same layer can look different from one option to the next (an alert's banner content per state).
   // Each distinct look is its own conditional copy. Layer ids differ per variant, so they are left out of the comparison.
@@ -201,7 +206,7 @@ export function buildStructure(rawDesign: DesignData, props: Property[], notes: 
       }
       looksOf.set(name, known)
       const key = `${name}|${known.indexOf(l)}`
-      const g = groups.get(key) ?? { parentPath: a.parentPath, layer: a.layer, index: a.index, present: [false, ...design.variantDiffs.map(() => false)] }
+      const g = groups.get(key) ?? { parentPath: a.parentPath, layer: a.layer, index: a.index, removed: new Set(d.removed), present: [false, ...design.variantDiffs.map(() => false)] }
       g.present[i + 1] = true
       groups.set(key, g)
     }
@@ -244,7 +249,7 @@ export function buildStructure(rawDesign: DesignData, props: Property[], notes: 
       node.children = kids.map((c) => make(c, childPath(path, c, kids), node, elName(c)))
       markLook(node)
       nodes.push(node)
-      place(parent, node, g.index)
+      place(parent, node, g.index, g.removed)
       notes.push({ level: 'info', layer: g.layer.name, message: `In the design this only shows in the ${showIn.map((x) => x.value).join(' and ')} state, so it is hidden until then.${typeof g.index === 'number' ? '' : ' Its position among its siblings was guessed, because the plugin did not say where it sits.'}` })
       continue
     }
@@ -287,7 +292,7 @@ export function buildStructure(rawDesign: DesignData, props: Property[], notes: 
       node.children = kids.map((c) => make(c, childPath(path, c, kids), node, elName(c)))
       markLook(node)
       nodes.push(node)
-      if (typeof g.index === 'number' || addedNodes.some((a) => a.parent === parent && a.layer.name === node.layer.name)) place(parent, node, g.index)
+      if (typeof g.index === 'number' || addedNodes.some((a) => a.parent === parent && a.layer.name === node.layer.name)) place(parent, node, g.index, g.removed)
       else if (pos === 'before') parent.children.unshift(node)
       else parent.children.push(node)
     }

@@ -42,15 +42,18 @@ const OVERLAP = '--overlap', OVERLAP_SIDE = '--overlap-side', TOP_FIRST = '--top
 const JUSTIFY = { MIN: 'flex-start', CENTER: 'center', MAX: 'flex-end', SPACE_BETWEEN: 'space-between' } as const
 const ALIGN = { MIN: 'flex-start', CENTER: 'center', MAX: 'flex-end', BASELINE: 'baseline' } as const
 
-function layoutDecls(eff: Layer, ctx: Ctx): Decl[] {
+/** `explicit`: a variant's overrides, which must say "none" where the default had a value (no gap, no padding, start-aligned, no wrap). */
+function layoutDecls(eff: Layer, ctx: Ctx, explicit = false): Decl[] {
   const l = eff.layout
   if (!l) return []
   const out: Decl[] = [['display', ctx.isRoot && l.sizingH === 'HUG' ? 'inline-flex' : 'flex'], ['flex-direction', l.mode === 'HORIZONTAL' ? 'row' : 'column']]
   if (l.wrap) out.push(['flex-wrap', 'wrap'])
+  else if (explicit) out.push(['flex-wrap', 'nowrap'])
   // With space between, Figma keeps a gap value but does not use it: the free space is the gap.
   if (l.gap && l.gap > 0 && l.primaryAlign !== 'SPACE_BETWEEN') out.push(['gap', px(l.gap)])
   // A negative gap (layers overlapping) cannot be a CSS gap. It is written as a margin on every item after the first (see overlapRules).
   else if (l.gap && l.gap < 0 && l.primaryAlign !== 'SPACE_BETWEEN') out.push(['gap', '0'], [OVERLAP, px(l.gap)], [OVERLAP_SIDE, l.mode === 'HORIZONTAL' ? 'margin-left' : 'margin-top'])
+  if (explicit && !l.gap) out.push(['gap', '0'])
   if (l.reverseZIndex) out.push([TOP_FIRST, '1'])
   if (l.padding) {
     let { top: t, right: r, bottom: b, left: x } = l.padding
@@ -58,9 +61,9 @@ function layoutDecls(eff: Layer, ctx: Ctx): Decl[] {
     const sz = eff.size
     if (sz && l.sizingH === 'FIXED' && x + r > sz.width) { const half = Math.floor(sz.width / 2); x = Math.min(x, half); r = Math.min(r, half) }
     if (sz && l.sizingV === 'FIXED' && t + b > sz.height) { const half = Math.floor(sz.height / 2); t = Math.min(t, half); b = Math.min(b, half) }
-    if (t || r || b || x) out.push(['padding', t === b && r === x ? (t === r ? px(t) : `${px(t)} ${px(r)}`) : `${px(t)} ${px(r)} ${px(b)} ${px(x)}`])
+    if (t || r || b || x || explicit) out.push(['padding', t === b && r === x ? (t === r ? px(t) : `${px(t)} ${px(r)}`) : `${px(t)} ${px(r)} ${px(b)} ${px(x)}`])
   }
-  if (l.primaryAlign && l.primaryAlign !== 'MIN') out.push(['justify-content', JUSTIFY[l.primaryAlign]])
+  if (l.primaryAlign && (l.primaryAlign !== 'MIN' || explicit)) out.push(['justify-content', JUSTIFY[l.primaryAlign]])
   // Flex stretches children across by default. Figma only does that when a child asks to fill, so "start" must be said out loud.
   out.push(['align-items', ALIGN[l.counterAlign ?? 'MIN']])
   return out
@@ -211,6 +214,13 @@ function textDecls(eff: Layer, ctx: Ctx): Decl[] {
   if (!t) return []
   if (t.mixed) ctx.notes.push({ level: 'info', layer: ctx.layer, message: 'This text mixes styles. The CSS uses its main style only.' })
   const out: Decl[] = []
+  // Text that is cut with an ellipsis: on one line, or at a number of lines.
+  if (t.truncation === 'ENDING') {
+    if (!t.maxLines || t.maxLines <= 1) out.push(['white-space', 'nowrap'], ['overflow', 'hidden'], ['text-overflow', 'ellipsis'])
+    else out.push(['display', '-webkit-box'], ['-webkit-box-orient', 'vertical'], ['-webkit-line-clamp', String(t.maxLines)], ['line-clamp', String(t.maxLines)], ['overflow', 'hidden'])
+  }
+  // Without the space above the capitals and below the baseline. Browsers that do not know this keep the usual line box.
+  if (t.leadingTrim === 'CAP_HEIGHT') out.push(['text-box-trim', 'trim-both'], ['text-box-edge', 'cap alphabetic'])
   if (t.fontFamily) out.push(['font-family', `"${t.fontFamily}", sans-serif`])
   if (t.fontSize) out.push(['font-size', px(t.fontSize)])
   if (t.fontWeight) out.push(['font-weight', String(t.fontWeight)])
@@ -280,7 +290,7 @@ function declsFor(attrs: LayerChanges, eff: Layer, ctx: Ctx, explicit: boolean):
       case 'transform': if (!ctx.absolute && eff.transform) out.push(...turnDecls(eff)); else if (ctx.absolute && eff.transform) out.push(['transform', `matrix(${eff.transform.map((n) => round(n * 10000) / 10000).join(', ')}, 0, 0)`], ['transform-origin', '0 0']); break
       case 'clipsContent': if (eff.clipsContent) out.push(['overflow', 'hidden']); else if (explicit) out.push(['overflow', 'visible']); break
       case 'blendMode': { const m = BLEND[eff.blendMode ?? '']; if (m) out.push(['mix-blend-mode', m]); else if (explicit) out.push(['mix-blend-mode', 'normal']); break }
-      case 'layout': out.push(...layoutDecls(eff, ctx)); break
+      case 'layout': out.push(...layoutDecls(eff, ctx, explicit)); break
       case 'size':
         if (eff.type === 'GROUP') break
         out.push(...sizeDecls(eff, ctx, explicit))
@@ -300,7 +310,7 @@ function declsFor(attrs: LayerChanges, eff: Layer, ctx: Ctx, explicit: boolean):
         out.push(...textDecls(eff, ctx))
         // Text in a box taller than it is, set to sit in the middle or at the bottom, needs that box.
         const av = eff.text?.alignVertical
-        if ((av === 'CENTER' || av === 'BOTTOM') && eff.text?.autoResize === 'NONE' && eff.size && !ctx.absolute) {
+        if ((av === 'CENTER' || av === 'BOTTOM') && eff.text?.autoResize === 'NONE' && eff.text.truncation !== 'ENDING' && eff.size && !ctx.absolute) {
           out.push(['display', 'flex'], ['flex-direction', 'column'], ['justify-content', av === 'CENTER' ? 'center' : 'flex-end'], ['width', px(eff.size.width)], ['height', px(eff.size.height)], ['flex-shrink', '0'])
         }
         break
@@ -494,6 +504,8 @@ export function generateCss(st: Structure, block: string, notes: MarkupNote[], t
       let real = declsFor(attrs, eff, ctx, false)
       // A layer the design shows or hides only in this combination must say so, even when what it says is "shown".
       if (change?.visible !== undefined) real = dedupe([...real, ...declsFor({ visible: change.visible }, eff, ctx, true)])
+      // The same for a layout the combination changes: it must say "no gap" where the stack of single options has one.
+      if (change?.layout !== undefined) real = dedupe([...real, ...declsFor({ layout: change.layout }, eff, ctx, true)])
       const cascade = new Map<string, string>(baseDecls.get(node) ?? [])
       const stacked = new Set<string>()
       for (const a of applied) {
@@ -506,7 +518,9 @@ export function generateCss(st: Structure, block: string, notes: MarkupNote[], t
         const said: LayerChanges = { ...('strokes' in change ? { strokes: change.strokes } : {}), ...('effects' in change ? { effects: change.effects } : {}) }
         for (const d of declsFor(said, eff, ctx, true)) if (d[0] === 'box-shadow' && !(d[1] === 'none' && !cascade.has('box-shadow'))) real = dedupe([...real, d])
       }
-      const differs = real.filter(([p, v]) => cascade.get(p) !== v && !(p === 'display' && node.showIn?.length))
+      // Saying "no gap" is only needed where something earlier set one.
+      const initial: Record<string, string> = { gap: '0', 'flex-wrap': 'nowrap', 'justify-content': 'flex-start', padding: '0' }
+      const differs = real.filter(([p, v]) => cascade.get(p) !== v && !(p === 'display' && node.showIn?.length) && !(!cascade.has(p) && initial[p] === v))
       // What one option adds (the pill's border) may not be there in the combination (the hovered pill has none). Put it back to the base.
       for (const p of stacked) {
         if (p === 'display' || real.some(([rp]) => rp === p)) continue

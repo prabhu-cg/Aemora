@@ -17,6 +17,23 @@ Measured with plugin 1.2.1 and the current Aemora:
 
 These numbers say less than they look like. The check compares what the export says with what Aemora draws. It cannot find what the export does not say. The requirements below are those gaps.
 
+## Status after plugin 1.3.0 (checked 2026-11-11 against the Rayna export)
+Plugin 1.3.0 delivers most of this spec, and Aemora reads it:
+
+| Requirement | In 1.3.0 | Aemora |
+|---|---|---|
+| 1. `box` per layer, per variant | Yes (every layer, and in changes) | Used to place layers and to check positions (fidelity check, "Position") |
+| 2. `added[].index` | Yes | Used. It counts the layers the variant keeps, not the ones it removes |
+| 3. `reordered` | Yes (on every diff) | Used for the `order` rules in the CSS |
+| 4. `layerId` on changes | Yes | Used to find the layer by id. `AMBIGUOUS_SIBLINGS` is not seen in the Rayna export, so name paths still decide for `removed` and `added` |
+| 5. Gradient stops | Yes (`stops`, `angle`) | Drawn |
+| 6. `maxLines`, `truncation`, `leadingTrim` | Yes | Written as CSS |
+| 7. `metadata.fonts` | Yes | Not used yet |
+| 8. Pictures (`includeImages`, `assets/images/*.png`, `fills[].image`) | Yes | **Not drawn yet** |
+| 9. Spacing and size tokens | No | Parked (`tokens-in-markup.md`) |
+
+With 1.3.0, the fidelity check finds position differences it could not see before (about 6% of layers). They are being worked through; the ones found so far were in Aemora (variant resets of gap and padding, the place of added layers, group offsets), not in the export.
+
 ## What the export already gives (do not change)
 Layer tree per default variant, `variantDiffs` per other variant, `size`, `layout` (including `reverseZIndex`), `placement` (`sizingH`, `sizingV`, `grow`, `align`, `positioning`), `position` for layers placed by coordinates, `rotation`, `clipsContent`, `vector` shapes, fills and strokes with tokens, `text` (including `autoResize`, `alignVertical`), `instanceOf` with `properties`, `propertyRefs`, `sizeLimits`, `cornerSmoothing`, `constraints`. Aemora reads all of these except where the table at the end says otherwise.
 

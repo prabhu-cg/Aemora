@@ -72,3 +72,22 @@ describe('layers added in several looks', () => {
     expect(diffs[0].added.map((a) => (a as { index?: number }).index)).toEqual([0, 1, 2])
   })
 })
+
+describe('what plugin 1.3 adds', () => {
+  it('turns gradient stops into the gradient the CSS reads', () => {
+    const tree = { name: 'A', type: 'COMPONENT', fills: [{ type: 'GRADIENT_LINEAR', visible: true, stops: [{ position: 0, hex: '#ffffff', alpha: 1 }, { position: 1, hex: '#000000', alpha: 0.5 }], angle: 135 }] }
+    prepareLayers(tree, [])
+    expect((tree.fills[0] as { gradient?: unknown }).gradient).toEqual({ kind: 'LINEAR', angle: 135, stops: [{ position: 0, hex: '#ffffff', alpha: 1 }, { position: 1, hex: '#000000', alpha: 0.5 }] })
+  })
+  it('finds the layer a variant changes by its id, even when the name path is the same for two layers', () => {
+    const tree = { id: 'r', name: 'Flag', type: 'COMPONENT', children: [{ id: 'v1', name: 'Vector', type: 'VECTOR' }, { id: 'v2', name: 'Vector', type: 'VECTOR' }] }
+    const diffs = [{ layers: [{ path: 'Flag/Vector', layerId: 'v2', changes: { visible: false } }], added: [], removed: [] }]
+    prepareLayers(tree, diffs)
+    expect(diffs[0].layers[0].path).toBe('Flag/Vector[1]')
+  })
+  it('places a layer from its box relative to the frame around it', () => {
+    const tree = { name: 'Card', type: 'COMPONENT', size: { width: 100, height: 100 }, box: { x: 0, y: 0, width: 100, height: 100 }, children: [{ name: 'Dot', type: 'ELLIPSE', size: { width: 10, height: 10 }, box: { x: 30, y: 40, width: 10, height: 10 } }] }
+    prepareLayers(tree, [])
+    expect((tree.children[0] as { position?: unknown }).position).toEqual({ x: 30, y: 40 })
+  })
+})

@@ -10,7 +10,7 @@ import { buildModel, defaultSamples } from '../markup/render/samples'
 import { buildStructure, type Node } from '../markup/structure'
 import { paintFrame } from '../preview/paintFrame'
 
-export type MismatchKind = 'size' | 'color' | 'order' | 'missing'
+export type MismatchKind = 'size' | 'position' | 'color' | 'order' | 'missing'
 
 export interface Mismatch {
   kind: MismatchKind
@@ -43,12 +43,13 @@ const COLOR_TOLERANCE = 3
 const ALPHA_TOLERANCE = 0.03
 const MAX_MISMATCHES = 300
 
-const KINDS: MismatchKind[] = ['size', 'color', 'order', 'missing']
+const KINDS: MismatchKind[] = ['size', 'position', 'color', 'order', 'missing']
 export const FIDELITY_LIMITS = [
   'Pictures are not in the export, so they are not compared.',
   'Interaction states (hover, focus, disabled) are not drawn by this check.',
   'Text uses the fallback font here, so text boxes are held at the design size and only their colour and order are compared.',
-  'Gradients, blend modes, shadows, rotation and exact positions are not compared yet.',
+  'Gradients, blend modes, shadows and rotation are not compared yet.',
+  'Positions are compared only when the export has the design\'s box for each layer (DesignMD 1.3 or later).',
 ]
 
 interface Rgba { r: number; g: number; b: number; a: number }
@@ -176,6 +177,8 @@ export function checkFidelity(component: ComponentDef, html: string, css: string
     const copies = new Map<string, Node[]>()
     for (const n of st.nodes) copies.set(n.path, [...(copies.get(n.path) ?? []), n])
     for (const n of st.nodes) if (!expected.has(n.path)) unmatched.add(n.path)
+    const rootEl = doc.body.firstElementChild
+    const rootRect = rootEl?.getBoundingClientRect()
     for (const [path, e] of expected) {
       const layer = e.layer
       // A layer the design hides is not compared, nor a group (it has no box of its own).
@@ -198,6 +201,13 @@ export function checkFidelity(component: ComponentDef, html: string, css: string
       if (!layer.transform) {
         const ok = Math.abs(r.width - layer.size.width) <= SIZE_TOLERANCE && Math.abs(r.height - layer.size.height) <= SIZE_TOLERANCE
         record('size', ok, { variant: name, path, expected: `${layer.size.width}x${layer.size.height}`, actual: `${Math.round(r.width * 10) / 10}x${Math.round(r.height * 10) / 10}` })
+      }
+
+      // Where the layer is, from the top left of the root. A turned layer is not compared: its box is where it started.
+      if (layer.box && rootRect && !layer.transform && (layer.type !== 'TEXT')) {
+        const dx = r.left - rootRect.left, dy = r.top - rootRect.top
+        const ok = Math.abs(dx - layer.box.x) <= SIZE_TOLERANCE && Math.abs(dy - layer.box.y) <= SIZE_TOLERANCE
+        record('position', ok, { variant: name, path, expected: `${layer.box.x}, ${layer.box.y}`, actual: `${Math.round(dx * 10) / 10}, ${Math.round(dy * 10) / 10}` })
       }
 
       const want = expectedColor(layer)

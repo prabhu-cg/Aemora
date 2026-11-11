@@ -9,6 +9,14 @@
   flex-shrink: 0;
 }
 
+.cmp-dropdown-menu-item__text {
+  color: #101928;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.45;
+}
+
 .cmp-dropdown-menu-item__left-content-2 {
   box-sizing: border-box;
   display: flex;
@@ -54,14 +62,6 @@
 }
 
 .cmp-dropdown-menu-item__text-2 {
-  color: #101928;
-  font-family: "Inter", sans-serif;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.45;
-}
-
-.cmp-dropdown-menu-item__text {
   color: #101928;
   font-family: "Inter", sans-serif;
   font-size: 14px;

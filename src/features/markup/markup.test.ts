@@ -349,6 +349,35 @@ describe('layer handling', () => {
     expect(h).toMatch(/<svg class="cmp-tip__arrow" data-sly-test="\$\{model\.sideModifier == 'bottom'\}"[^>]*>\s*<path d="M0 0 L10 12 L20 0 Z"/)
   })
 
+  it('cuts text with an ellipsis at one line or at a number of lines, and trims to the capitals', () => {
+    const t = (words: object) => file(component('Box', design(frame('Box', {}, [{ id: 't', name: 'Words', type: 'TEXT', role: 'text', visible: true, size: { width: 50, height: 20 }, text: { characters: 'x', ...words } }])), []), 'css')
+    expect(t({ truncation: 'ENDING', maxLines: null })).toMatch(/__words \{[^}]*text-overflow: ellipsis;/s)
+    expect(t({ truncation: 'ENDING', maxLines: 3 })).toMatch(/__words \{[^}]*-webkit-line-clamp: 3;/s)
+    expect(t({ leadingTrim: 'CAP_HEIGHT' })).toContain('text-box-trim: trim-both;')
+    expect(t({ truncation: 'NONE', maxLines: null })).not.toContain('ellipsis')
+  })
+
+  it('has a variant say "no gap" and "no padding" where the default has them', () => {
+    const lay = (gap: number, p: number) => ({ layout: { mode: 'VERTICAL', gap, padding: { top: p, right: p, bottom: p, left: p }, primaryAlign: 'MIN', counterAlign: 'MIN', sizingH: 'HUG', sizingV: 'HUG' } })
+    const d = design(frame('Box', lay(32, 8), [text('A', 'a'), text('B', 'b')]), {
+      defaultVariantProperties: { mode: 'full' },
+      variantDiffs: [{ variantId: 'v', variantProperties: { mode: 'compact' }, layers: [{ path: 'Box', changes: lay(0, 0) }], added: [], removed: [] }],
+    })
+    const c = file(component('Box', d, [prop('mode', 'enum', { defaultValue: 'full', allowedValues: ['full', 'compact'] })]), 'css')
+    expect(c).toMatch(/--mode-compact \{[^}]*gap: 0;[^}]*padding: 0;/s)
+  })
+
+  it('puts a layer a variant adds after the layers it keeps, not counting the ones it removes', () => {
+    const tree = frame('Row', { layout: { mode: 'HORIZONTAL' } }, [frame('Avatar'), frame('Body')])
+    const d = design(tree, {
+      defaultVariantProperties: { side: 'in' },
+      variantDiffs: [{ variantId: 'v', variantProperties: { side: 'out' }, layers: [], added: [{ parentPath: 'Row', index: 1, layer: { id: 'i', name: 'Icon', type: 'FRAME', role: 'container', visible: true } }], removed: ['Row/Avatar'] }],
+    })
+    const lines = file(component('Row', d, [prop('side', 'enum', { defaultValue: 'in', allowedValues: ['in', 'out'] })]), 'htl').split('\n')
+    // The variant has Body, then Icon.
+    expect(lines.findIndex((l) => l.includes('__icon'))).toBeGreaterThan(lines.findIndex((l) => l.includes('__body')))
+  })
+
   it('hides a layer that some options remove', () => {
     const tree = frame('Tag', {}, [text('Label', 'Tag'), { id: 'x', name: 'Close', type: 'INSTANCE', role: 'icon', visible: true }])
     const d = design(tree, {

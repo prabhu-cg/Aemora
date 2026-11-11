@@ -36,12 +36,19 @@ export interface TextProps {
   italic?: boolean
   /** Where the text sits in a box taller than it is. */
   alignVertical?: 'TOP' | 'CENTER' | 'BOTTOM'
+  /** ENDING: text that does not fit is cut with an ellipsis, at `maxLines` lines (one when null). */
+  truncation?: 'ENDING' | 'NONE'
+  maxLines?: number | null
+  /** CAP_HEIGHT: the space above the capitals and below the baseline is trimmed from the text box. */
+  leadingTrim?: 'CAP_HEIGHT' | 'NONE'
 }
 export interface Radii { tl: number; tr: number; br: number; bl: number }
 
 export interface LayerAttrs {
   role?: string; roleSource?: string; visible?: boolean
   size?: { width: number; height: number }
+  /** Where the layer is in the variant, from the top left of its root, in px. The design's own answer, used to check the result. */
+  box?: { x: number; y: number; width: number; height: number }
   layout?: Layout
   radius?: number | Radii
   opacity?: number
