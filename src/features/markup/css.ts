@@ -390,6 +390,11 @@ export function generateCss(st: Structure, block: string, notes: MarkupNote[], t
       }
       // A layer that exists only in some interaction states is hidden by default and shown by its own rules.
       // Comparing it with that hiding would show it in every combination, so its display is left to those rules.
+      // A combination that says "no border, no shadow" in so many words draws none, whatever the single options stacked up.
+      if (change && ('strokes' in change || 'effects' in change)) {
+        const said: LayerChanges = { ...('strokes' in change ? { strokes: change.strokes } : {}), ...('effects' in change ? { effects: change.effects } : {}) }
+        for (const d of declsFor(said, eff, ctx, true)) if (d[0] === 'box-shadow' && !(d[1] === 'none' && !cascade.has('box-shadow'))) real = dedupe([...real, d])
+      }
       const differs = real.filter(([p, v]) => cascade.get(p) !== v && !(p === 'display' && node.showIn?.length))
       // What one option adds (the pill's border) may not be there in the combination (the hovered pill has none). Put it back to the base.
       for (const p of stacked) {
