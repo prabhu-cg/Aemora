@@ -31,6 +31,23 @@ export interface FetchFigmaOptions {
   signal?: AbortSignal
 }
 
+/** A wait in the unit a person thinks in. */
+export function humanWait(seconds: number): string {
+  const plural = (n: number, unit: string) => `${n} ${unit}${n === 1 ? '' : 's'}`
+  if (seconds < 90) return plural(Math.round(seconds), 'second')
+  if (seconds < 3600) return plural(Math.round(seconds / 60), 'minute')
+  if (seconds < 86400) return `about ${plural(Math.round(seconds / 3600), 'hour')}`
+  return `about ${plural(Math.round(seconds / 86400), 'day')}`
+}
+
+/** Waits of an hour or more are a used-up monthly allowance, not a busy moment: say so, and say what still works. */
+function rateLimitMessage(secs: number | undefined, limitType: string | null): string {
+  if (!secs) return 'Figma is rate limiting requests. Wait a minute and try again.'
+  if (secs < 3600) return `Figma is rate limiting requests. Try again in ${humanWait(secs)}.`
+  const seat = limitType?.toLowerCase() === 'low' ? ' Figma reports this account is on its lowest limit tier, which is what View and Collab seats get.' : ''
+  return `Figma is rate limiting requests, and the wait is ${humanWait(secs)} (${secs} seconds). A wait that long means the allowance for this file has run out for the month. Figma sets it by the plan of the team the file is in and by your seat type, and free plans get the smallest.${seat} Importing with the DesignMD plugin export needs no Figma API requests, so use that to carry on now.`
+}
+
 /** One authenticated GET to api.figma.com, with every failure turned into a plain-language FigmaError. */
 export async function figmaGetJson(url: string, token: string, fetchImpl: typeof fetch = fetch, signal?: AbortSignal): Promise<unknown> {
   if (!token.trim()) throw new FigmaError('missing-token', 'Add a Figma personal access token first. It is kept in memory for this session only.')
@@ -48,7 +65,7 @@ export async function figmaGetJson(url: string, token: string, fetchImpl: typeof
   if (res.status === 429) {
     const wait = Number(res.headers.get('Retry-After'))
     const secs = Number.isFinite(wait) && wait > 0 ? wait : undefined
-    throw new FigmaError('rate-limit', `Figma is rate limiting requests.${secs ? ` Try again in ${secs} seconds.` : ' Wait a minute and try again.'}`, secs)
+    throw new FigmaError('rate-limit', rateLimitMessage(secs, res.headers.get('X-Figma-Rate-Limit-Type')), secs)
   }
   if (!res.ok) throw new FigmaError('bad-response', `Figma returned an unexpected error (HTTP ${res.status}).`)
 

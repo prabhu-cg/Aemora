@@ -196,6 +196,21 @@ describe('Figma client errors and token handling', () => {
       expect((e as Error).message).toMatch(/42 seconds/)
     }
   })
+  it('says what a multi-day rate limit means and points to the DesignMD route', async () => {
+    const msg = async (retry: string, type?: string) => {
+      try { await fetchFigma({ ref, token: 't', fetchImpl: resp(429, { 'Retry-After': retry, ...(type ? { 'X-Figma-Rate-Limit-Type': type } : {}) }) }) } catch (e) { return (e as Error).message }
+      return ''
+    }
+    const long = await msg('358575', 'low')
+    expect(long).toMatch(/about 4 days \(358575 seconds\)/)
+    expect(long).toMatch(/allowance for this file has run out/)
+    expect(long).toMatch(/lowest limit tier/)
+    expect(long).toMatch(/DesignMD plugin export needs no Figma API requests/)
+    expect(await msg('7200')).toMatch(/about 2 hours/)
+    expect(await msg('7200')).not.toMatch(/lowest limit tier/)
+    expect(await msg('300')).toBe('Figma is rate limiting requests. Try again in 5 minutes.')
+    expect(await msg('1')).toMatch(/Try again in 1 second\./)
+  })
   it('sends the token only as a header to api.figma.com and uses the nodes endpoint for a node id', async () => {
     const calls: { url: string; init?: RequestInit }[] = []
     const f = (async (url: string, init?: RequestInit) => { calls.push({ url, init }); return new Response('{}', { status: 200 }) }) as unknown as typeof fetch
