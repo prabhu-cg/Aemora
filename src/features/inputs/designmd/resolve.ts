@@ -15,10 +15,10 @@ function countLayers(l: Layer): number {
   return 1 + (l.children ?? []).reduce((n, c) => n + countLayers(c), 0)
 }
 
-/** True when the tree is only drawn shapes: an icon. Without the shapes' paths there is nothing useful to show. */
+/** True when the tree is only shapes that have no drawing: an icon from an export without shape data, which would only be a box. */
 function onlyShapes(l: Layer): boolean {
   const kids = l.children ?? []
-  if (!kids.length) return SHAPES.has(l.type) || l.type === 'ELLIPSE' || l.type === 'RECTANGLE'
+  if (!kids.length) return !l.graphic && (SHAPES.has(l.type) || l.type === 'ELLIPSE' || l.type === 'RECTANGLE')
   return kids.every(onlyShapes) && !l.fills?.length
 }
 const hasText = (l: Layer): boolean => l.type === 'TEXT' || (l.children ?? []).some(hasText)

@@ -18,6 +18,8 @@ export interface Node {
   presence?: Presence
   /** The layer exists only in these interaction states of the design (a focus icon, a selected check). Hidden until then. */
   showIn?: { factor: Factor; value: string; /** Also needs one of these combinations of the other options (the Last Day position, say). Absent means any. */ when?: Term[][] }[]
+  /** The layer has a different drawing in some options (a tooltip's pointer, up or down; an icon at each size). One drawing per look, with when it applies. */
+  drawings?: { graphic: NonNullable<Layer['graphic']>; size: { width: number; height: number }; presence: Presence }[]
   /** The layer is in the markup, but the design removes it in these interaction states (a chevron the selected look does not have). Hidden there. */
   hideIn?: { factor: Factor; value: string; when?: Term[][] }[]
 }
@@ -168,13 +170,22 @@ export function buildStructure(rawDesign: DesignData, props: Property[], notes: 
     return null
   }
 
-  // Layers that exist only in some variants.
+  // Layers that exist only in some variants. The same layer can have a copy for each look it has (an icon that is grey, then orange);
+  // the copies sit side by side, so the order of the layers around them is the order of the design.
+  const addedNodes: Node[] = []
+  const place = (parent: Node, node: Node, index: number | undefined) => {
+    const twin = parent.children.find((c) => addedNodes.includes(c) && c.layer.name === node.layer.name)
+    if (twin) parent.children.splice(parent.children.indexOf(twin), 0, node)
+    else if (typeof index === 'number') parent.children.splice(Math.min(index, parent.children.length), 0, node)
+    else parent.children.push(node)
+    addedNodes.push(node)
+  }
   type Group = { parentPath: string; layer: Layer; index?: number; present: boolean[] }
   const groups = new Map<string, Group>()
   // The same layer can look different from one option to the next (an alert's banner content per state).
   // Each distinct look is its own conditional copy. Layer ids differ per variant, so they are left out of the comparison.
   const look = (l: Layer) => JSON.stringify(l, (k, v) => (k === 'id' ? undefined : v))
-  const MAX_LOOKS = 12
+  const MAX_LOOKS = 120
   const looksOf = new Map<string, string[]>()
   design.variantDiffs.forEach((d, i) => {
     for (const a of d.added) {
@@ -233,8 +244,7 @@ export function buildStructure(rawDesign: DesignData, props: Property[], notes: 
       node.children = kids.map((c) => make(c, childPath(path, c, kids), node, elName(c)))
       markLook(node)
       nodes.push(node)
-      if (typeof g.index === 'number') parent.children.splice(Math.min(g.index, parent.children.length), 0, node)
-      else parent.children.push(node)
+      place(parent, node, g.index)
       notes.push({ level: 'info', layer: g.layer.name, message: `In the design this only shows in the ${showIn.map((x) => x.value).join(' and ')} state, so it is hidden until then.${typeof g.index === 'number' ? '' : ' Its position among its siblings was guessed, because the plugin did not say where it sits.'}` })
       continue
     }
@@ -277,10 +287,37 @@ export function buildStructure(rawDesign: DesignData, props: Property[], notes: 
       node.children = kids.map((c) => make(c, childPath(path, c, kids), node, elName(c)))
       markLook(node)
       nodes.push(node)
-      if (typeof g.index === 'number') parent.children.splice(Math.min(g.index, parent.children.length), 0, node)
+      if (typeof g.index === 'number' || addedNodes.some((a) => a.parent === parent && a.layer.name === node.layer.name)) place(parent, node, g.index)
       else if (pos === 'before') parent.children.unshift(node)
       else parent.children.push(node)
     }
+  }
+
+  // Layers whose drawing is different in some options.
+  for (const n of nodes) {
+    const base = n.layer
+    if (!base.graphic || !base.size || n.look && !base.graphic) continue
+    const looks = new Map<string, { graphic: NonNullable<Layer['graphic']>; size: { width: number; height: number }; present: boolean[] }>()
+    const variantsOf: { graphic?: Layer['graphic']; size?: { width: number; height: number } }[] = [{ graphic: base.graphic, size: base.size }, ...design.variantDiffs.map((d) => {
+      const c = d.layers.find((l) => l.path === n.path)?.changes
+      return { graphic: c?.graphic ?? base.graphic, size: c?.size ?? base.size }
+    })]
+    variantsOf.forEach((v, i) => {
+      if (!v.graphic || !v.size) return
+      const key = JSON.stringify([v.graphic, v.size.width, v.size.height])
+      const cur = looks.get(key) ?? { graphic: v.graphic, size: v.size, present: variantsOf.map(() => false) }
+      cur.present[i] = true
+      looks.set(key, cur)
+    })
+    if (looks.size < 2) continue
+    const drawings: NonNullable<Node['drawings']> = []
+    for (const look of looks.values()) {
+      const rule = decide(look.present)
+      if (!rule) { drawings.length = 0; break }
+      drawings.push({ graphic: look.graphic, size: look.size, presence: { terms: rule.positive, negate: false } })
+    }
+    if (drawings.length) n.drawings = drawings
+    else notes.push({ level: 'warning', layer: base.name, message: 'This layer is drawn differently in some options, but the options of the component do not tell when, so only its default drawing is in the markup.' })
   }
 
   // Layers that are missing in some variants.

@@ -85,9 +85,8 @@ describe('markup from the real Rayna file', () => {
     expect(m.files[0].content).toContain('aria-label="${model.label}"')
     expect(m.notes.some((n) => /accessible name/.test(n.message))).toBe(true)
   })
-  it('says what it guessed or left out', () => {
+  it('says what it left out, and has no warnings for a real component', () => {
     const notes = generateMarkup(imported('Metrics Card')).notes
-    expect(notes.some((n) => /guessed from the option names/.test(n.message))).toBe(true)
     expect(notes.filter((n) => n.level === 'warning')).toEqual([])
   })
 })
@@ -225,7 +224,9 @@ describe('layer handling', () => {
     const css = file(component('Box', design(tree), []), 'css')
     expect(css).toContain('display: flex;')
     expect(css).toContain('flex-direction: row;')
-    expect(css).toContain('gap: 12px;')
+    // With space between, Figma keeps a gap value but does not use it.
+    expect(css).not.toContain('gap: 12px;')
+    expect(css).toContain('justify-content: space-between;')
     expect(css).toContain('padding: 8px 16px;')
     expect(css).toContain('justify-content: space-between;')
     expect(css).toContain('align-items: center;')
@@ -242,7 +243,7 @@ describe('layer handling', () => {
     expect(css).toContain('text-decoration: underline;')
     expect(css).toContain('text-align: right;')
     expect(css).toContain('color: #ffffff;')
-    expect(css).toMatch(/__grow \{[^}]*flex: 1 1 0;[^}]*min-width: 0;[^}]*align-self: stretch;/s)
+    expect(css).toMatch(/__grow \{[^}]*flex: 1 1 10px;[^}]*min-width: 0;[^}]*align-self: stretch;/s)
   })
 
   it('reports fills and strokes it cannot reproduce instead of dropping them silently', () => {
@@ -332,6 +333,20 @@ describe('layer handling', () => {
     expect(lines.findIndex((l) => l.includes('__dot'))).toBe(lines.findIndex((l) => l.includes('__a')) + 1)
     expect(m.files[0].content).toContain("data-sly-test=\"${model.markModifier == 'dot'}\"")
     expect(m.notes.some((n) => /guessed/.test(n.message))).toBe(false)
+  })
+
+  it('draws a layer with a different shape in some options once for each shape, each only for its options', () => {
+    const arrow = (d: string) => ({ fills: [{ d, rule: 'NONZERO' }] })
+    const tree = frame('Tip', {}, [{ id: 'a', name: 'Arrow', type: 'VECTOR', role: 'icon', visible: true, size: { width: 20, height: 12 }, graphic: arrow('M0 12 L10 0 L20 12 Z') }])
+    const d = design(tree, {
+      defaultVariantProperties: { side: 'top' },
+      variantDiffs: [{ variantId: 'v', variantProperties: { side: 'bottom' }, layers: [{ path: 'Tip/Arrow', changes: { graphic: arrow('M0 0 L10 12 L20 0 Z') } }], added: [], removed: [] }],
+    })
+    const m = generateMarkup(component('Tip', d, [prop('side', 'enum', { defaultValue: 'top', allowedValues: ['top', 'bottom'] })]))
+    const h = m.files[0].content
+    expect(h.match(/<svg /g)).toHaveLength(2)
+    expect(h).toMatch(/<svg class="cmp-tip__arrow" data-sly-test="\$\{model\.sideModifier == 'top'\}"[^>]*>\s*<path d="M0 12 L10 0 L20 12 Z"/)
+    expect(h).toMatch(/<svg class="cmp-tip__arrow" data-sly-test="\$\{model\.sideModifier == 'bottom'\}"[^>]*>\s*<path d="M0 0 L10 12 L20 0 Z"/)
   })
 
   it('hides a layer that some options remove', () => {
@@ -505,12 +520,36 @@ describe('layers placed by their coordinates, and drawn shapes', () => {
     expect(t('WIDTH_AND_HEIGHT')).toContain('white-space: nowrap;')
   })
 
+  it('keeps a group in an auto-layout frame as a box, and a box whose children are all placed by coordinates at its size', () => {
+    const c = css(frame('Row', { layout: { mode: 'VERTICAL', sizingH: 'HUG', sizingV: 'HUG' }, size: { width: 140, height: 30 } }, [
+      { id: 'g', name: 'Logo', type: 'GROUP', role: 'container', visible: true, size: { width: 133, height: 25 }, children: [shape('Letter', { position: { x: 30, y: 2 } })] },
+    ]))
+    expect(c).toMatch(/__logo \{[^}]*position: relative;[^}]*width: 133px;[^}]*height: 25px;/s)
+    expect(c).not.toMatch(/__logo \{[^}]*display: contents/s)
+    const d = css(frame('Dial', { layout: { mode: 'VERTICAL', sizingH: 'HUG', sizingV: 'HUG' }, size: { width: 38, height: 38 } }, [shape('Dot', { layoutPositioning: 'ABSOLUTE', position: { x: 1, y: 1 } })]))
+    expect(d).toMatch(/\.cmp-box \{[^}]*width: 38px;[^}]*height: 38px;/s)
+  })
+
+  it('writes a negative gap as a margin on the items after the first, and lifts the first item for "first on top"', () => {
+    const c = css(frame('Tip', { layout: { mode: 'HORIZONTAL', gap: -2, reverseZIndex: true, sizingH: 'FIXED', sizingV: 'HUG' }, size: { width: 100, height: 20 } }, [shape('A'), shape('B')]))
+    expect(c).not.toContain('--overlap')
+    expect(c).not.toContain('gap: -2px')
+    expect(c).toMatch(/\.cmp-box > \* \+ \* \{[^}]*margin-left: -2px;/s)
+    expect(c).toMatch(/\.cmp-box > :first-child \{[^}]*z-index: 1;/s)
+  })
+
+  it('does not write the gap of a space-between row, and keeps a fixed box from being squeezed by its padding', () => {
+    const c = css(frame('Bar', { layout: { mode: 'HORIZONTAL', gap: 24, primaryAlign: 'SPACE_BETWEEN', sizingH: 'FIXED', sizingV: 'FIXED', padding: { top: 13, right: 13, bottom: 13, left: 13 } }, size: { width: 24, height: 24 } }))
+    expect(c).not.toContain('gap:')
+    expect(c).toContain('padding: 12px;')
+  })
+
   it('fills the row for a text or shape that asks to fill, and gives a round ellipse', () => {
     const c = css(frame('Box', { layout: { mode: 'HORIZONTAL', sizingH: 'HUG', sizingV: 'HUG' } }, [
       { id: 't', name: 'Grow', type: 'TEXT', role: 'text', visible: true, size: { width: 10, height: 10 }, sizing: { h: 'FILL', v: 'HUG' }, text: { characters: 'x' } },
       shape('Round', { type: 'ELLIPSE' }),
     ]))
-    expect(c).toMatch(/__grow \{[^}]*flex: 1 1 0;[^}]*min-width: 0;/s)
+    expect(c).toMatch(/__grow \{[^}]*flex: 1 1 10px;[^}]*min-width: 0;/s)
     expect(c).toMatch(/__round \{[^}]*border-radius: 50%;/s)
   })
 

@@ -1,4 +1,5 @@
 import type { ComponentDef } from '../components/schema'
+import { prepareLayers } from '../inputs/designmd/vectors'
 
 /** The parts of designmd.components/v1 layers that markup generation reads. */
 export interface Gradient {
@@ -22,6 +23,8 @@ export interface Layout {
   mode: 'HORIZONTAL' | 'VERTICAL'; gap?: number; padding?: Padding
   primaryAlign?: 'MIN' | 'CENTER' | 'MAX' | 'SPACE_BETWEEN'; counterAlign?: 'MIN' | 'CENTER' | 'MAX' | 'BASELINE'
   sizingH?: 'FIXED' | 'HUG' | 'FILL'; sizingV?: 'FIXED' | 'HUG' | 'FILL'; wrap?: boolean
+  /** The first layer is drawn on top (Figma's "first on top"). */
+  reverseZIndex?: boolean
 }
 export interface Effect { type: string; visible?: boolean; color?: { hex?: string; alpha?: number; r?: number; g?: number; b?: number; a?: number }; offsetX?: number; offsetY?: number; radius?: number; spread?: number }
 export interface UnitValue { value: number; unit: 'px' | 'percent' | 'auto' }
@@ -78,10 +81,29 @@ export interface DesignData {
   treeTruncated: boolean
 }
 
-/** The design data the DesignMD adapter stored on the component, or null when there is none. */
+const read = new WeakMap<object, DesignData>()
+
+/**
+ * The design data the DesignMD adapter stored on the component, or null when there is none.
+ * A component imported with an older Aemora keeps the export's own field names, so its layers are brought up to date here
+ * (on a copy, once), and nothing has to be imported again.
+ */
 export function readDesign(component: ComponentDef): DesignData | null {
   const d = component.meta.design as Record<string, unknown> | undefined
   if (!d || typeof d !== 'object' || (d.format !== 'designmd.components/v1' && d.format !== 'aemora.design/v1')) return null
+  const hit = read.get(d)
+  if (hit) return hit
+  const out = readFresh(d)
+  read.set(d, out)
+  return out
+}
+
+function readFresh(source: Record<string, unknown>): DesignData {
+  let d = source
+  if (source.format === 'designmd.components/v1' && (source.tree || Array.isArray(source.variantDiffs))) {
+    d = { ...source, tree: structuredClone(source.tree), variantDiffs: structuredClone(source.variantDiffs ?? []) }
+    prepareLayers(d.tree, d.variantDiffs as unknown[])
+  }
   const arr = <T,>(v: unknown): T[] => (Array.isArray(v) ? (v as T[]) : [])
   const tree = d.tree && typeof d.tree === 'object' ? (d.tree as Layer) : undefined
   return {

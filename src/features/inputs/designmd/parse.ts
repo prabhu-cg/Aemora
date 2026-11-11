@@ -3,6 +3,7 @@ import { InputError, safeReviver, type ImportResult, type Warning } from '../typ
 import type { ComponentDef } from '../../components/schema'
 import { convertDesignMdComponent, walkLayers } from './convert'
 import type { Library } from './resolve'
+import { prepareLayers } from './vectors'
 import { DESIGNMD_SCHEMA, DmComponentSchema, DmEnvelopeSchema, type DmLayer, type DmWarning } from './schema'
 
 /** A DesignMD file can hold a whole design system (tens of MB), so it is read as a file, not pasted. */
@@ -109,11 +110,17 @@ export function mergeCatalogs(list: DesignMdCatalog[]): DesignMdCatalog {
 /** Looks components of the file up by id, reading each one once. */
 function libraryOf(cat: DesignMdCatalog): Library {
   const cache = new Map<string, ReturnType<typeof DmComponentSchema.safeParse>>()
+  const converted = new Set<string>()
   return (id) => {
     const hit = cat.byAnyId.get(id)
     if (!hit) return undefined
     let parsed = cache.get(hit.compId)
     if (!parsed) { parsed = DmComponentSchema.safeParse(cat.components.get(hit.compId)); cache.set(hit.compId, parsed) }
+    if (parsed.success && !converted.has(hit.compId)) {
+      // A nested component is copied into another one from here, so its shapes must already be in the form the generators read.
+      converted.add(hit.compId)
+      prepareLayers(parsed.data.tree, parsed.data.variantDiffs)
+    }
     return parsed.success ? { comp: parsed.data, variantId: hit.variantId } : undefined
   }
 }

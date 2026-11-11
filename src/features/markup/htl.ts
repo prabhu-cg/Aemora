@@ -119,8 +119,17 @@ function render(n: Node, depth: number, ctx: Ctx, modifierClasses: string, inlin
   const attrs = [`class="${cls}"`, ...(test ? [test] : []), ...d.attrs, ...(!n.parent ? rootExtra(ctx) : [])].join(' ')
   if (d.tag === 'svg' && l.graphic) {
     const d2 = (p: { d: string; rule?: string }, extra: string) => `${pad}${INDENT}<path${extra} d="${p.d.replace(/"/g, '')}"${p.rule === 'EVENODD' ? ' fill-rule="evenodd" clip-rule="evenodd"' : ''}${extra ? '' : ' fill="currentColor"'}/>`
-    const paths = [...l.graphic.fills.map((p) => d2(p, '')), ...(l.graphic.strokes ?? []).map((p) => d2(p, ` class="${cls}-stroke"`))]
-    return [`${pad}<svg ${attrs}>`, ...paths, `${pad}</svg>`]
+    const draw = (g: NonNullable<typeof l.graphic>, attributes: string) => [`${pad}<svg ${attributes}>`, ...g.fills.map((p) => d2(p, '')), ...(g.strokes ?? []).map((p) => d2(p, ` class="${cls}-stroke"`)), `${pad}</svg>`]
+    // A layer drawn differently in some options has one drawing for each, and each is there only for its own options.
+    if (n.drawings?.length) {
+      return n.drawings.flatMap((dr) => {
+        const w = Math.round(dr.size.width * 100) / 100, h = Math.round(dr.size.height * 100) / 100
+        const own = [...conds, condExpr(dr.presence, ctx.names)]
+        const t = `data-sly-test="\${${own.length > 1 ? own.map((c) => (/\|\||&&/.test(c) ? `(${c})` : c)).join(' && ') : own[0]}}"`
+        return draw(dr.graphic, [`class="${cls}"`, t, `viewBox="0 0 ${w} ${h}"`, `width="${w}"`, `height="${h}"`, 'aria-hidden="true"', 'focusable="false"', ...(!n.parent ? rootExtra(ctx) : [])].join(' '))
+      })
+    }
+    return draw(l.graphic, attrs)
   }
   if (VOID.has(d.tag)) return [`${pad}<${d.tag} ${attrs}>`]
   if (content !== null && !n.children.length) return [`${pad}<${d.tag} ${attrs}>${content}</${d.tag}>`]

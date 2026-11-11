@@ -36,6 +36,9 @@ function topPaint(paints: Paint[] | undefined, ctx: Ctx, what: string): string |
   return null
 }
 
+/** Markers that layoutDecls leaves for overlapRules to turn into rules for the items inside. They never reach the output. */
+const OVERLAP = '--overlap', OVERLAP_SIDE = '--overlap-side', TOP_FIRST = '--top-first'
+
 const JUSTIFY = { MIN: 'flex-start', CENTER: 'center', MAX: 'flex-end', SPACE_BETWEEN: 'space-between' } as const
 const ALIGN = { MIN: 'flex-start', CENTER: 'center', MAX: 'flex-end', BASELINE: 'baseline' } as const
 
@@ -44,9 +47,17 @@ function layoutDecls(eff: Layer, ctx: Ctx): Decl[] {
   if (!l) return []
   const out: Decl[] = [['display', ctx.isRoot && l.sizingH === 'HUG' ? 'inline-flex' : 'flex'], ['flex-direction', l.mode === 'HORIZONTAL' ? 'row' : 'column']]
   if (l.wrap) out.push(['flex-wrap', 'wrap'])
-  if (l.gap) out.push(['gap', px(l.gap)])
+  // With space between, Figma keeps a gap value but does not use it: the free space is the gap.
+  if (l.gap && l.gap > 0 && l.primaryAlign !== 'SPACE_BETWEEN') out.push(['gap', px(l.gap)])
+  // A negative gap (layers overlapping) cannot be a CSS gap. It is written as a margin on every item after the first (see overlapRules).
+  else if (l.gap && l.gap < 0 && l.primaryAlign !== 'SPACE_BETWEEN') out.push(['gap', '0'], [OVERLAP, px(l.gap)], [OVERLAP_SIDE, l.mode === 'HORIZONTAL' ? 'margin-left' : 'margin-top'])
+  if (l.reverseZIndex) out.push([TOP_FIRST, '1'])
   if (l.padding) {
-    const { top: t, right: r, bottom: b, left: x } = l.padding
+    let { top: t, right: r, bottom: b, left: x } = l.padding
+    // A fixed box can be smaller than its padding in Figma and the content just overflows. CSS never lets a box shrink below its padding.
+    const sz = eff.size
+    if (sz && l.sizingH === 'FIXED' && x + r > sz.width) { const half = Math.floor(sz.width / 2); x = Math.min(x, half); r = Math.min(r, half) }
+    if (sz && l.sizingV === 'FIXED' && t + b > sz.height) { const half = Math.floor(sz.height / 2); t = Math.min(t, half); b = Math.min(b, half) }
     if (t || r || b || x) out.push(['padding', t === b && r === x ? (t === r ? px(t) : `${px(t)} ${px(r)}`) : `${px(t)} ${px(r)} ${px(b)} ${px(x)}`])
   }
   if (l.primaryAlign && l.primaryAlign !== 'MIN') out.push(['justify-content', JUSTIFY[l.primaryAlign]])
@@ -55,27 +66,42 @@ function layoutDecls(eff: Layer, ctx: Ctx): Decl[] {
   return out
 }
 
-function sizeDecls(eff: Layer, ctx: Ctx): Decl[] {
+/** `explicit`: these are a variant's overrides, so what the base rule set for flex and size must be undone where the sizing changed. */
+function sizeDecls(eff: Layer, ctx: Ctx, explicit = false): Decl[] {
   const sz = eff.size
   if (!sz) return []
   const out: Decl[] = []
   const axis = (horizontal: boolean) => {
     const sizing = horizontal ? (eff.layout?.sizingH ?? eff.sizing?.h) : (eff.layout?.sizingV ?? eff.sizing?.v)
     const dim = horizontal ? 'width' : 'height'
-    if (sizing === 'HUG') return
+    // A box that hugs its content has nothing to hug when everything in it is placed by coordinates, so it keeps its size.
+    const inFlow = (eff.children ?? []).some((c) => c.layoutPositioning !== 'ABSOLUTE' && c.visible !== false)
+    const empty = !!eff.layout && !!eff.children?.length && !inFlow
+    const alongMain = !!ctx.parentMode && (ctx.parentMode === 'HORIZONTAL') === horizontal
+    if (sizing === 'HUG' && !empty) {
+      if (explicit && eff.type !== 'TEXT') { out.push([dim, 'auto']); if (alongMain) out.push(['flex', '0 0 auto']) }
+      return
+    }
     if (sizing === 'FILL' && !ctx.absolute) {
+      if (explicit && ctx.parentMode && !alongMain && eff.type !== 'TEXT') out.push([dim, 'auto'])
       // The root has no parent to fill, so it keeps the size it has in the design.
       if (!ctx.parentMode) { if (eff.type !== 'TEXT') out.push([dim, px(horizontal ? sz.width : sz.height)]); return }
       const along = (ctx.parentMode === 'HORIZONTAL') === horizontal
-      if (along) out.push(['flex', '1 1 0'], [horizontal ? 'min-width' : 'min-height', '0'])
+      // Padding counts toward a flex item's starting size, so items that share a row would not come out equal if some had padding and others none.
+      // Every item that fills along a row starts from its size in the design, where they are equal, and the space left over is shared equally.
+      // In a column the height follows the content, so it starts from nothing.
+      if (along) out.push(['flex', horizontal ? `1 1 ${px(sz.width)}` : '1 1 0'], [horizontal ? 'min-width' : 'min-height', '0'])
       else out.push(['align-self', 'stretch'])
       return
     }
     // Text follows its words unless its box is fixed.
     if (eff.type === 'TEXT') return
+    if (explicit && ctx.parentMode && !ctx.absolute) out.push(alongMain ? ['flex', '0 0 auto'] : ['align-self', 'auto'])
     out.push([dim, px(horizontal ? sz.width : sz.height)])
   }
   axis(true); axis(false)
+  // Text that grows with its words never wraps.
+  if (eff.type === 'TEXT' && eff.text?.autoResize === 'WIDTH_AND_HEIGHT') out.push(['white-space', 'nowrap'])
   // A box with a size of its own must really have it. Inline elements ignore width and height, and flex items shrink by default.
   if (out.some(([p]) => p === 'width' || p === 'height')) {
     if (!eff.layout) out.push(['display', 'block'])
@@ -201,6 +227,25 @@ function textDecls(eff: Layer, ctx: Ctx): Decl[] {
   return out
 }
 
+/**
+ * A layer turned a quarter or half turn inside an auto layout takes the room its turned shape takes (a divider of 42 by 1 turned
+ * 90 degrees is 1 by 42). CSS transforms do not change layout, so the box turns about its centre and its margins make up the difference.
+ * Other angles are left as they are.
+ */
+function turnDecls(eff: Layer): Decl[] {
+  const t = eff.transform, sz = eff.size
+  if (!t || !sz) return []
+  const quarter = Math.abs(t[0]) < 0.001 && Math.abs(t[3]) < 0.001 && Math.abs(Math.abs(t[1]) - 1) < 0.001
+  const half = Math.abs(t[1]) < 0.001 && Math.abs(t[2]) < 0.001 && Math.abs(t[0] + 1) < 0.001 && Math.abs(t[3] + 1) < 0.001
+  if (!quarter && !half) return []
+  const out: Decl[] = [['transform', `matrix(${t.map((n) => round(n * 10000) / 10000).join(', ')}, 0, 0)`], ['transform-origin', 'center']]
+  if (quarter) {
+    const mx = round((sz.height - sz.width) / 2), my = round((sz.width - sz.height) / 2)
+    if (mx || my) out.push(['margin', `${px(my)} ${px(mx)}`])
+  }
+  return out
+}
+
 const BLEND: Record<string, string> = { MULTIPLY: 'multiply', SCREEN: 'screen', OVERLAY: 'overlay', DARKEN: 'darken', LIGHTEN: 'lighten', COLOR_DODGE: 'color-dodge', COLOR_BURN: 'color-burn', HARD_LIGHT: 'hard-light', SOFT_LIGHT: 'soft-light', DIFFERENCE: 'difference', EXCLUSION: 'exclusion', HUE: 'hue', SATURATION: 'saturation', COLOR: 'color', LUMINOSITY: 'luminosity' }
 
 function displayFor(eff: Layer): string {
@@ -214,13 +259,13 @@ function declsFor(attrs: LayerChanges, eff: Layer, ctx: Ctx, explicit: boolean):
     if (!(k in attrs) || (attrs as Record<string, unknown>)[k] === undefined) continue
     switch (k) {
       case 'position': if (ctx.absolute && eff.position) out.push(['position', 'absolute'], ['left', px(eff.position.x)], ['top', px(eff.position.y)]); break
-      case 'transform': if (ctx.absolute && eff.transform) out.push(['transform', `matrix(${eff.transform.map((n) => round(n * 10000) / 10000).join(', ')}, 0, 0)`], ['transform-origin', '0 0']); break
+      case 'transform': if (!ctx.absolute && eff.transform) out.push(...turnDecls(eff)); else if (ctx.absolute && eff.transform) out.push(['transform', `matrix(${eff.transform.map((n) => round(n * 10000) / 10000).join(', ')}, 0, 0)`], ['transform-origin', '0 0']); break
       case 'clipsContent': if (eff.clipsContent) out.push(['overflow', 'hidden']); else if (explicit) out.push(['overflow', 'visible']); break
       case 'blendMode': { const m = BLEND[eff.blendMode ?? '']; if (m) out.push(['mix-blend-mode', m]); else if (explicit) out.push(['mix-blend-mode', 'normal']); break }
       case 'layout': out.push(...layoutDecls(eff, ctx)); break
       case 'size':
         if (eff.type === 'GROUP') break
-        out.push(...sizeDecls(eff, ctx))
+        out.push(...sizeDecls(eff, ctx, explicit))
         // A text box that is placed by coordinates keeps the width it has in the design, unless it follows its text.
         if (ctx.absolute && eff.type === 'TEXT' && eff.size) { out.push(['width', px(eff.size.width)], ['flex-shrink', '0']); if (eff.text?.autoResize === 'WIDTH_AND_HEIGHT') out.push(['white-space', 'nowrap']) }
         break
@@ -242,6 +287,8 @@ function declsFor(attrs: LayerChanges, eff: Layer, ctx: Ctx, explicit: boolean):
   }
   // A frame's size and layout can change on their own. Re-emit the sizing that depends on both.
   if (explicit && ('layout' in attrs) && !('size' in attrs) && eff.size) out.push(...sizeDecls(eff, ctx))
+  // A turned layer's margins follow its size.
+  if (explicit && 'size' in attrs && !('transform' in attrs) && eff.transform && !ctx.absolute) out.push(...turnDecls(eff))
   return dedupe(out)
 }
 
@@ -277,7 +324,9 @@ export function generateCss(st: Structure, block: string, notes: MarkupNote[], t
   const rootSel = `.${block}`
   const sel = (n: Node) => (n.el ? `${rootSel}__${n.el}` : rootSel)
   // Figma groups are not containers: what is inside one is placed in the frame around it. A group is a box with no box (display: contents).
-  const isGroup = (n: Node) => n.layer.type === 'GROUP'
+  // The exception is a group inside an auto-layout frame: there it is one item of the layout, with its own coordinates inside, so it stays a box.
+  const groupBox = (n: Node) => n.layer.type === 'GROUP' && !!n.parent?.layer.layout
+  const isGroup = (n: Node) => n.layer.type === 'GROUP' && !groupBox(n)
   const container = (n: Node): Node | null => { let p = n.parent; while (p && isGroup(p)) p = p.parent; return p }
   const isAbsolute = (n: Node): boolean => {
     if (!n.layer.position || isGroup(n)) return false
@@ -285,6 +334,8 @@ export function generateCss(st: Structure, block: string, notes: MarkupNote[], t
     return !!c && (!c.layer.layout || n.layer.layoutPositioning === 'ABSOLUTE')
   }
   const hasAbsolute = (n: Node): boolean => n.children.some((c) => isAbsolute(c) || (isGroup(c) && hasAbsolute(c)))
+  // The direction a layer's parent lays out in, in a variant: the parent's own change to it, or else the default.
+  const modeIn = (n: Node, layers: { path: string; changes: LayerChanges }[]) => layers.find((l) => l.path === n.parent?.path)?.changes.layout?.mode ?? n.parent?.layer.layout?.mode
   const rules: Rule[] = []
   const done = new Set<string>()
   const baseDecls = new Map<Node, Decl[]>()
@@ -304,6 +355,7 @@ export function generateCss(st: Structure, block: string, notes: MarkupNote[], t
     if (n.layer.type !== 'TEXT') decls.push(['box-sizing', 'border-box'])
     decls.push(...(TAG_RESETS[tags.get(n) ?? ''] ?? []))
     if (isGroup(n)) decls.push(['display', 'contents'])
+    else if (groupBox(n) && n.layer.size) decls.push(['position', 'relative'], ['display', 'block'], ['width', px(n.layer.size.width)], ['height', px(n.layer.size.height)], ['flex-shrink', '0'])
     else if (!isAbsolute(n) && hasAbsolute(n)) decls.push(['position', 'relative'])
     decls.push(...declsFor(attrs, n.layer, ctx, false))
     if (n.showIn?.length) decls.push(['display', 'none'])
@@ -331,14 +383,33 @@ export function generateCss(st: Structure, block: string, notes: MarkupNote[], t
       if (!notes.some((n) => n.message === msg)) notes.push({ level: 'info', message: msg })
     }
     const extra: Decl[] = factor.isState && prefixes.disabled ? [['cursor', 'not-allowed']] : []
+    // The export does not say that a layer changes places between options. A layer named for the option (a "pointer" for "pointer position")
+    // sits after the others when the option starts with right or bottom.
+    if (!factor.isState && /^(right|bottom|end|after|below)\b/i.test(value.trim())) {
+      const words = (x: string) => x.toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length > 2)
+      const fw = words(factor.name)
+      for (const n of unique) {
+        const nw = words(n.layer.name)
+        if (!(n.parent?.layer.layout && nw.length && nw.every((w) => fw.includes(w)))) continue
+        const decls: Decl[] = [['order', '1']]
+        rules.push({ selectors: prefixes.list.map((p) => `${p} ${sel(n)}`), decls })
+        // Items that overlap (a negative gap) take their margin on the second one as drawn. Moved to the end, this item is the second.
+        const lay = diff.layers.find((l) => l.path === n.parent!.path)?.changes.layout ?? n.parent.layer.layout
+        if (lay && lay.gap && lay.gap < 0) {
+          decls.push([(lay.mode ?? n.parent.layer.layout.mode) === 'HORIZONTAL' ? 'margin-left' : 'margin-top', px(lay.gap)])
+          rules.push({ selectors: prefixes.list.map((p) => `${n.parent!.el ? `${p} ${sel(n.parent!)}` : p} > :not(${sel(n)})`), decls: [['margin-left', '0'], ['margin-top', '0']] })
+        }
+      }
+    }
     for (const entry of diff.layers) {
       const node = st.byPath.get(entry.path)
       if (!node) continue
       const eff = withChanges(node.layer, entry.changes)
-      const ctx: Ctx = { isRoot: !node.parent, parentMode: node.parent?.layer.layout?.mode, notes, layer: node.layer.name, boolKeys, absolute: isAbsolute(node) }
+      const ctx: Ctx = { isRoot: !node.parent, parentMode: modeIn(node, diff.layers), notes, layer: node.layer.name, boolKeys, absolute: isAbsolute(node) }
+      const baseCtx: Ctx = { ...ctx, parentMode: node.parent?.layer.layout?.mode }
       const baseAttrs: LayerChanges = {}
       for (const k of Object.keys(entry.changes)) (baseAttrs as Record<string, unknown>)[k] = (node.layer as unknown as Record<string, unknown>)[k]
-      const base = declsFor(baseAttrs, node.layer, ctx, true)
+      const base = declsFor(baseAttrs, node.layer, baseCtx, true)
       const decls = declsFor(entry.changes, eff, ctx, true).filter(([p, v]) => !base.some(([bp, bv]) => bp === p && bv === v))
       if (!node.parent) decls.push(...extra)
       if (!decls.length) continue
@@ -377,7 +448,7 @@ export function generateCss(st: Structure, block: string, notes: MarkupNote[], t
     for (const node of unique) {
       const change = diff.layers.find((l) => l.path === node.path)?.changes
       const eff = change ? withChanges(node.layer, change) : node.layer
-      const ctx: Ctx = { isRoot: !node.parent, parentMode: node.parent?.layer.layout?.mode, notes: [], layer: node.layer.name, boolKeys, absolute: isAbsolute(node) }
+      const ctx: Ctx = { isRoot: !node.parent, parentMode: modeIn(node, diff.layers), notes: [], layer: node.layer.name, boolKeys, absolute: isAbsolute(node) }
       const attrs: LayerChanges = {}
       for (const k of KEYS) if (eff[k] !== undefined) (attrs as Record<string, unknown>)[k] = eff[k]
       let real = declsFor(attrs, eff, ctx, false)
@@ -416,7 +487,27 @@ export function generateCss(st: Structure, block: string, notes: MarkupNote[], t
     }
   }
 
-  return rules.map((r) => `${r.selectors.join(',\n')} {\n${r.decls.map(([p, v]) => `  ${p}: ${v};`).join('\n')}\n}`).join('\n\n') + '\n'
+  return overlapRules(rules).map((r) => `${r.selectors.join(',\n')} {\n${r.decls.map(([p, v]) => `  ${p}: ${v};`).join('\n')}\n}`).join('\n\n') + '\n'
+}
+
+/**
+ * Turns the markers of layoutDecls into rules. A negative gap becomes a negative margin on every item after the first,
+ * and "first on top" lifts the first item. Where a variant changes the gap, the margin of the base is put back.
+ */
+function overlapRules(rules: Rule[]): Rule[] {
+  const any = rules.some((r) => r.decls.some(([p]) => p === OVERLAP))
+  if (!any && !rules.some((r) => r.decls.some(([p]) => p === TOP_FIRST))) return rules
+  const out: Rule[] = []
+  for (const r of rules) {
+    const get = (k: string) => r.decls.find(([p]) => p === k)?.[1]
+    const decls = r.decls.filter(([p]) => ![OVERLAP, OVERLAP_SIDE, TOP_FIRST].includes(p))
+    out.push({ ...r, decls })
+    const items = (suffix: string) => r.selectors.map((s) => `${s}${suffix}`)
+    if (get(OVERLAP)) out.push({ selectors: items(' > * + *'), decls: [['margin-left', '0'], ['margin-top', '0'], [get(OVERLAP_SIDE)!, get(OVERLAP)!]] })
+    else if (any && decls.some(([p]) => p === 'gap') && r.selectors.some((s) => s.includes('--'))) out.push({ selectors: items(' > * + *'), decls: [['margin-left', '0'], ['margin-top', '0']] })
+    if (get(TOP_FIRST)) out.push({ selectors: items(' > :first-child'), decls: [['position', 'relative'], ['z-index', '1']] })
+  }
+  return out
 }
 
 function prefixesFor(factor: Factor, value: string, rootSel: string): { list: string[]; disabled: boolean } | null {

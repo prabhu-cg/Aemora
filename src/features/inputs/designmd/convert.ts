@@ -5,6 +5,8 @@ import type { Warning } from '../types'
 import { resolveInstances, type Library } from './resolve'
 import { DESIGNMD_SCHEMA, type DmComponent, type DmLayer, type DmProperty, type DmWarning } from './schema'
 import type { Layer } from '../../markup/layers'
+import { prepareLayers } from './vectors'
+import { scanCoverage } from './coverage'
 
 /** Interaction words. A "state" property made only of these is styled in CSS, not chosen by authors. */
 const INTERACTIVE = new Set(['default', 'hover', 'hovered', 'focus', 'focused', 'pressed', 'active', 'disabled', 'de-activated', 'deactivated', 'inactive', 'enabled'])
@@ -121,6 +123,11 @@ export function convertDesignMdComponent(comp: DmComponent, tokens: Record<strin
     const mapped = mapProperty(p, comp, taken, origin, warnings, unsupported, notes)
     if (mapped) properties.push(mapped)
   }
+  // The plugin writes a drawn shape as `vector`; the generators read it as `graphic`. Renaming is done in place and is safe to repeat.
+  {
+    const tooLarge = prepareLayers(comp.tree, comp.variantDiffs)
+    if (tooLarge) warnings.push({ level: 'info', where: comp.name, message: `${tooLarge} drawn shape${tooLarge === 1 ? ' is' : 's are'} too large to carry into the markup, so ${tooLarge === 1 ? 'it is' : 'they are'} shown as boxes.` })
+  }
   let tree = (comp.tree && typeof comp.tree === 'object' ? comp.tree : undefined) as DmLayer | undefined
   // Components used inside this one come through empty unless the export asked for their insides. Fill them in from the same file.
   if (tree && library) {
@@ -145,6 +152,13 @@ export function convertDesignMdComponent(comp: DmComponent, tokens: Record<strin
   for (const w of pluginWarnings) {
     if (w.componentId !== comp.id || w.code === 'TREE_TRUNCATED') continue
     warnings.push({ level: w.code === 'DUPLICATE_SIBLING_NAME' ? 'info' : 'warning', where: comp.name, message: w.message })
+  }
+
+  // Say what of the design is not drawn, and what in the export Aemora does not know yet, so a gap is not found in a screenshot.
+  {
+    const cov = scanCoverage([tree, ...comp.variantDiffs.flatMap((d) => [...(d as { layers?: { changes?: unknown }[] }).layers?.map((e) => e.changes) ?? [], ...((d as { added?: { layer?: unknown }[] }).added?.map((a) => a.layer) ?? [])])])
+    for (const n of cov.notApplied) warnings.push({ level: 'info', where: comp.name, message: `Not in the result: ${n.feature} (${n.layers} layer${n.layers === 1 ? '' : 's'}).` })
+    if (cov.unknown.length) warnings.push({ level: 'warning', where: comp.name, message: `The export has fields this version of Aemora does not read: ${cov.unknown.slice(0, 6).map((u) => `${u.field} (${u.layers})`).join(', ')}. The result may differ from the design because of them.` })
   }
 
   let guessed = 0

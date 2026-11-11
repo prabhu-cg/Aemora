@@ -15,7 +15,7 @@ export const STATES: { id: Exclude<PreviewState, 'default'>; label: string; pseu
 /** The design's own typeface when it is Inter, which most design systems use. Other fonts fall back to the system font. */
 const FONT_CSS = `@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:swap;src:url("${new URL(interUrl, typeof location === 'undefined' ? 'http://localhost/' : location.href).href}") format("woff2-variations")}`
 
-export const FRAME_CSS = `html,body{margin:0}body{padding:16px;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#fff;color:#101828}body.pv-dark{background:#101828;color:#f2f4f7}[data-pv-empty]{outline:1px dashed rgba(128,128,128,.7);outline-offset:-1px}`
+export const FRAME_CSS = `html,body{margin:0}body{padding:16px;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#fff;color:#101828}body.pv-dark{background:#101828;color:#f2f4f7}:where(img[data-pv-nopic]){background-color:#e4e7ec;object-fit:cover}[data-pv-empty]{outline:1px dashed rgba(128,128,128,.7);outline-offset:-1px}`
 
 /** The CSS with each state's pseudo-class swapped for a class, so a state can be shown without hovering. */
 export function withStateClasses(css: string): string {
@@ -53,6 +53,9 @@ function markPlaceholders(doc: Document, win: Window): void {
   }
 }
 
+/** A 1x1 transparent picture, so a picture with no source shows the box the design gave it and not a broken-image glyph. */
+const CLEAR_PIXEL = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
+
 const seen = new WeakSet<Document>()
 
 export interface PaintOptions {
@@ -84,6 +87,12 @@ export function paintFrame(doc: Document, o: PaintOptions): number | null {
   doc.body.replaceChildren(...[...o.body.childNodes].map((n) => doc.importNode(n, true)))
   // Icons and pictures are not in the markup, only their names are. Hovering a dashed box says which one.
   doc.querySelectorAll('[data-icon]').forEach((el) => el.setAttribute('title', `Icon: ${el.getAttribute('data-icon')}`))
+  // A picture with no source (the design had a photo, the component has no image field) is a grey box, not a broken-image glyph.
+  doc.querySelectorAll('img').forEach((img) => {
+    const noPic = () => { img.setAttribute('src', CLEAR_PIXEL); img.setAttribute('alt', ''); img.setAttribute('data-pv-nopic', '') }
+    if (!img.getAttribute('src')?.trim()) noPic()
+    else img.addEventListener('error', noPic, { once: true })
+  })
   markPlaceholders(doc, win)
   const root = doc.body.firstElementChild
   if (root && o.state.startsWith('is-')) {
