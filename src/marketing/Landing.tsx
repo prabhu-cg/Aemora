@@ -69,7 +69,7 @@ const FAQ: [string, string][] = [
   ['Does my design leave the browser?', 'Only if you ask for it: reading a Figma file sends a request to Figma with your token. Everything else happens on your machine.'],
   ['Which AEM is this for?', 'AEM as a Cloud Service, Touch UI dialogs built from Granite UI and Coral components. It does not generate Classic UI dialogs or custom widgets. The one script it ever adds is a small show/hide clientlib, included in the export only when a dialog uses “show only when” fields.'],
   ['Can I change the XML by hand?', 'Yes. Switch to edit mode, format it, and watch the checks update. If you change the design afterwards, Aemora tells you your edited XML is out of date instead of overwriting it.'],
-  ['How do I try it without setting anything up?', 'Open the sample project. It is read-only, with five components already mapped, laid out and turned into XML, and you can make an editable copy of it.'],
+  ['How do I try it without setting anything up?', 'Open the sample project. It is read-only, with seven components already mapped, laid out, previewed and turned into XML and markup, and you can make an editable copy of it.'],
 ]
 
 export function Landing() {

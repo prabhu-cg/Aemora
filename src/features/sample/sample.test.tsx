@@ -22,10 +22,10 @@ beforeEach(async () => { await Promise.all([db.projects.clear(), db.previous.cle
 
 describe('sample project data', () => {
   const p = sampleProject()
-  it('is a valid project with five named components', () => {
+  it('is a valid project with seven named components', () => {
     expect(ProjectSchema.safeParse(p).success).toBe(true)
-    expect(p.components.map((c) => c.name)).toEqual(['Button', 'Card', 'Image', 'Text', 'Container'])
-    expect(p.components.map((c) => c.type)).toEqual(['button', 'card', 'image', 'text', 'container'])
+    expect(p.components.map((c) => c.name)).toEqual(['Button', 'Card', 'Image', 'Text', 'Container', 'Accordion', 'Tabs'])
+    expect(p.components.map((c) => c.type)).toEqual(['button', 'card', 'image', 'text', 'container', 'custom', 'custom'])
   })
   it('is stable: the same object and the same ids every time', () => {
     expect(sampleProject()).toBe(p)
@@ -50,18 +50,48 @@ describe('sample project data', () => {
     expect(d.tabs[0].items.some((i) => i.kind === 'section' && i.title === 'Media')).toBe(true)
     expect(Object.keys(p.dialog.components)).toEqual([card.id])
   })
-  it('gives the Button and the Card real layers, and the other three none', () => {
-    expect(p.components.map((c) => !!readDesign(c)?.tree)).toEqual([true, true, false, false, false])
+  it('gives every component real layers', () => {
+    expect(p.components.map((c) => !!readDesign(c)?.tree)).toEqual(p.components.map(() => true))
   })
-  it.each(['Button', 'Card'])('%s generates real markup: HTL, CSS with options and states, and no problems', (name) => {
+  it('lets every sample value drive something: each text, option and switch is in the markup, bar the behaviour-only ones', () => {
+    const behaviourOnly = new Set(['allowMultiple', 'accessibilityLabel'])
+    for (const c of p.components) {
+      const html = generateMarkup(c).files[0].content
+      for (const prop of c.properties.filter((x) => ['string', 'text', 'richtext', 'enum', 'boolean'].includes(x.type) && !behaviourOnly.has(x.key))) {
+        expect(html, `${c.name}: ${prop.label}`).toContain(prop.type === 'enum' ? `model.${prop.key}Modifier` : `model.${prop.key}`)
+      }
+    }
+  })
+  it('every change a variant makes points at a layer that exists', () => {
+    const resolves = (tree: NonNullable<ReturnType<typeof readDesign>>['tree'], path: string) => {
+      const [root, ...rest] = path.split('/')
+      let node = tree?.name === root ? tree : undefined
+      for (const name of rest) node = node?.children?.find((c) => c.name === name)
+      return !!node
+    }
+    for (const c of p.components) {
+      const d = readDesign(c)!
+      for (const v of d.variantDiffs) for (const l of v.layers) expect(resolves(d.tree, l.path), `${c.name}: ${l.path}`).toBe(true)
+    }
+  })
+  it.each(['Button', 'Card', 'Image', 'Text', 'Container', 'Accordion', 'Tabs'])('%s generates real markup: HTL, CSS with options and states, and no problems', (name) => {
     const c = p.components.find((x) => x.name === name)!
     const m = generateMarkup(c)
     expect(m.fallback).toBe(false)
     expect(validateMarkup(m)).toEqual([])
     expect(m.notes.filter((n) => n.level === 'warning')).toEqual([])
     const css = m.files[1].content
-    expect(css).toContain(`.cmp-${name.toLowerCase()}:hover`)
-    expect(css).toMatch(/--(variant|background-variant)-/)
+    if (['Button', 'Card', 'Accordion'].includes(name)) expect(css).toContain(`.cmp-${name.toLowerCase()}:hover`)
+    // Each option has its own rules, for the look it gives.
+    expect(css).toMatch(new RegExp(`\\.cmp-${name.toLowerCase()}--[a-z0-9-]+ `))
+  })
+  it('draws the pill tabs with only the active tab raised, whichever tab is active', () => {
+    const tabs = p.components.find((c) => c.name === 'Tabs')!
+    const rules = generateMarkup(tabs).files[1].content.split('\n\n')
+    const rule = (sel: string) => rules.find((r) => r.startsWith(sel))
+    // Tab 2 active in the pill look: tab 1 has no underline or shadow left over from the line look, and tab 2 is the white pill.
+    expect(rule('.cmp-tabs--style-pill.cmp-tabs--active-tab-2 .cmp-tabs__tab-1 {')).toMatch(/box-shadow: none/)
+    expect(rule('.cmp-tabs--style-pill.cmp-tabs--active-tab-2 .cmp-tabs__tab-2 {')).toMatch(/background-color: #ffffff/)
   })
   it('binds the card\'s image description and button link, and the button\'s icon position', () => {
     const [button, card] = p.components
@@ -75,7 +105,7 @@ describe('sample project data', () => {
     const s = suggestShowWhen(resolveComponent(card, p.mappings), card)
     expect(s.map((x) => [x.controllerLabel, x.targetLabel, x.source])).toEqual([['Show description', 'Description', 'design']])
   })
-  it.each(['Button', 'Card', 'Image', 'Text', 'Container'])('%s generates clean XML: well-formed, no structural problems, no generator errors', (name) => {
+  it.each(['Button', 'Card', 'Image', 'Text', 'Container', 'Accordion', 'Tabs'])('%s generates clean XML: well-formed, no structural problems, no generator errors', (name) => {
     const c = p.components.find((x) => x.name === name)!
     const fields = resolveComponent(c, p.mappings)
     const dialog = resolveDialog(c, p.dialog.components[c.id])
@@ -93,12 +123,12 @@ describe('sample project page', () => {
     await screen.findByRole('list', { name: /Properties of/ })
   }
 
-  it('says it is read-only, hides the import area and lists the five components', async () => {
+  it('says it is read-only, hides the import area and lists the seven components', async () => {
     await open()
     expect(screen.getByRole('note').textContent).toMatch(/Read-only sample/)
     expect(screen.queryByRole('button', { name: 'Bring in a design' })).toBeNull()
     const nav = screen.getByRole('navigation', { name: 'Components' })
-    expect(within(nav).getAllByRole('button').map((b) => b.textContent!.replace(/\d+$/, ''))).toEqual(['Button', 'Card', 'Image', 'Text', 'Container'])
+    expect(within(nav).getAllByRole('button').map((b) => b.textContent!.replace(/\d+$/, ''))).toEqual(['Button', 'Card', 'Image', 'Text', 'Container', 'Accordion', 'Tabs'])
   })
 
   it('disables every way of changing the component', async () => {
@@ -168,14 +198,17 @@ describe('sample project page', () => {
     expect((editor as HTMLTextAreaElement).value).toContain('sling:resourceType="cq/gui/components/authoring/dialog"')
   })
 
-  it('opens the preview on the component for a component with layers, and on the dialog for one without', async () => {
+  it('opens the preview on the component, for every component', async () => {
     const user = userEvent.setup()
     await open()
     await user.click(screen.getByRole('tab', { name: 'Preview' }))
     expect(await screen.findByRole('region', { name: 'Component preview' })).toBeTruthy()
     expect(screen.queryByText(/This preview is not the design/)).toBeNull()
-    await user.click(screen.getByRole('button', { name: /^Image/ }))
-    expect(await screen.findByRole('region', { name: 'Simulated dialog preview' })).toBeTruthy()
+    for (const name of [/^Image/, /^Accordion/, /^Tabs/]) {
+      await user.click(screen.getByRole('button', { name }))
+      expect(await screen.findByRole('region', { name: 'Component preview' })).toBeTruthy()
+      expect(screen.queryByText(/This preview is not the design/)).toBeNull()
+    }
   })
 
   it('writes nothing to storage, however much you click around', async () => {
@@ -194,7 +227,7 @@ describe('sample project page', () => {
     const copy = (await db.projects.toArray())[0]
     expect(copy.id).not.toBe('sample')
     expect(copy.name).toBe('Component library (from the sample)')
-    expect(copy.components).toHaveLength(5)
+    expect(copy.components).toHaveLength(7)
     expect(await screen.findByRole('button', { name: 'Bring in a design' })).toBeTruthy()
     expect((screen.getByRole('button', { name: 'Add property' }) as HTMLButtonElement).disabled).toBe(false)
     expect(screen.queryByRole('note')).toBeNull()

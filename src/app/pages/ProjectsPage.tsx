@@ -81,7 +81,7 @@ export function ProjectsPage() {
       <section aria-label="Sample project" className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-hairline-strong bg-sand p-4">
         <div className="min-w-0">
           <h2 className="flex items-center gap-2 text-base"><Lock size={15} aria-hidden="true" />Sample: component library <span className="rounded-full border border-hairline-strong px-2 py-0.5 text-[11px] font-bold text-ink-muted">Read-only</span></h2>
-          <p className="mt-0.5 max-w-[62ch] text-[13px] text-ink-muted">Five components (Button, Card, Image, Text, Container) already mapped, laid out and turned into XML. A quick way to see what a finished project looks like.</p>
+          <p className="mt-0.5 max-w-[62ch] text-[13px] text-ink-muted">Seven components (Button, Card, Image, Text, Container, Accordion, Tabs) already mapped, laid out and turned into XML. A quick way to see what a finished project looks like.</p>
         </div>
         <Link to="/app/sample" className="inline-flex h-10 items-center rounded-lg border border-hairline-strong bg-surface px-4 text-sm font-bold text-ink-strong hover:bg-bg">Open the sample</Link>
       </section>

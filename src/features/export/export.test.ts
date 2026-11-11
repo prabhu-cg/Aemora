@@ -17,8 +17,8 @@ describe('what gets exported', () => {
   const items = componentExports(sample())
 
   it('one dialog per component, at the path AEM expects', () => {
-    expect(items.map((i) => i.component.name)).toEqual(['Button', 'Card', 'Image', 'Text', 'Container'])
-    expect(items.map((i) => i.folder)).toEqual(['button', 'card', 'image', 'text', 'container'])
+    expect(items.map((i) => i.component.name)).toEqual(['Button', 'Card', 'Image', 'Text', 'Container', 'Accordion', 'Tabs'])
+    expect(items.map((i) => i.folder)).toEqual(['button', 'card', 'image', 'text', 'container', 'accordion', 'tabs'])
     expect(items[1].aemPath).toBe('/apps/sample-component-library/components/card/_cq_dialog/.content.xml')
     expect(items[1].zipPath).toBe('jcr_root/apps/sample-component-library/components/card/_cq_dialog/.content.xml')
     expect(items[1].filename).toBe('card.cq_dialog.content.xml')

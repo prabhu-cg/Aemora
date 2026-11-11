@@ -31,7 +31,7 @@ describe('Export section on the sample project', () => {
   it('lists every dialog with where it belongs and its three checks', async () => {
     const r = await open()
     const rows = within(r).getAllByRole('listitem')
-    expect(rows).toHaveLength(5)
+    expect(rows).toHaveLength(7)
     expect(rows[1].textContent).toContain('Card')
     expect(rows[1].textContent).toContain('/apps/sample-component-library/components/card/_cq_dialog/.content.xml')
     for (const row of rows) {
@@ -65,11 +65,11 @@ describe('Export section on the sample project', () => {
     const zip = readZip(new Uint8Array(await blobs[0].arrayBuffer()))
     expect(zip.map((e) => e.name)).toEqual([
       'README.txt',
-      ...['button', 'card', 'image', 'text', 'container'].map((f) => `jcr_root/apps/sample-component-library/components/${f}/_cq_dialog/.content.xml`),
+      ...['button', 'card', 'image', 'text', 'container', 'accordion', 'tabs'].map((f) => `jcr_root/apps/sample-component-library/components/${f}/_cq_dialog/.content.xml`),
       'aemora-project.json',
     ])
     expect(zip.every((e) => e.crcOk)).toBe(true)
-    expect(parseImport(zip.at(-1)!.text).projects[0].components).toHaveLength(5)
+    expect(parseImport(zip.at(-1)!.text).projects[0].components).toHaveLength(7)
   })
 
   it('downloads the project configuration as JSON', async () => {
@@ -80,7 +80,7 @@ describe('Export section on the sample project', () => {
     expect(names).toEqual(['sample-component-library.aemora.json'])
     const json = JSON.parse(await blobs[0].text())
     expect(json.format).toBe('aemora.project')
-    expect(json.project.components).toHaveLength(5)
+    expect(json.project.components).toHaveLength(7)
   })
 
   it('exporting the read-only sample writes nothing to storage', async () => {

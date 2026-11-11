@@ -4,7 +4,7 @@ import { buildDialog } from '../dialog/ops'
 import { setConstraint, setFieldType, setMultifield, patchSubfield, addSubfield } from '../mapping/ops'
 import type { Mapping } from '../mapping/schema'
 import { ProjectSchema, SCHEMA_VERSION, type Project } from '../projects/schema'
-import { buttonDesign, cardDesign } from './sampleDesign'
+import { accordionDesign, buttonDesign, cardDesign, containerDesign, imageDesign, tabsDesign, textDesign } from './sampleDesign'
 
 export const SAMPLE_ID = 'sample'
 const T = '2025-01-01T09:00:00.000Z'
@@ -75,13 +75,42 @@ function build(): Project {
     }],
   })
 
-  // Button and Card come with layers, so the sample has a real component preview and real HTL and CSS. The other three have none.
-  const components = [{ ...button, meta: { design: buttonDesign() } }, { ...card, meta: { design: cardDesign() } }, image, text, container]
+  const accordion: ComponentDef = makeComponent({
+    id: 'sample-accordion', name: 'Accordion', type: 'custom', description: 'Items that open and close. Authors write each item and choose which ones start open.',
+    properties: [
+      prop('accordion', 'firstTitle', 'First title', 'string', { required: true, defaultValue: 'What is Aemora?', group: 'First item' }),
+      prop('accordion', 'firstContent', 'First content', 'text', { defaultValue: 'It turns a design component into an AEM dialog.', group: 'First item' }),
+      prop('accordion', 'firstOpen', 'First item open', 'boolean', { defaultValue: true, description: 'Whether the first item starts open.', group: 'First item' }),
+      prop('accordion', 'secondTitle', 'Second title', 'string', { defaultValue: 'Does it need a server?', group: 'Second item' }),
+      prop('accordion', 'secondContent', 'Second content', 'text', { defaultValue: 'No. It runs in your browser.', group: 'Second item' }),
+      prop('accordion', 'secondOpen', 'Second item open', 'boolean', { defaultValue: false, group: 'Second item' }),
+      prop('accordion', 'style', 'Style', 'enum', { allowedValues: ['default', 'boxed'], defaultValue: 'default', group: 'Style' }),
+      prop('accordion', 'allowMultiple', 'Allow several open', 'boolean', { defaultValue: false, description: 'Lets visitors keep more than one item open. A behaviour, not a look.', group: 'Behaviour' }),
+    ],
+    children: [{ name: 'Accordion item', approach: 'reference-component', exposedKeys: [] }],
+  })
+
+  const tabs: ComponentDef = makeComponent({
+    id: 'sample-tabs', name: 'Tabs', type: 'custom', description: 'A strip of tabs over a panel. Authors name the tabs and choose which one is open first.',
+    properties: [
+      prop('tabs', 'tab1Label', 'Tab 1 label', 'string', { required: true, defaultValue: 'Overview', group: 'Tabs' }),
+      prop('tabs', 'tab2Label', 'Tab 2 label', 'string', { required: true, defaultValue: 'Details', group: 'Tabs' }),
+      prop('tabs', 'tab3Label', 'Tab 3 label', 'string', { defaultValue: 'Reviews', group: 'Tabs' }),
+      prop('tabs', 'showThirdTab', 'Show third tab', 'boolean', { defaultValue: true, description: 'Optional content: drop the third tab on short pages.', group: 'Tabs' }),
+      prop('tabs', 'style', 'Style', 'enum', { allowedValues: ['line', 'pill'], defaultValue: 'line', group: 'Style' }),
+      prop('tabs', 'activeTab', 'Active tab', 'enum', { allowedValues: ['1', '2', '3'], defaultValue: '1', description: 'The tab that is open when the page loads.', group: 'Style' }),
+    ],
+  })
+
+  // Every sample component carries layers, so each one has a real component preview and real HTL and CSS, and every sample value does something.
+  const withDesign = (c: ComponentDef, design: unknown): ComponentDef => ({ ...c, meta: { design } })
+  const components = [withDesign(button, buttonDesign()), withDesign(card, cardDesign()), withDesign(image, imageDesign()), withDesign(text, textDesign()), withDesign(container, containerDesign()), withDesign(accordion, accordionDesign()), withDesign(tabs, tabsDesign())]
   const find = (c: ComponentDef, key: string) => c.properties.find((p) => p.key === key)!
 
   let mappings: Mapping[] = []
   mappings = setConstraint(mappings, card, find(card, 'heading'), 'maxlength', 60)
   mappings = setFieldType(mappings, card, find(card, 'showDescription'), 'switch').mappings
+  mappings = setFieldType(mappings, tabs, find(tabs, 'showThirdTab'), 'switch').mappings
   mappings = setFieldType(mappings, image, find(image, 'asset'), 'fileupload').mappings
   const links = find(container, 'links')
   mappings = setMultifield(mappings, container, links, { composite: true })
@@ -94,7 +123,7 @@ function build(): Project {
 
   return ProjectSchema.parse({
     schemaVersion: SCHEMA_VERSION, id: SAMPLE_ID, name: 'Sample: component library',
-    description: 'A read-only tour: five components, with mappings, a laid-out dialog and generated XML. The Button and Card also have layers, so their Preview and Markup tabs show a real component with options and states. Open any tab to see how it works.',
+    description: 'A read-only tour: seven components, with mappings, a laid-out dialog and generated XML. Every component also has layers, so the Preview and Markup tabs show a real component with options and states. Open any tab to see how it works.',
     aemComponentName: '', inputSource: { kind: 'json', label: 'Built-in sample' },
     components, mappings,
     dialog: { components: { [card.id]: buildDialog(card) } },
