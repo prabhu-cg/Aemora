@@ -2,21 +2,26 @@
 
 **Generate. Build. Scale.**
 
-Aemora turns a design component's properties into a complete **AEM as a Cloud Service** authoring dialog: mapped to Granite UI fields, arranged in tabs and sections, previewed, and written out as XML. It is deterministic (the same input always gives the same XML), runs entirely in the browser, and has no backend, no account, and no AI.
+Aemora turns a design component into a complete **AEM as a Cloud Service** authoring dialog (mapped to Granite UI fields, arranged in tabs and sections, previewed, and written out as XML) and into the **HTL, CSS and Sling Model** that match it. It is deterministic (the same input always gives the same XML), runs entirely in the browser, and has no backend, no account, and no AI.
 
 Live: https://aemora.vercel.app
 
-> **Not yet tested on a running AEM instance.** The XML follows Granite UI and Coral conventions and passes Aemora's structural checks, but nobody has deployed it to a Cloud Service environment yet. Follow [docs/verifying-on-aem.md](docs/verifying-on-aem.md) before relying on it.
+> **Not yet tested on a running AEM instance.** The XML follows Granite UI and Coral conventions and passes Aemora's structural checks, and the markup is checked against the design, but nobody has deployed any of it to a Cloud Service environment yet. Follow [docs/verifying-on-aem.md](docs/verifying-on-aem.md) before relying on it.
 
 ## What it does
 
-1. **Bring in a design:** component JSON ([format](docs/component-json.md), [schema](public/schemas/aemora-components-v1.json)), clipboard text ([format](docs/clipboard-format.md)), the Figma REST API (with optional preview pictures), or a screenshot you annotate by hand. A Figma plugin interface is defined ([docs](docs/figma-plugin-interface.md)) but the plugin is not built, and its tab is hidden.
-2. **Review the properties:** rename, retype, defaults, allowed values, grouping. Anything Aemora cannot map is kept and flagged, never dropped.
-3. **Map to AEM fields:** a fixed rule table suggests one of 14 Granite field types for each property. Every suggestion can be changed.
+1. **Bring in a design:**
+   - **DesignMD:** the export of the DesignMD Figma plugin (`designmd.components/v1`, [spec](docs/designmd-components-v1.md)), as one file or a whole export folder. It carries the properties and the full layer structure: layout, colors, text styles, every variant and state. Components used inside others are filled in from the same file.
+   - **Figma API:** a file, or one component by link. It reads the properties, variants and states, and the layers too (layout, colors, gradients, strokes, positions, drawn icons). Optional preview pictures. See [docs](docs/figma-plugin-interface.md).
+   - **Screenshot:** annotate an image by hand. This gives a dialog but no markup, because there are no layers to read.
+   - **Hidden for now (the code stays):** component JSON ([format](docs/component-json.md), [schema](public/schemas/aemora-components-v1.json)), clipboard text ([format](docs/clipboard-format.md)) and the planned Aemora Figma plugin. Set `INPUT_TAB_FLAGS.text` in `src/features/inputs/ui/InputPanel.tsx` to show JSON and Clipboard again, and `SHOW_PLUGIN_TAB` for the plugin.
+2. **Review the properties:** rename, retype, defaults, allowed values, grouping. Anything Aemora cannot map is kept and flagged, never dropped. Interaction states (hover, focus, disabled) are not made into fields, because the CSS styles them.
+3. **Map to AEM fields:** a fixed rule table suggests one of 14 Granite field types for each property. Every suggestion can be changed. **Show only when** rules, which show a field while a checkbox is checked or a select has a value, are suggested from the design itself (a field made from a layer that a yes/no property switches) or from matching names, and are applied on request. Both ways in behave the same.
 4. **Arrange the dialog:** tabs, sections, drag and drop, fields left out without being deleted.
-5. **Preview:** an interactive, AEM-style simulation of the dialog. It is a simulation, not AEM.
-6. **XML:** complete dialog XML, an editor, and three separate checks (syntax, Aemora's own model, static AEM structure).
-7. **Export and back up:** one XML file, a ZIP laid out like an AEM project, the project JSON, restore points kept in the browser, backup files.
+5. **Preview:** the **Component** preview (the default) draws the generated HTL and CSS with sample values you choose, in default, hover, active and disabled, at several zooms and on a dark background. The **Dialog** preview is an interactive, AEM-style simulation of the dialog. Both are simulations, not AEM. A field left out of the dialog has no sample control in the Component preview.
+6. **Markup:** HTL, CSS, a Sling Model and the component definition, generated from the design's layers. Options become modifier classes, layers that only exist in some looks or states are in the markup and shown by the CSS, and nothing is guessed that the design does not say. Hand edits are kept and flagged when the design changes. See [docs/plan-htl-markup.md](docs/plan-htl-markup.md) and [docs/designmd-exact-fidelity.md](docs/designmd-exact-fidelity.md).
+7. **XML:** complete dialog XML, an editor, and three separate checks (syntax, Aemora's own model, static AEM structure).
+8. **Export and back up:** one XML file, a ZIP laid out like an AEM project, the project JSON, restore points kept in the browser, backup files.
 
 A read-only **sample project** (`/#/app/sample`) shows a finished one.
 
@@ -41,11 +46,12 @@ Stack: React, TypeScript, Vite, Tailwind CSS, Dexie (IndexedDB), Zod, dnd-kit, R
 
 ```
 src/features/
-  inputs/      adapters (json, clipboard, figma, plugin, screenshot) -> one component model
+  inputs/      adapters (designmd, figma, screenshot; json, clipboard and plugin are hidden) -> one component model
   components/  the canonical model, detection, inspector UI
   mapping/     field catalogue, deterministic engine, field node builder, validation
   dialog/      tabs, sections, layout operations
-  preview/     the simulated dialog
+  markup/      layers -> structure (options, looks, states) -> HTL, CSS, Sling Model, component XML
+  preview/     the simulated dialog and the component preview (HTL rendered with sample values)
   xml/         node tree, serializer, three validation layers, editor
   export/      per-component export and the ZIP bundle
   backup/      restore points
@@ -54,7 +60,7 @@ src/features/
 src/marketing/ landing page
 ```
 
-The mapping engine, XML generator and validators are separate, pure modules with no UI in them.
+The mapping engine, XML generator, markup generator and validators are separate, pure modules with no UI in them.
 
 ## Deploy
 
@@ -76,9 +82,9 @@ Everything runs in your browser. Projects are stored in IndexedDB on your machin
 
 ## Testing
 
-Nearly 600 automated tests: the mapping engine, node tree and XML, all three validators, every input adapter (Figma against recorded responses), import/export round trips, restore points, the interface for every view, keyboard behaviour, colour contrast computed from the real design tokens, automated accessibility checks (axe) on every screen, and security guards. The ZIP export was also checked with the system `unzip` and every generated dialog with `xmllint`.
+More than 800 automated tests: the mapping engine, node tree and XML, all three validators, the markup generators (with golden files, and a check that every variant and state of the real Rayna UI components shows the layers Figma has), every input adapter (Figma against recorded responses and hand-built node data), import/export round trips, restore points, the interface for every view, keyboard behaviour, colour contrast computed from the real design tokens, automated accessibility checks (axe) on every screen, and security guards. The ZIP export was also checked with the system `unzip` and every generated dialog with `xmllint`.
 
-What automation cannot tell you: whether the dialogs work in AEM (see above), whether the live Figma API accepts requests from your browser exactly as the tests assume, and how the tool feels with a screen reader.
+What automation cannot tell you: whether the dialogs and markup work in AEM (see above), how closely the CSS matches Figma pixel for pixel (the checks compare which layers show, and the styles come from the design's data), whether the live Figma API accepts requests from your browser exactly as the tests assume, and how the tool feels with a screen reader.
 
 ## Design
 

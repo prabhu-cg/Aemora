@@ -41,30 +41,31 @@ const H2 = ({ children }: { children: React.ReactNode }) => <h2 className="max-w
 const Lede = ({ children }: { children: React.ReactNode }) => <p className="mt-4 max-w-[56ch] text-[1.125rem] leading-relaxed text-ink-muted">{children}</p>
 
 const STEPS = [
-  ['Bring in a design', 'Paste or upload component JSON, paste a description, read a Figma file, or annotate a screenshot by hand. Every route ends in the same component model.'],
+  ['Bring in a design', 'Import a DesignMD export, read a Figma file through its API, or annotate a screenshot by hand. Every route ends in the same component model.'],
   ['Review the properties', 'Rename them, set types, required flags, defaults and allowed values. Anything Aemora cannot map is kept and flagged, never dropped.'],
   ['Map each one to an AEM field', 'Each property gets a suggested Granite UI field. Fourteen field types are available, and every suggestion can be changed.'],
   ['Arrange the dialog', 'Group fields into tabs and sections, drag them into order, and decide which properties stay out of the dialog.'],
-  ['Preview it, then take the XML', 'Try the dialog in a simulated authoring preview, then copy or download complete dialog XML, checked three ways.'],
+  ['Preview it, then take the code', 'Try the dialog in a simulated authoring preview and see the component itself in every state. Then copy or download the dialog XML, the HTL, the CSS and the Sling Model.'],
 ]
 
 const INPUTS: [string, string, 'live' | 'planned'][] = [
-  ['Component JSON', 'A documented format with a JSON Schema. Mistakes come back with the exact path that is wrong.', 'live'],
-  ['Clipboard', 'Paste JSON or a plain text description. Lines Aemora cannot read are listed for you to correct, not discarded.', 'live'],
-  ['Figma API', 'Reads component names, variants, properties, text layers and sizes. Your token stays in memory for the session.', 'live'],
-  ['Screenshot', 'Mark regions on an image and describe each property yourself. Nothing is guessed from pixels.', 'live'],
+  ['DesignMD', 'Import the export of the DesignMD Figma plugin, or a whole export folder. It brings the properties and the full layer structure: layout, colors, text styles, every variant and every state. Components used inside others are filled in from the same file.', 'live'],
+  ['Figma API', 'Reads a file or one component by link: properties, variants and states, and now the layers too, with their layout, colors, gradients and drawn icons. Your token stays in memory for the session.', 'live'],
+  ['Screenshot', 'Mark regions on an image and describe each property yourself. Nothing is guessed from pixels. This route gives a dialog but no markup, because there are no layers to read.', 'live'],
   ['Figma plugin', 'A companion plugin that sends components straight in. The format is defined; the plugin is not built yet.', 'planned'],
 ]
 
 const LIMITS: [string, string][] = [
   ['The preview is a simulation', 'It shows how the dialog is laid out and how required fields and limits behave. It is not a running AEM instance, and AEM will look and behave a little differently.'],
-  ['The XML has not run on AEM yet', 'It follows Granite UI and Coral conventions and passes structural checks, but it has not been tested on a live Cloud Service environment. Try it on a development instance before you rely on it.'],
+  ['Nothing has run on AEM yet', 'The dialog XML follows Granite UI and Coral conventions and passes structural checks, but it has not been tested on a live Cloud Service environment. Neither has the generated HTL, CSS or Sling Model, which are checked against the design only. Try it all on a development instance before you rely on it.'],
+  ['The markup follows the design closely, not perfectly', 'It is measured against the layers and states Figma records, and most components match. Large sets of artwork (country flags, brand logos, illustrations), pictures, and components with unusual variant setups are approximated, and the preview uses a fallback font unless the design uses Inter.'],
   ['No AI in the loop', 'The same input always produces the same XML. Mappings come from fixed rules you can read and override.'],
   ['Your work stays in your browser', 'There is no server and no account. Projects are stored locally. A Figma token is held in memory, and is never saved, exported or logged.'],
 ]
 
 const FAQ: [string, string][] = [
-  ['Do I need Figma?', 'No. JSON, clipboard text and screenshots all work without it. Figma is one way in, not a requirement.'],
+  ['Do I need Figma?', 'For the markup, yes: it comes from the layers, which the DesignMD export or the Figma API provide. Without Figma you can still annotate a screenshot and get a dialog, but no HTL or CSS.'],
+  ['What do I get besides the dialog?', 'HTL, CSS, a Sling Model and the component definition, generated from the design’s layers. The CSS follows every option and state, and the Component preview shows the result with the sample values you choose. Fields you leave out of the dialog are left out of the preview too.'],
   ['Does my design leave the browser?', 'Only if you ask for it: reading a Figma file sends a request to Figma with your token. Everything else happens on your machine.'],
   ['Which AEM is this for?', 'AEM as a Cloud Service, Touch UI dialogs built from Granite UI and Coral components. It does not generate Classic UI dialogs or custom widgets. The one script it ever adds is a small show/hide clientlib, included in the export only when a dialog uses “show only when” fields.'],
   ['Can I change the XML by hand?', 'Yes. Switch to edit mode, format it, and watch the checks update. If you change the design afterwards, Aemora tells you your edited XML is out of date instead of overwriting it.'],
@@ -98,7 +99,7 @@ export function Landing() {
                 Design properties in. AEM <PointerHighlight>dialog XML</PointerHighlight> out.
               </h1>
               <p className="mx-auto mt-6 max-w-[58ch] text-[1.1875rem] leading-relaxed text-ink-muted">
-                Aemora turns a design component’s properties into a complete AEM Cloud Service dialog: mapped to Granite UI fields, arranged in tabs, previewed, and written out as XML. Deterministic, in your browser, with no AI and no backend.
+                Aemora turns a design component into a complete AEM Cloud Service dialog, mapped to Granite UI fields, arranged in tabs, previewed and written out as XML, and into the HTL, CSS and Sling Model to match. Deterministic, in your browser, with no AI and no backend.
               </p>
               <div className="mt-9 flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
                 <Link to="/app" className={`${buttonClass('primary', 'lg')} rounded-full`}>Open the tool<ArrowRight size={18} aria-hidden="true" /></Link>
@@ -141,7 +142,7 @@ export function Landing() {
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-5">
               <H2>Start from whatever you already have.</H2>
-              <Lede>Design files, copied notes, a screenshot. All of them become the same component model, so nothing downstream cares where it came from.</Lede>
+              <Lede>A DesignMD export, a Figma file, a screenshot. All of them become the same component model, so nothing downstream cares where it came from.</Lede>
             </div>
             <ul className="lg:col-span-7">
               {INPUTS.map(([name, text, status]) => (
@@ -181,6 +182,24 @@ export function Landing() {
               </div>
               <AppWindow className="lg:col-span-7" title="Card · XML" caption="The start of the generated XML for the Card sample, with its three checks."><XmlBody /></AppWindow>
             </div>
+            <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-16">
+              <div className="lg:col-span-5">
+                <h3 className="text-[clamp(1.5rem,3vw,2rem)] leading-tight tracking-[-0.03em]">Markup that follows the design, in every state.</h3>
+                <p className="mt-3 text-ink-muted">Aemora reads the layers behind a component and writes the HTL, the CSS and the Sling Model that match it. The Component preview shows the result with your own sample values, in default, hover, active and disabled, and next to the dialog.</p>
+              </div>
+              <ul className="lg:col-span-7">
+                {[
+                  ['One look per option', 'A layout, size or style option becomes a modifier class. A look that exists only in a state is hidden until that state.'],
+                  ['Show and hide that agree', 'A yes/no property that switches a layer also becomes a “show only when” rule on the field it controls, whichever way the design came in.'],
+                  ['Checked against Figma', 'Every variant and state is compared with the layers Figma records for it, so a mismatch shows up as a failing check, not as a surprise in the browser.'],
+                ].map(([t, d]) => (
+                  <li key={t} className="border-t border-hairline-strong py-5 first:border-t-0 first:pt-0">
+                    <h4 className="text-[1.125rem] font-bold tracking-[-0.02em] text-ink-strong">{t}</h4>
+                    <p className="mt-1 max-w-[54ch] text-ink-muted">{d}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </Section>
 
@@ -216,7 +235,7 @@ export function Landing() {
         <section aria-label="Get started" className="bg-accent text-on-accent">
           <Frame className="py-20 text-center sm:py-24">
             <h2 className="mx-auto max-w-[20ch] text-[clamp(2rem,4.6vw,3.25rem)] leading-[1.05] tracking-[-0.03em] !text-on-accent">Try it on a real component.</h2>
-            <p className="mx-auto mt-4 max-w-[48ch] text-[1.125rem] text-on-accent">Paste a component’s properties and have a dialog to review in a few minutes. Nothing to install or sign up for.</p>
+            <p className="mx-auto mt-4 max-w-[48ch] text-[1.125rem] text-on-accent">Bring in a component and have a dialog, and the markup to go with it, to review in a few minutes. Nothing to install or sign up for.</p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Link to="/app" className="inline-flex h-11 items-center rounded-lg bg-white px-6 text-sm font-bold text-accent-hover hover:bg-white/90 focus-visible:!outline-white">Open the tool</Link>
               <Link to="/app/sample" className="inline-flex h-11 items-center rounded-lg border border-white/70 px-6 text-sm font-bold text-on-accent hover:bg-white/10 focus-visible:!outline-white">Open the sample project</Link>

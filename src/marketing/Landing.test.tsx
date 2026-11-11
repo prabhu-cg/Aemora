@@ -30,14 +30,14 @@ describe('landing page', () => {
     open()
     const steps = within(screen.getByRole('region', { name: 'How it works' })).getAllByRole('listitem')
     expect(steps.map((s) => s.querySelector('h3')?.textContent)).toEqual([
-      'Bring in a design', 'Review the properties', 'Map each one to an AEM field', 'Arrange the dialog', 'Preview it, then take the XML',
+      'Bring in a design', 'Review the properties', 'Map each one to an AEM field', 'Arrange the dialog', 'Preview it, then take the code',
     ])
   })
 
   it('lists the ways in and is honest that the Figma plugin is not built', () => {
     open()
     const ways = screen.getByRole('region', { name: 'Ways in' })
-    expect(within(ways).getAllByRole('heading', { level: 3 }).map((h) => h.textContent)).toEqual(['Component JSON', 'Clipboard', 'Figma API', 'Screenshot', 'Figma plugin'])
+    expect(within(ways).getAllByRole('heading', { level: 3 }).map((h) => h.textContent)).toEqual(['DesignMD', 'Figma API', 'Screenshot', 'Figma plugin'])
     const plugin = within(ways).getByRole('heading', { name: 'Figma plugin' }).closest('li')!
     expect(plugin.textContent).toMatch(/In development/)
     expect(plugin.textContent).toMatch(/not built yet/)
