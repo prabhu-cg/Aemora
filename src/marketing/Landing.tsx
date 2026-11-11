@@ -13,7 +13,7 @@ const go = (id: string) => {
   document.getElementById(id)?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
 }
 
-const NAV = [['how', 'How it works'], ['inputs', 'Ways in'], ['tour', 'Inside'], ['limits', 'Limits'], ['faq', 'FAQ']] as const
+const NAV = [['how', 'How it works'], ['inputs', 'Ways in'], ['tour', 'Inside'], ['why', 'Why'], ['limits', 'Limits'], ['faq', 'FAQ']] as const
 
 /** One word picked out the way a design tool selects it. Used once, in the headline. */
 function PointerHighlight({ children }: { children: string }) {
@@ -53,6 +53,20 @@ const INPUTS: [string, string, 'live' | 'planned'][] = [
   ['Figma API', 'Reads a file or one component by link: properties, variants and states, and now the layers too, with their layout, colors, gradients and drawn icons. Your token stays in memory for the session.', 'live'],
   ['Screenshot', 'Mark regions on an image and describe each property yourself. Nothing is guessed from pixels. This route gives a dialog but no markup, because there are no layers to read.', 'live'],
   ['Figma plugin', 'A companion plugin that sends components straight in. The format is defined; the plugin is not built yet.', 'planned'],
+]
+
+const REFERENCES_URL = 'https://github.com/prabhu-cg/Aemora/blob/main/docs/references.md'
+
+type Backing = 'Documented' | 'Community examples' | 'Not yet confirmed'
+const DECISIONS: [string, string, Backing][] = [
+  ['Granite UI’s own field types', 'Dialogs use only the Coral foundation form components in Adobe’s Granite UI reference: textfield, textarea, numberfield, checkbox, switch, select, multifield, pathfield, datepicker and colorfield, with tabs and fixed columns around them. Each one’s properties were checked against its reference page.', 'Documented'],
+  ['Values saved with the right type', 'Forms send everything as text. A number, checkbox or date gets a Sling @TypeHint so it is stored as a Long, Double, Boolean or Date. The Granite checkbox has no type hint property, so Aemora writes a hidden hint field beside it.', 'Documented'],
+  ['Repeated items as multifields', 'A list of links or items becomes a composite multifield, which Granite saves as child nodes (item0, item1 and so on), the shape the Granite reference describes.', 'Documented'],
+  ['Sling Models that read the resource', 'The model adapts from the resource, injects each property with @ValueMapValue, and treats missing ones as optional with defaults. That follows Apache Sling’s own advice, which discourages the catch-all @Inject.', 'Documented'],
+  ['Plain HTL, no scripts', 'The markup uses data-sly-use for the model, data-sly-test to show or hide a layer, and the html context only for rich text, as the HTL specification defines them. Nothing in it needs a custom script.', 'Documented'],
+  ['“Show only when” with a small script', 'Fields are marked with Granite’s show/hide markers, and the export carries a short clientlib that acts on exactly those. Adobe has no page for the markers, and sources disagree on the checkbox names, so Aemora ships its own handler instead of relying on a built-in one.', 'Community examples'],
+  ['File upload, tags and rich text', 'These use AEM’s authoring components, which the Granite reference does not cover. The settings come from forum examples and from copying the Core Components’ dialogs, and need a check on a real instance.', 'Community examples'],
+  ['Drag and drop onto the component', 'The generated component can be edited, deleted and inserted, but it does not yet declare drop targets, so dragging an asset onto it in the page editor will not work.', 'Not yet confirmed'],
 ]
 
 const LIMITS: [string, string][] = [
@@ -203,7 +217,30 @@ export function Landing() {
           </div>
         </Section>
 
-        <Section id="limits" label="Limits">
+        <Section id="why" label="Why it works this way">
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-5">
+              <H2>Every choice points at a public spec.</H2>
+              <Lede>Aemora does not invent AEM structure. Each decision below follows Adobe’s Granite UI reference, Apache Sling or the HTL specification, and where only forum examples exist, it says so.</Lede>
+              <p className="mt-6">
+                <a href={REFERENCES_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-[15px] font-bold text-accent-text underline-offset-4 hover:underline">Read the references, with what was and was not confirmed<ArrowRight size={16} aria-hidden="true" /></a>
+              </p>
+            </div>
+            <ul className="lg:col-span-7">
+              {DECISIONS.map(([title, text, backing]) => (
+                <li key={title} className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-t border-hairline-strong py-5 first:border-t-0 first:pt-0">
+                  <div className="min-w-0 flex-1 basis-72">
+                    <h3 className="text-[1.25rem] tracking-[-0.025em]">{title}</h3>
+                    <p className="mt-1 max-w-[56ch] text-ink-muted">{text}</p>
+                  </div>
+                  <span className={`rounded-full border px-2.5 py-0.5 text-[12px] font-semibold ${backing === 'Documented' ? 'border-hairline-strong text-ink-strong' : 'border-accent text-accent-text'}`}>{backing}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Section>
+
+        <Section id="limits" tone="sand" label="Limits">
           <H2>Plain about what it does not do.</H2>
           <ul className="mt-12 grid grid-cols-1 gap-x-16 md:grid-cols-2">
             {LIMITS.map(([title, text]) => (
@@ -215,7 +252,7 @@ export function Landing() {
           </ul>
         </Section>
 
-        <Section id="faq" tone="sand" label="Frequently asked questions">
+        <Section id="faq" label="Frequently asked questions">
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-4"><H2>Questions.</H2></div>
             <div className="lg:col-span-8">

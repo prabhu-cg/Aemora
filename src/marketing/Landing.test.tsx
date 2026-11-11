@@ -21,7 +21,7 @@ describe('landing page', () => {
 
   it('has every section, each findable by name', () => {
     open()
-    for (const name of ['Introduction', 'How it works', 'Ways in', 'Inside the tool', 'Limits', 'Frequently asked questions', 'Get started']) {
+    for (const name of ['Introduction', 'How it works', 'Ways in', 'Inside the tool', 'Why it works this way', 'Limits', 'Frequently asked questions', 'Get started']) {
       expect(screen.getByRole('region', { name })).toBeTruthy()
     }
   })
@@ -42,6 +42,17 @@ describe('landing page', () => {
     expect(plugin.textContent).toMatch(/In development/)
     expect(plugin.textContent).toMatch(/not built yet/)
     expect(within(ways).getAllByText('In development')).toHaveLength(1)
+  })
+
+  it('shows why it is built this way, says how well each choice is backed, and links the references', () => {
+    open()
+    const why = screen.getByRole('region', { name: 'Why it works this way' })
+    const titles = within(why).getAllByRole('heading', { level: 3 }).map((h) => h.textContent)
+    expect(titles).toContain('Granite UI’s own field types')
+    expect(titles).toContain('Drag and drop onto the component')
+    // Each decision carries one of three honest labels, and not everything is claimed as documented.
+    for (const label of ['Documented', 'Community examples', 'Not yet confirmed']) expect(within(why).getAllByText(label).length).toBeGreaterThan(0)
+    expect(within(why).getByRole('link', { name: /Read the references/ }).getAttribute('href')).toMatch(/docs\/references\.md$/)
   })
 
   it('states the limits plainly', () => {

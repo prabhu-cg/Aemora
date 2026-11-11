@@ -7,6 +7,8 @@ Aemora turns a design component into a complete **AEM as a Cloud Service** autho
 Live: https://aemora.vercel.app
 
 > **Not yet tested on a running AEM instance.** The XML follows Granite UI and Coral conventions and passes Aemora's structural checks, and the markup is checked against the design, but nobody has deployed any of it to a Cloud Service environment yet. Follow [docs/verifying-on-aem.md](docs/verifying-on-aem.md) before relying on it.
+>
+> What each AEM choice rests on, and how much of it was actually confirmed against Adobe, Apache Sling and the HTL specification, is in [docs/references.md](docs/references.md).
 
 ## What it does
 
