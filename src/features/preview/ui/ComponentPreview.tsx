@@ -9,6 +9,7 @@ import { readDesign } from '../../markup/layers'
 import { isInteractionState } from '../../inputs/designmd/convert'
 import { renderHtl } from '../../markup/render/render'
 import { buildModel, defaultSamples, type SampleValue } from '../../markup/render/samples'
+import { FidelityPanel } from '../../fidelity/ui/FidelityPanel'
 import { paintFrame, STATES, type Background, type PreviewState } from '../paintFrame'
 
 const ZOOMS = [{ v: '1', label: '100%' }, { v: '1.5', label: '150%' }, { v: '2', label: '200%' }, { v: '3', label: '300%' }]
@@ -20,9 +21,10 @@ const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n
  * The HTL is rendered here with sample values, and shown in a frame that cannot run script.
  */
 export function ComponentPreview({ project, component, fields, dialog }: { project: Project; component: ComponentDef; fields: ResolvedField[]; dialog?: ComponentDialog }) {
-  const { html, css, edited } = useMemo(() => {
+  const { html, css, edited, blockClass } = useMemo(() => {
     const { result } = generateForProject(project, component, fields)
     return {
+      blockClass: result.blockClass,
       html: effectiveContent(project, component, result, 'htl'),
       css: effectiveContent(project, component, result, 'css'),
       edited: ['htl', 'css'].filter((k) => project.markup?.[component.id]?.files?.[k]?.edited),
@@ -125,6 +127,8 @@ export function ComponentPreview({ project, component, fields, dialog }: { proje
           <p className="mt-4 text-[12px] text-ink-muted">These only change the preview. They are not saved and not part of the export.</p>
         </fieldset>
       )}
+
+      {!noLayers && <FidelityPanel component={component} html={html} css={css} blockClass={blockClass} />}
 
     </section>
   )
