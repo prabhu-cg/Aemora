@@ -44,14 +44,19 @@ const region = () => within(screen.getByRole('region', { name: 'Component previe
 const msgRaw = import.meta.glob('../../../test/fixtures/designmd-message.json', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
 
 describe('Component preview', () => {
-  it('is a choice next to the dialog preview, which stays the default', async () => {
+  it('opens on the component preview, with the dialog preview a choice beside it', async () => {
     const c = importDesignMd(catalog, [catalog.entries[0].id]).components[0]
     const p = await createProject({ name: 'Acme' })
     await mutateProject(p.id, (x) => ({ ...x, components: [c] }))
     render(<MemoryRouter initialEntries={[`/app/generator/${p.id}`]}><AppRoutes /></MemoryRouter>)
     await screen.findByRole('list', { name: /Properties of/ })
-    await userEvent.setup().click(screen.getByRole('tab', { name: 'Preview' }))
-    expect(screen.getByRole('button', { name: 'Dialog' }).getAttribute('aria-pressed')).toBe('true')
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('tab', { name: 'Preview' }))
+    const [first, second] = within(screen.getByRole('group', { name: 'Preview type' })).getAllByRole('button')
+    expect([first.textContent, second.textContent]).toEqual(['Component', 'Dialog'])
+    expect(first.getAttribute('aria-pressed')).toBe('true')
+    expect(await screen.findByRole('region', { name: 'Component preview' })).toBeTruthy()
+    await user.click(second)
     expect(screen.queryByRole('region', { name: 'Component preview' })).toBeNull()
   })
 
@@ -110,15 +115,6 @@ describe('Component preview', () => {
     await waitFor(() => expect(frameDoc().body.classList.contains('pv-dark')).toBe(false))
   })
 
-  it('shows the design picture in a section under the preview, collapsed at first', async () => {
-    const { user } = await open({ image: true })
-    const section = region().getByText('Design').closest('details')!
-    expect(section.open).toBe(false)
-    expect(region().getByRole('img', { name: 'Design of Button / primary', hidden: true })).toBeTruthy()
-    await user.click(region().getByText('Design'))
-    expect(section.open).toBe(true)
-    expect(section.compareDocumentPosition(screen.getByTitle('Generated component preview')) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy()
-  })
   it('hides the design section when there is no design picture', async () => {
     await open()
     expect(region().queryByText('Design')).toBeNull()

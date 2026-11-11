@@ -46,7 +46,7 @@ export function ComponentWorkspace({ project, readOnly = false, focus }: { proje
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [confirmDeleteAll, setConfirmDeleteAll] = useState(false)
   const [view, setView] = useState<WorkspaceView>('properties')
-  const [previewMode, setPreviewMode] = useState<'dialog' | 'component'>('dialog')
+  const [previewMode, setPreviewMode] = useState<'dialog' | 'component'>('component')
   const [fieldPropId, setFieldPropId] = useState('')
   const [dialogSelected, setDialogSelected] = useState('')
   const [lastFieldProp, setLastFieldProp] = useState<Property | undefined>(undefined)
@@ -289,13 +289,13 @@ export function ComponentWorkspace({ project, readOnly = false, focus }: { proje
         ) : view === 'preview' ? (
           <div role="tabpanel" className="mt-4">
             <div role="group" aria-label="Preview type" className="mb-4 inline-flex rounded-lg border border-hairline-strong p-0.5">
-              {([['dialog', 'Dialog'], ['component', 'Component']] as const).map(([id, label]) => (
+              {([['component', 'Component'], ['dialog', 'Dialog']] as const).map(([id, label]) => (
                 <button key={id} type="button" aria-pressed={previewMode === id} onClick={() => setPreviewMode(id)}
                   className={`h-8 cursor-pointer rounded-md px-3 text-[13px] font-bold ${previewMode === id ? 'bg-ink-strong/10 text-ink-strong' : 'text-ink-muted hover:text-ink-strong'}`}>{label}</button>
               ))}
             </div>
             {previewMode === 'component'
-              ? <ComponentPreview key={component.id} project={project} component={component} fields={fields} />
+              ? <ComponentPreview key={component.id} project={project} component={component} fields={fields} dialog={dialog} />
               : <DialogPreview key={component.id} component={component} dialog={dialog} fields={fields} onShowDialog={() => { setView('dialog'); setPropId(''); setFieldPropId('') }} />}
           </div>
         ) : view === 'dialog' ? (

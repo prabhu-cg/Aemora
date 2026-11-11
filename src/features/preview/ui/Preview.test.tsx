@@ -38,7 +38,9 @@ async function open(extra: (c: ReturnType<typeof makeComponent>) => ReturnType<t
   await mutateProject(p.id, (x) => ({ ...x, components: [c], mappings: ms }))
   render(<MemoryRouter initialEntries={[`/app/generator/${p.id}`]}><AppRoutes /></MemoryRouter>)
   await screen.findByRole('list', { name: /Properties of/ })
-  await userEvent.setup().click(screen.getByRole('tab', { name: 'Preview' }))
+  const u = userEvent.setup()
+  await u.click(screen.getByRole('tab', { name: 'Preview' }))
+  await u.click(await screen.findByRole('button', { name: 'Dialog' }))
   await screen.findByRole('region', { name: 'Simulated dialog preview' })
   return { p, c }
 }
@@ -196,6 +198,7 @@ describe('simulated dialog preview', () => {
     await user.click(await screen.findByRole('button', { name: /Remove from dialog/ }))
     await waitFor(async () => expect(Object.values((await db.projects.get(p.id))!.dialog.components)[0].excluded).toHaveLength(1))
     await user.click(screen.getByRole('tab', { name: 'Preview' }))
+    await user.click(await screen.findByRole('button', { name: 'Dialog' }))
     expect(await screen.findByRole('tab', { name: 'Basics' })).toBeTruthy()
     expect(screen.queryByLabelText(/^Body/)).toBeNull()
     const note = screen.getByRole('note', { name: 'Properties left out of the dialog' })
@@ -227,6 +230,7 @@ describe('conditional fields in the preview', () => {
     await mutateProject(p.id, (x) => ({ ...x, components: [c], mappings: ms }))
     render(<MemoryRouter initialEntries={[`/app/generator/${p.id}`]}><AppRoutes /></MemoryRouter>)
     await user.click(await screen.findByRole('tab', { name: 'Preview' }))
+    await user.click(await screen.findByRole('button', { name: 'Dialog' }))
     await screen.findByRole('region', { name: 'Simulated dialog preview' })
     expect(screen.queryByLabelText(/^Left icon/)).toBeNull()
     expect(screen.queryByLabelText(/^Icon size/)).toBeNull()

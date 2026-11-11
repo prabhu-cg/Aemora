@@ -2,9 +2,11 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Moon, Sun } from 'lucide-react'
 import type { ComponentDef, Property } from '../../components/schema'
 import type { ResolvedField } from '../../mapping/engine'
+import type { ComponentDialog } from '../../dialog/schema'
 import type { Project } from '../../projects/schema'
 import { effectiveContent, generateForProject } from '../../markup/effective'
 import { readDesign } from '../../markup/layers'
+import { isInteractionState } from '../../inputs/designmd/convert'
 import { renderHtl } from '../../markup/render/render'
 import { buildModel, defaultSamples, type SampleValue } from '../../markup/render/samples'
 import { paintFrame, STATES, type Background, type PreviewState } from '../paintFrame'
@@ -17,7 +19,7 @@ const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n
  * Shows what the generated HTL and CSS look like, next to the design they came from.
  * The HTL is rendered here with sample values, and shown in a frame that cannot run script.
  */
-export function ComponentPreview({ project, component, fields }: { project: Project; component: ComponentDef; fields: ResolvedField[] }) {
+export function ComponentPreview({ project, component, fields, dialog }: { project: Project; component: ComponentDef; fields: ResolvedField[]; dialog?: ComponentDialog }) {
   const { html, css, edited } = useMemo(() => {
     const { result } = generateForProject(project, component, fields)
     return {
@@ -53,10 +55,12 @@ export function ComponentPreview({ project, component, fields }: { project: Proj
 
   // Without a layer structure there is nothing to draw but a plain wrapper, and it must not pass for the design.
   const noLayers = !readDesign(component)?.tree
-  const asset = project.assets.find((a) => a.id === component.previewAssetId)
-  const editable = component.properties.filter((p) => ['string', 'text', 'richtext', 'link', 'enum', 'boolean', 'number'].includes(p.type))
+  // A property left out of the dialog cannot be set by authors, so it keeps its default here and has no control.
+  const leftOut = new Set(dialog?.excluded ?? [])
+  const editable = component.properties.filter((p) => !leftOut.has(p.id) && ['string', 'text', 'richtext', 'link', 'enum', 'boolean', 'number'].includes(p.type))
   const set = (key: string, v: SampleValue) => setSamples((s) => ({ ...s, [key]: v }))
-  const options = editable.filter((p) => p.type === 'enum')
+  // A field for hover, focus, disabled ... (from an import made before those were skipped) changes nothing here: the State buttons do.
+  const options = editable.filter((p) => p.type === 'enum' && !isInteractionState({ name: p.label || p.key, variantOptions: p.allowedValues }))
   const content = editable.filter((p) => ['string', 'text', 'richtext', 'link', 'number'].includes(p.type))
   const toggles = editable.filter((p) => p.type === 'boolean')
 
@@ -122,14 +126,6 @@ export function ComponentPreview({ project, component, fields }: { project: Proj
         </fieldset>
       )}
 
-      {asset && (
-        <details className="mt-5 rounded-lg border border-hairline">
-          <summary className="cursor-pointer px-4 py-2.5 text-[13px] font-extrabold text-ink-strong">Design</summary>
-          <div className="border-t border-hairline bg-sand p-3">
-            <img src={asset.dataUrl} alt={`Design of ${component.name}`} className="mx-auto block max-h-96 w-auto max-w-full object-contain" />
-          </div>
-        </details>
-      )}
     </section>
   )
 }

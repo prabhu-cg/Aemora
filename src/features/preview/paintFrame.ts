@@ -15,11 +15,42 @@ export const STATES: { id: Exclude<PreviewState, 'default'>; label: string; pseu
 /** The design's own typeface when it is Inter, which most design systems use. Other fonts fall back to the system font. */
 const FONT_CSS = `@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:swap;src:url("${new URL(interUrl, typeof location === 'undefined' ? 'http://localhost/' : location.href).href}") format("woff2-variations")}`
 
-export const FRAME_CSS = `html,body{margin:0}body{padding:16px;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#fff;color:#101828}body.pv-dark{background:#101828;color:#f2f4f7}body *:empty:not(hr):not(img):not(input):not(br){outline:1px dashed rgba(128,128,128,.7);outline-offset:-1px}`
+export const FRAME_CSS = `html,body{margin:0}body{padding:16px;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#fff;color:#101828}body.pv-dark{background:#101828;color:#f2f4f7}[data-pv-empty]{outline:1px dashed rgba(128,128,128,.7);outline-offset:-1px}`
 
 /** The CSS with each state's pseudo-class swapped for a class, so a state can be shown without hovering. */
 export function withStateClasses(css: string): string {
   return STATES.reduce((out, s) => out.split(s.pseudo).join(`.is-preview-${s.id}`), css)
+}
+
+/** Is this colour something you could not see on a white page: nothing, or white? */
+function invisibleOnLight(color: string): boolean {
+  const m = /rgba?\(([^)]+)\)/.exec(color)
+  if (!m) return true
+  const [r, g, b, a = '1'] = m[1].split(/[\s,/]+/).filter(Boolean)
+  return Number(a) < 0.05 || [r, g, b].every((v) => Number(v) >= 245)
+}
+
+/**
+ * Empty boxes that you could not otherwise see (an avatar, an icon the export has no shape for) get a dashed outline.
+ * A box that has a fill, a border, a shadow or a drawing in it is drawn as it is.
+ */
+/** A white box shows up when what is behind it is not white: a coloured frame, a gradient. */
+function onColoured(el: HTMLElement, win: Window): boolean {
+  for (let p = el.parentElement; p && p !== el.ownerDocument.body; p = p.parentElement) {
+    const cs = win.getComputedStyle(p)
+    if (cs.backgroundImage !== 'none' || !invisibleOnLight(cs.backgroundColor)) return true
+  }
+  return false
+}
+
+function markPlaceholders(doc: Document, win: Window): void {
+  for (const el of doc.body.querySelectorAll<HTMLElement>('*')) {
+    el.removeAttribute('data-pv-empty')
+    if (el.closest('svg') || el.children.length || el.textContent?.trim() || ['HR', 'IMG', 'INPUT', 'BR'].includes(el.tagName)) continue
+    const cs = win.getComputedStyle(el)
+    const painted = (!invisibleOnLight(cs.backgroundColor) || (cs.backgroundColor !== 'rgba(0, 0, 0, 0)' && onColoured(el, win))) || cs.backgroundImage !== 'none' || cs.boxShadow !== 'none' || (cs.borderTopWidth !== '0px' && cs.borderTopStyle !== 'none') || cs.outlineStyle !== 'none'
+    if (!painted) el.setAttribute('data-pv-empty', '')
+  }
 }
 
 const seen = new WeakSet<Document>()
@@ -53,6 +84,7 @@ export function paintFrame(doc: Document, o: PaintOptions): number | null {
   doc.body.replaceChildren(...[...o.body.childNodes].map((n) => doc.importNode(n, true)))
   // Icons and pictures are not in the markup, only their names are. Hovering a dashed box says which one.
   doc.querySelectorAll('[data-icon]').forEach((el) => el.setAttribute('title', `Icon: ${el.getAttribute('data-icon')}`))
+  markPlaceholders(doc, win)
   const root = doc.body.firstElementChild
   if (root && o.state.startsWith('is-')) {
     root.classList.add(o.state)
