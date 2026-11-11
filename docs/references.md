@@ -97,6 +97,25 @@ Aemora writes `@Model(adaptables = Resource.class, defaultInjectionStrategy = De
 - **Community:** `_cq_dialog/.content.xml` and `_cq_dialog.xml` are both valid serializations of the dialog node, and the folder form is fine. `_cq_editConfig.xml` is the usual name for the edit config. An Adobe knowledge-base article confirms that a Cloud Manager deployment fails when a dialog's `.content.xml` is not valid XML, which is what Aemora's three checks guard against.
 - **Gap, found while writing this:** Aemora's edit config has **no `cq:dropTargets`**. Forum answers say drag and drop of an asset onto a component needs that node (copied from a Core Components dialog). Dragging an image from the asset finder onto a generated component will not work until it is added.
 
+## Parked for a later release
+
+### Dropping an asset onto the component in the page editor
+
+**What it is.** In AEM's page editor an author can drag an image from the Assets panel and drop it onto a component on the page, and it fills the component's image field without opening the dialog. This has nothing to do with ordering fields in Aemora's Dialog tab, which already works.
+
+**Why it does not work today.** AEM only accepts the drop if the component declares it, with a `cq:dropTargets` node in the edit config. Aemora's `_cq_editConfig.xml` holds only `cq:actions="[edit,delete,insert]"`, so authors open the dialog and use the upload field instead.
+
+**Why it is parked.**
+- It matters only for components with a file upload field.
+- The node structure was not confirmed from a source. It is believed to be a `cq:dropTargets` node whose child is of type `cq:DropTargetConfig`, with properties for the accepted file types and the property the asset path is written to. Forum answers say to copy it from the WCM Core Components image dialog, and none gives a specification.
+- The generator would need to know which field receives the asset, and it does not yet link a design layer to a field.
+
+**What to do when it is picked up.**
+1. Copy the exact structure from the Core Components image component, and link that file here.
+2. Generate it only for a component with a file upload field, pointing at that field's file reference property.
+3. Keep it marked **Not verified** until it has been tried on an instance.
+4. Check that the generated `_cq_editConfig.xml` still passes Aemora's checks and imports on Cloud Manager.
+
 ## What to do next
 
 In rough order of risk:
@@ -104,7 +123,7 @@ In rough order of risk:
 1. Run the dialogs on a development instance ([verifying-on-aem.md](verifying-on-aem.md)).
 2. Check the file upload, tag field and rich text dialogs against the WCM Core Components versions.
 3. Check the Cloud Service Granite UI reference for the properties above, since the pages read here are 6.5.
-4. Decide whether to add `cq:dropTargets` to the edit config.
+4. Pick up the parked drop-target work above.
 5. Replace each **Community** or **Not verified** line with a link as soon as a source is found.
 
 ## Keeping this page honest
