@@ -133,9 +133,10 @@ describe('Figma adapter parsing', () => {
     expect(button.properties.find((p) => p.key === 'size')).toMatchObject({ type: 'enum', allowedValues: ['Small', 'Medium', 'Large'], defaultValue: 'Medium' })
     expect(button.properties.find((p) => p.key === 'disabled')).toMatchObject({ type: 'boolean', defaultValue: false })
   })
-  it('records unsupported instance swaps with a reason instead of dropping them', () => {
-    expect(button.unsupported[0]).toMatchObject({ name: 'Icon', rawType: 'INSTANCE_SWAP' })
-    expect(button.unsupported[0].reason).toMatch(/independently authored component/)
+  it('turns an instance swap into a text field for the component name, and says so', () => {
+    expect(button.properties.find((x) => x.key === 'icon')).toMatchObject({ type: 'string', label: 'Icon' })
+    expect(button.unsupported.some((u) => u.rawType === 'INSTANCE_SWAP')).toBe(false)
+    expect(res.warnings.some((w) => /An instance swap \(usually an icon\) became a text field/.test(w.message))).toBe(true)
   })
   it('proposes unexposed text layers as suggestions, not the ones already exposed', () => {
     const helper = button.properties.find((p) => p.key === 'helperText')!
@@ -151,10 +152,10 @@ describe('Figma adapter parsing', () => {
     expect(card.properties.map((p) => p.key)).toEqual(['heading', 'description'])
     expect(card.properties.find((p) => p.key === 'description')!.type).toBe('text')
   })
-  it('stamps the source and warns that visual properties are not mapped', () => {
+  it('stamps the source and says visual properties are read for the markup but are not fields', () => {
     expect(res.source).toMatchObject({ kind: 'figma-rest' })
     expect(res.source.label).toMatch(/Design System/)
-    expect(res.warnings.some((w) => /colors, spacing/.test(w.message))).toBe(true)
+    expect(res.warnings.some((w) => /Colors, spacing and shapes are read for the markup and preview, but they are not authoring fields/.test(w.message))).toBe(true)
   })
   it('reports missing nodes and empty results', () => {
     const missing = parseFigmaResponse(JSON.parse(fx('figma-nodes-missing.json')), { requestedNodeId: '9:9' })

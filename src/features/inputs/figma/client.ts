@@ -65,6 +65,7 @@ export async function figmaGetJson(url: string, token: string, fetchImpl: typeof
  */
 export async function fetchFigma({ ref, token, fetchImpl = fetch, signal }: FetchFigmaOptions): Promise<unknown> {
   const base = `https://api.figma.com/v1/files/${encodeURIComponent(ref.fileKey)}`
-  const url = ref.nodeId ? `${base}/nodes?ids=${encodeURIComponent(ref.nodeId)}&geometry=omit` : `${base}?geometry=omit`
+  // For chosen nodes, geometry=paths brings vector shapes and positions. A whole file would be too large to ask that of.
+  const url = ref.nodeId ? `${base}/nodes?ids=${encodeURIComponent(ref.nodeId)}&geometry=paths` : `${base}?geometry=omit`
   return figmaGetJson(url, token, fetchImpl, signal)
 }

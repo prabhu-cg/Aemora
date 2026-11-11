@@ -44,3 +44,12 @@ By default DesignMD does not read what is inside a nested component (an avatar i
 - This is the library version. Anything changed in that use of the component, such as a different label, is not applied. For exact contents, export from DesignMD with **Include layers inside nested instances** on. Layers that already carry their insides are never touched.
 - Icons are not filled in. The export holds a vector's size and colour but not its path, so there is nothing to draw. They stay as labelled boxes until DesignMD can export the shapes.
 - Filling is limited to 3 levels deep and 400 extra layers per component, and never follows a component into itself.
+
+## The Figma API route reads layers too
+Pasting a Figma link in the **Figma API** tab reads the component's fields as before, and now also its layers: layout, colors, text styles, positions, rotation, clipping, gradients, per-side and dashed strokes, and the drawn shape of vectors and icons. The request for a chosen node asks Figma for geometry (`geometry=paths`). A whole-file import does not, because that would be too large, so it has no vector shapes.
+
+- Both routes end in the same layer format, so the markup, the preview and the dialog suggestions behave the same.
+- Interaction states (a variant property such as `State` with hover, focus, disabled) are not fields: they are CSS.
+- A swapped icon (instance swap) becomes a text field for its name, as in the DesignMD route.
+- Show-only-when suggestions come from the design first: a field made from a layer inside one that a yes/no property switches is offered as "only when" that property is checked. Name pairs (a "Show icon" checkbox beside an "Icon" field) are offered for the rest.
+- Pictures (image fills) are not drawn yet.

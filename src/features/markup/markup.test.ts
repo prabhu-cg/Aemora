@@ -462,3 +462,151 @@ describe('validateMarkup', () => {
     expect(validateMarkup(mutate('css', (s) => s + '.x { color: undefined;')).join()).toMatch(/braces|unresolved/)
   })
 })
+
+describe('layers placed by their coordinates, and drawn shapes', () => {
+  const design = (tree: object) => ({ tree, variantDiffs: [], states: [], sizes: [], treeTruncated: false })
+  const css = (tree: object, props: Property[] = []) => file(component('Box', design(tree), props), 'css')
+  const html = (tree: object) => file(component('Box', design(tree), []), 'htl')
+  const shape = (name: string, extra: object = {}) => ({ id: name, name, type: 'RECTANGLE', role: 'unknown', visible: true, size: { width: 10, height: 10 }, ...extra })
+
+  it('places children of a frame without auto layout at their coordinates, and makes that frame the reference', () => {
+    const c = css(frame('Box', { size: { width: 80, height: 60 } }, [shape('Dot', { position: { x: 30, y: 6 } }), shape('Flow')]))
+    expect(c).toMatch(/\.cmp-box \{[^}]*position: relative;/s)
+    expect(c).toMatch(/__dot \{[^}]*position: absolute;[^}]*left: 30px;[^}]*top: 6px;/s)
+    expect(c).not.toMatch(/__flow \{[^}]*position: absolute/s) // no position known: it stays in the flow
+  })
+
+  it('does not place children that auto layout places, unless they are absolute', () => {
+    const tree = frame('Box', { layout: { mode: 'HORIZONTAL', sizingH: 'HUG', sizingV: 'HUG' } }, [shape('Flows', { position: { x: 5, y: 5 } }), shape('Badge', { position: { x: 40, y: -4 }, layoutPositioning: 'ABSOLUTE' })])
+    const c = css(tree)
+    expect(c).not.toMatch(/__flows \{[^}]*position: absolute/s)
+    expect(c).toMatch(/__badge \{[^}]*position: absolute;[^}]*left: 40px;[^}]*top: -4px;/s)
+    expect(c).toMatch(/\.cmp-box \{[^}]*position: relative;/s)
+  })
+
+  it('treats a group as no box at all, and places what is in it against the frame around it', () => {
+    const c = css(frame('Box', { size: { width: 80, height: 80 } }, [{ id: 'g', name: 'Group', type: 'GROUP', role: 'container', visible: true, size: { width: 30, height: 30 }, children: [shape('Inside', { position: { x: 15, y: 25 } })] }]))
+    expect(c).toMatch(/__group \{[^}]*display: contents;/s)
+    expect(c).not.toMatch(/__group \{[^}]*width/s)
+    expect(c).toMatch(/\.cmp-box \{[^}]*position: relative;/s) // the frame, not the group, is the reference
+    expect(c).toMatch(/__inside \{[^}]*position: absolute;[^}]*left: 15px;[^}]*top: 25px;/s)
+  })
+
+  it('applies a rotation or flip as a matrix from the corner, and clips and blends', () => {
+    const c = css(frame('Box', { clipsContent: true, blendMode: 'MULTIPLY' }, [shape('Tilt', { position: { x: 8, y: 20 }, transform: [0.866, 0.5, -0.5, 0.866] })]))
+    expect(c).toMatch(/\.cmp-box \{[^}]*overflow: hidden;[^}]*mix-blend-mode: multiply;/s)
+    expect(c).toMatch(/__tilt \{[^}]*transform: matrix\(0\.866, 0\.5, -0\.5, 0\.866, 0, 0\);[^}]*transform-origin: 0 0;/s)
+  })
+
+  it('keeps the width of an absolute text box, and lets one that follows its text stay on one line', () => {
+    const t = (autoResize: string) => css(frame('Box', {}, [{ id: 't', name: 'Words', type: 'TEXT', role: 'text', visible: true, size: { width: 50, height: 20 }, position: { x: 1, y: 2 }, text: { characters: 'x', autoResize } }]))
+    expect(t('NONE')).toMatch(/__words \{[^}]*width: 50px;/s)
+    expect(t('NONE')).not.toContain('white-space: nowrap')
+    expect(t('WIDTH_AND_HEIGHT')).toContain('white-space: nowrap;')
+  })
+
+  it('fills the row for a text or shape that asks to fill, and gives a round ellipse', () => {
+    const c = css(frame('Box', { layout: { mode: 'HORIZONTAL', sizingH: 'HUG', sizingV: 'HUG' } }, [
+      { id: 't', name: 'Grow', type: 'TEXT', role: 'text', visible: true, size: { width: 10, height: 10 }, sizing: { h: 'FILL', v: 'HUG' }, text: { characters: 'x' } },
+      shape('Round', { type: 'ELLIPSE' }),
+    ]))
+    expect(c).toMatch(/__grow \{[^}]*flex: 1 1 0;[^}]*min-width: 0;/s)
+    expect(c).toMatch(/__round \{[^}]*border-radius: 50%;/s)
+  })
+
+  it('draws gradients as background layers, stacked top first', () => {
+    const lin = { type: 'GRADIENT_LINEAR', gradient: { kind: 'LINEAR', angle: 90, stops: [{ position: 0, hex: '#ff0000', alpha: 1 }, { position: 1, hex: '#0000ff', alpha: 0.5 }] } }
+    expect(css(frame('Box', { fills: [lin] }))).toContain('background-image: linear-gradient(90deg, #ff0000 0%, rgba(0, 0, 255, 0.5) 100%);')
+    const stacked = css(frame('Box', { fills: [{ type: 'SOLID', hex: '#00ff00' }, lin] }))
+    expect(stacked).toContain('background-image: linear-gradient(90deg, #ff0000 0%, rgba(0, 0, 255, 0.5) 100%), linear-gradient(#00ff00, #00ff00);')
+    const rad = { type: 'GRADIENT_RADIAL', gradient: { kind: 'RADIAL', center: { x: 0.5, y: 0.5 }, radii: { x: 0.5, y: 0.25 }, stops: [{ position: 0, hex: '#ffffff', alpha: 1 }, { position: 1, hex: '#000000', alpha: 1 }] } }
+    expect(css(frame('Box', { fills: [rad] }))).toContain('radial-gradient(ellipse 50% 25% at 50% 50%, #ffffff 0%, #000000 100%)')
+  })
+
+  it('draws a stroke on one side, or dashed, without changing any size', () => {
+    const stroke = (extra: object) => css(frame('Box', { strokes: { paints: [{ type: 'SOLID', hex: '#ff0000', alpha: 1 }], weight: 3, align: 'INSIDE', ...extra } }))
+    expect(stroke({ sides: { top: 0, right: 0, bottom: 3, left: 0 } })).toContain('box-shadow: inset 0 -3px 0 0 #ff0000;')
+    expect(stroke({ sides: { top: 1, right: 0, bottom: 0, left: 2 } })).toContain('box-shadow: inset 0 1px 0 0 #ff0000, inset 2px 0 0 0 #ff0000;')
+    expect(stroke({ align: 'OUTSIDE', sides: { top: 2, right: 0, bottom: 0, left: 0 } })).toContain('box-shadow: 0 -2px 0 0 #ff0000;')
+    const dashed = stroke({ dash: [4, 2] })
+    expect(dashed).toContain('outline: 3px dashed #ff0000;')
+    expect(dashed).toContain('outline-offset: -3px;')
+    expect(dashed).not.toContain('box-shadow')
+  })
+
+  it('writes a drawn shape as inline SVG coloured like text, with its outline as a second path', () => {
+    const tree = frame('Box', {}, [{ id: 'v', name: 'Arrow', type: 'VECTOR', role: 'icon', visible: true, size: { width: 18, height: 17 }, fills: [{ type: 'SOLID', hex: '#98a2b3', alpha: 1 }], strokes: { paints: [{ type: 'SOLID', hex: '#101828', alpha: 1 }], weight: 1, align: 'CENTER' }, graphic: { fills: [{ d: 'M0 0L18 8.5L0 17Z', rule: 'EVENODD' }], strokes: [{ d: 'M1 1L17 8L1 16Z' }] } }])
+    const h = html(tree)
+    expect(h).toContain('<svg class="cmp-box__arrow" viewBox="0 0 18 17" width="18" height="17" aria-hidden="true" focusable="false">')
+    expect(h).toContain('<path d="M0 0L18 8.5L0 17Z" fill-rule="evenodd" clip-rule="evenodd" fill="currentColor"/>')
+    expect(h).toContain('<path class="cmp-box__arrow-stroke" d="M1 1L17 8L1 16Z"/>')
+    const c = css(tree)
+    expect(c).toMatch(/__arrow \{[^}]*color: #98a2b3;/s)
+    expect(c).not.toMatch(/__arrow \{[^}]*background-color/s)
+    expect(c).not.toMatch(/__arrow \{[^}]*box-shadow/s) // the outline is the second path
+    expect(c).toContain('.cmp-box__arrow-stroke {\n  fill: #101828;\n}')
+    expect(validateMarkup(generateMarkup(component('Box', design(tree), [])))).toEqual([])
+  })
+})
+
+
+describe('a look that keeps a copy of its layers for each state (the Rayna Tab in Pill)', () => {
+  const raw = import.meta.glob('../../test/fixtures/designmd-tab.json', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
+  const cat = parseDesignMdText(Object.values(raw)[0])
+  const tab = importDesignMd(cat, cat.entries.map((e) => e.id)).components[0]
+  const css = generateMarkup(tab).files[1].content
+  const shownBy = (state: string) => css.split('\n\n').filter((r) => r.split('{')[0].includes(state) && r.split('{')[0].includes('--style-pill') && /display: (inline|block|flex)/.test(r)).flatMap((r) => r.split('{')[0].match(/__[\w-]+/g) ?? [])
+
+  it('draws the hovered and active pill without the border the resting pill has, as the design does', () => {
+    expect(css).toMatch(/--style-pill \{[^}]*box-shadow: inset 0 0 0 1px #d0d5dd/s)
+    for (const sel of [':hover.cmp-tab--style-pill {', '.cmp-tab.is-active.cmp-tab--style-pill {']) {
+      const rule = css.split('\n\n').find((r) => r.split('{')[0].trim().endsWith(sel.slice(0, -2)))
+      expect(rule, sel).toMatch(/box-shadow: (initial|none)/)
+    }
+  })
+
+  it('shows, in each state, only that state\'s copies, never another state\'s', () => {
+    const states = { hover: shownBy(':hover'), active: shownBy('is-active'), disabled: shownBy(':disabled') }
+    for (const [state, own] of Object.entries(states)) {
+      expect(own.length, state).toBeGreaterThan(0)
+      for (const [other, theirs] of Object.entries(states)) if (other !== state) expect(own.filter((c) => theirs.includes(c)).filter((c) => /icon-home|badge|label/.test(c)), `${state} shows ${other}'s layers`).toEqual([])
+    }
+  })
+})
+
+describe('a layer the design does not have in some interaction states (the Rayna Breadcrumb)', () => {
+  const raw = import.meta.glob('../../test/fixtures/designmd-breadcrumb.json', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
+  const cat = parseDesignMdText(Object.values(raw)[0])
+  const crumb = importDesignMd(cat, cat.entries.map((e) => e.id)).components[0]
+  const m = generateMarkup(crumb)
+  const css = m.files[1].content
+
+  it('keeps it in the markup and hides it in the states where the design removes it', () => {
+    const el = /cmp-breadcrumb__(content-separator)\b/
+    expect(m.files[0].content).toMatch(el)
+    for (const sel of [':hover', '[aria-selected="true"]', ':disabled']) {
+      const rule = css.split('\n\n').find((r) => r.split('{')[0].includes(sel) && /__content-separator[,\s{]/.test(r.split('{')[0]) && /display: none/.test(r))
+      expect(rule, sel).toBeTruthy()
+    }
+  })
+})
+
+describe('layers and states in the Rayna Chip and Input', () => {
+  const load = (glob: Record<string, string>, name?: string) => {
+    const cat = parseDesignMdText(Object.values(glob)[0])
+    const e = name ? cat.entries.find((x) => x.name === name)! : cat.entries[0]
+    return importDesignMd(cat, [e.id]).components[0]
+  }
+  const rules = (css: string) => css.split('\n\n')
+
+  it('hides the chevron of a filter chip in the states and looks where the design has none', () => {
+    const css = generateMarkup(load(chipRaw, 'Chip')).files[1].content
+    expect(rules(css).some((r) => /:disabled|aria-disabled/.test(r.split('{')[0]) && /__icon-chevron-down[^-]/.test(r.split('{')[0]) && /display: none/.test(r))).toBe(true)
+  })
+
+  it('keeps a layer the design itself hides hidden in the state that adds it (the input\'s second rectangle)', () => {
+    const inputRaw = import.meta.glob('../../test/fixtures/designmd-input.json', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
+    const css = generateMarkup(load(inputRaw)).files[1].content
+    expect(rules(css).some((r) => /is-filled/.test(r.split('{')[0]) && /__rectangle-2/.test(r.split('{')[0]))).toBe(false)
+  })
+})

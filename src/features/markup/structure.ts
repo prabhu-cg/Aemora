@@ -12,11 +12,17 @@ export interface Node {
   el: string | null
   parent: Node | null
   children: Node[]
+  /** Made from a layer that only some looks of the component have (the pill version of a tab), with everything inside it. */
+  look?: boolean
   /** When the layer shows. Absent means always. */
   presence?: Presence
   /** The layer exists only in these interaction states of the design (a focus icon, a selected check). Hidden until then. */
   showIn?: { factor: Factor; value: string; /** Also needs one of these combinations of the other options (the Last Day position, say). Absent means any. */ when?: Term[][] }[]
+  /** The layer is in the markup, but the design removes it in these interaction states (a chevron the selected look does not have). Hidden there. */
+  hideIn?: { factor: Factor; value: string; when?: Term[][] }[]
 }
+
+const markLook = (n: Node): void => { n.look = true; n.children.forEach(markLook) }
 
 export interface Term { factor: Factor; value: string }
 /** Shows when any term holds (a term holds when each of its options has the given value), or when none holds if negated. */
@@ -40,7 +46,7 @@ export interface Structure {
   factors: Factor[]
   /** Diffs that differ from the default variant in exactly one factor. */
   single: { factor: Factor; value: string; diff: VariantDiff }[]
-  /** Diffs that differ from the default in two or more options the author picks (size and icon style together). */
+  /** Diffs that differ from the default in two or more options (size and icon style together), or in one state and some options (the active pill). */
   multi: { combo: { factor: Factor; value: string }[]; diff: VariantDiff }[]
 }
 
@@ -50,7 +56,29 @@ const DEFAULT_WORDS = ['default', 'enabled', 'rest', 'normal']
 
 function sameJson(a: unknown, b: unknown) { return JSON.stringify(a) === JSON.stringify(b) }
 
-export function buildStructure(design: DesignData, props: Property[], notes: MarkupNote[]): Structure | null {
+/**
+ * A component can spell its resting state two ways ("default" and "Default"). They are one state, so the others are
+ * read as the spelling the design declares as its default. Otherwise the second spelling would count as a state of its own.
+ */
+function mergeRestingSpellings(design: DesignData): DesignData {
+  const values = new Map<string, Set<string>>()
+  const note = (k: string, v: string) => values.set(k, (values.get(k) ?? new Set()).add(v))
+  for (const [k, v] of Object.entries(design.defaultVariantProperties ?? {})) note(k, v)
+  for (const d of design.variantDiffs) for (const [k, v] of Object.entries(d.variantProperties)) note(k, v)
+  const canon = new Map<string, Map<string, string>>()
+  for (const [name, vs] of values) {
+    const declared = design.defaultVariantProperties?.[name]
+    if (!declared || !DEFAULT_WORDS.includes(declared.toLowerCase()) || !isInteractionState({ name, variantOptions: [...vs] })) continue
+    const alias = [...vs].filter((v) => v !== declared && v.toLowerCase() === declared.toLowerCase())
+    if (alias.length) canon.set(name, new Map(alias.map((v) => [v, declared])))
+  }
+  if (!canon.size) return design
+  const fix = (vp: Record<string, string>) => Object.fromEntries(Object.entries(vp).map(([k, v]) => [k, canon.get(k)?.get(v) ?? v]))
+  return { ...design, variantDiffs: design.variantDiffs.map((d) => ({ ...d, variantProperties: fix(d.variantProperties) })) }
+}
+
+export function buildStructure(rawDesign: DesignData, props: Property[], notes: MarkupNote[]): Structure | null {
+  const design = mergeRestingSpellings(rawDesign)
   if (!design.tree) return null
   const nodes: Node[] = []
   const byPath = new Map<string, Node>()
@@ -105,7 +133,9 @@ export function buildStructure(design: DesignData, props: Property[], notes: Mar
   const multi: Structure['multi'] = []
   for (const d of design.variantDiffs) {
     const differing = Object.keys(d.variantProperties).filter((k) => d.variantProperties[k] !== defaults[k])
-    if (differing.length >= 2 && differing.every((k) => factorOf(k).key && !factorOf(k).isState)) {
+    const fs = differing.map(factorOf)
+    // Options picked together, or one interaction state together with options (the active look of the pill style).
+    if (differing.length >= 2 && fs.every((f) => f.key || f.isState) && fs.filter((f) => f.isState).length <= 1 && fs.some((f) => !f.isState)) {
       multi.push({ combo: differing.map((k) => ({ factor: factorOf(k), value: d.variantProperties[k] })), diff: d })
     }
   }
@@ -169,6 +199,13 @@ export function buildStructure(design: DesignData, props: Property[], notes: Mar
     const count = known.filter((x) => x !== 'overflow').length
     if (count > 1) notes.push({ level: 'info', layer: name.split('|')[1], message: `This layer looks different in ${count} options, so the markup has one copy for each look.` })
   }
+  // Where a layer exists in any of its looks. One copy being absent from a variant only means another copy stands for it there.
+  const anyLook = new Map<string, boolean[]>()
+  for (const g of groups.values()) {
+    const k = `${g.parentPath}|${g.layer.name}`
+    const cur = anyLook.get(k) ?? g.present.map(() => false)
+    anyLook.set(k, cur.map((x, i) => x || g.present[i]))
+  }
   for (const g of groups.values()) {
     const parent = byPath.get(g.parentPath)
     if (!parent) { notes.push({ level: 'warning', layer: g.layer.name, message: 'This layer appears in some variants, but its parent layer was not found, so it was left out.' }); continue }
@@ -194,6 +231,7 @@ export function buildStructure(design: DesignData, props: Property[], notes: Mar
       const node: Node = { layer: g.layer, path, el: elName(g.layer), parent, children: [], showIn }
       const kids = g.layer.children ?? []
       node.children = kids.map((c) => make(c, childPath(path, c, kids), node, elName(c)))
+      markLook(node)
       nodes.push(node)
       if (typeof g.index === 'number') parent.children.splice(Math.min(g.index, parent.children.length), 0, node)
       else parent.children.push(node)
@@ -215,15 +253,29 @@ export function buildStructure(design: DesignData, props: Property[], notes: Mar
     } else if (typeof g.index !== 'number') {
       notes.push({ level: 'info', layer: g.layer.name, message: `Its position among its siblings was guessed from the option names (${rule.positive.map(text).join(', ')}). The plugin did not say where it sits.` })
     }
+    // It shows wherever the options say, except in an interaction state where the design leaves it out (the disabled filter chip has no chevron).
+    const hideIn: NonNullable<Node['hideIn']> = []
+    const wanted = (v: Record<string, string>) => rule.positive.some((t) => t.every((x) => v[x.factor.name] === x.value))
+    for (const f of stateFactors) {
+      for (const val of new Set(design.variantDiffs.map((d) => d.variantProperties[f.name]).filter((x): x is string => !!x && x !== f.default))) {
+        const scope = (v: Record<string, string>) => v[f.name] === val && stateFactors.every((o) => o === f || v[o.name] === o.default) && wanted(v)
+        const inState = allVariants.map((v, i) => ({ v, i })).filter(({ v }) => scope(v))
+        const here = anyLook.get(`${g.parentPath}|${g.layer.name}`) ?? g.present
+        if (!inState.length || inState.every(({ i }) => here[i])) continue
+        if (inState.every(({ i }) => !here[i])) hideIn.push({ factor: f, value: val, when: rule.positive })
+        else { const r = decide(here, scope); if (r) hideIn.push({ factor: f, value: val, when: r.negative }) } // gone for only some looks (an icon on)
+      }
+    }
     const el = elName(g.layer)
     const single = byPosition.size === 1
     for (const [pos, terms] of byPosition) {
       const path = childPath(g.parentPath, g.layer, [...(parent.layer.children ?? []), g.layer])
       // Saying where it does not show is shorter when it shows almost everywhere. That only holds when one copy covers every place it shows.
       const presence: Presence = single && rule.negative.length < rule.positive.length ? { terms: rule.negative, negate: true } : { terms, negate: false }
-      const node: Node = { layer: g.layer, path, el, parent, children: [], presence }
+      const node: Node = { layer: g.layer, path, el, parent, children: [], presence, ...(hideIn.length ? { hideIn } : {}) }
       const kids = g.layer.children ?? []
       node.children = kids.map((c) => make(c, childPath(path, c, kids), node, elName(c)))
+      markLook(node)
       nodes.push(node)
       if (typeof g.index === 'number') parent.children.splice(Math.min(g.index, parent.children.length), 0, node)
       else if (pos === 'before') parent.children.unshift(node)
@@ -243,6 +295,21 @@ export function buildStructure(design: DesignData, props: Property[], notes: Mar
   for (const [path, present] of removedBy) {
     const node = byPath.get(path)
     if (present.every((p, i) => p || !isBase(allVariants[i]))) {
+      // Gone only in interaction states: it stays in the markup and the CSS hides it in the states where the design has no such layer.
+      const hideIn: NonNullable<Node['hideIn']> = []
+      const seenIn = new Set<string>()
+      design.variantDiffs.forEach((d, i) => {
+        if (present[i + 1]) return
+        for (const f of stateFactors) {
+          const v = d.variantProperties[f.name]
+          if (v && v !== f.default && !seenIn.has(`${f.name}|${v}`)) { seenIn.add(`${f.name}|${v}`); hideIn.push({ factor: f, value: v }) }
+        }
+      })
+      for (const entry of hideIn) {
+        const rule = decide(present, (v) => v[entry.factor.name] === entry.value && stateFactors.every((o) => o === entry.factor || v[o.name] === o.default))
+        if (rule) entry.when = rule.negative
+      }
+      if (node && hideIn.length) { node.hideIn = hideIn; notes.push({ level: 'info', layer: path.split('/').pop(), message: `In the design this is not there in the ${hideIn.map((x) => x.value).join(' and ')} state, so it is hidden then.` }); continue }
       notes.push({ level: 'info', layer: path.split('/').pop(), message: 'In the design this is hidden in some interaction states. The markup always includes it.' })
       continue
     }

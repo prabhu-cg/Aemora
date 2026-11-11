@@ -1,7 +1,22 @@
 import type { ComponentDef } from '../components/schema'
 
 /** The parts of designmd.components/v1 layers that markup generation reads. */
-export interface Paint { type: string; visible?: boolean; hex?: string; alpha?: number; description?: string; token?: { cssName?: string } }
+export interface Gradient {
+  kind: 'LINEAR' | 'RADIAL'
+  /** CSS angle in degrees (linear). */
+  angle?: number
+  /** Stops as positions along the CSS gradient line, 0 to 1. */
+  stops: { position: number; hex: string; alpha: number }[]
+  /** Radial: center and radii as fractions of the layer's box. */
+  center?: { x: number; y: number }
+  radii?: { x: number; y: number }
+}
+export interface Paint { type: string; visible?: boolean; hex?: string; alpha?: number; description?: string; token?: { cssName?: string }; gradient?: Gradient }
+/** The drawn shape of a vector layer, as SVG path data in the layer's own coordinates. */
+export interface Graphic {
+  fills: { d: string; rule?: 'EVENODD' | 'NONZERO' }[]
+  strokes?: { d: string; rule?: 'EVENODD' | 'NONZERO' }[]
+}
 export interface Padding { top: number; right: number; bottom: number; left: number }
 export interface Layout {
   mode: 'HORIZONTAL' | 'VERTICAL'; gap?: number; padding?: Padding
@@ -13,6 +28,9 @@ export interface UnitValue { value: number; unit: 'px' | 'percent' | 'auto' }
 export interface TextProps {
   fontFamily?: string; fontWeight?: number; fontSize?: number; lineHeight?: UnitValue; letterSpacing?: UnitValue
   textCase?: string; textDecoration?: string; align?: string; characters?: string; mixed?: boolean
+  /** NONE, WIDTH_AND_HEIGHT, HEIGHT or TRUNCATE: how the text box follows its text. */
+  autoResize?: string
+  italic?: boolean
 }
 export interface Radii { tl: number; tr: number; br: number; bl: number }
 
@@ -23,11 +41,21 @@ export interface LayerAttrs {
   radius?: number | Radii
   opacity?: number
   fills?: Paint[]
-  strokes?: { paints?: Paint[]; weight?: number; align?: string }
+  strokes?: { paints?: Paint[]; weight?: number; align?: string; sides?: { top: number; right: number; bottom: number; left: number }; dash?: number[] }
   effects?: Effect[]
   text?: TextProps
   instanceOf?: { componentId?: string; componentName?: string }
   propertyRefs?: { characters?: string; visible?: string; mainComponent?: string }
+  /** Position in the containing frame (groups do not contain). Used for children that auto layout does not place. */
+  position?: { x: number; y: number }
+  layoutPositioning?: 'AUTO' | 'ABSOLUTE'
+  /** How a layer that is not an auto-layout frame (text, a shape, an instance) is sized inside an auto-layout parent. Frames carry this in `layout`. */
+  sizing?: { h?: 'FIXED' | 'HUG' | 'FILL'; v?: 'FIXED' | 'HUG' | 'FILL' }
+  /** The 2x2 part of the layer's transform [a, b, c, d], only when it is not the identity (rotation, flip, skew). */
+  transform?: [number, number, number, number]
+  clipsContent?: boolean
+  blendMode?: string
+  graphic?: Graphic
 }
 export interface Layer extends LayerAttrs { id: string; name: string; type: string; children?: Layer[] }
 export type LayerChanges = LayerAttrs
@@ -53,7 +81,7 @@ export interface DesignData {
 /** The design data the DesignMD adapter stored on the component, or null when there is none. */
 export function readDesign(component: ComponentDef): DesignData | null {
   const d = component.meta.design as Record<string, unknown> | undefined
-  if (!d || typeof d !== 'object' || d.format !== 'designmd.components/v1') return null
+  if (!d || typeof d !== 'object' || (d.format !== 'designmd.components/v1' && d.format !== 'aemora.design/v1')) return null
   const arr = <T,>(v: unknown): T[] => (Array.isArray(v) ? (v as T[]) : [])
   const tree = d.tree && typeof d.tree === 'object' ? (d.tree as Layer) : undefined
   return {

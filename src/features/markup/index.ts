@@ -42,7 +42,7 @@ export function generateMarkup(component: ComponentDef, options: Partial<MarkupO
       if (n && l.changes.visible === false && n.layer.type === 'TEXT' && n.layer.role === 'label') hidden.push(n)
     }
     const { html: htl, tags } = generateHtl(st, component, block, modelFqn, hidden, notes)
-    css = generateCss(st, block, notes, tags)
+    css = generateCss(st, block, notes, tags, new Set(component.properties.filter((p) => p.type === 'boolean').map((p) => p.key)))
     files.push({ kind: 'htl', name: `${folder}.html`, content: htl })
   } else {
     notes.push({ level: 'warning', message: 'This component has no layer structure from the design, so only a simple wrapper with its text fields was generated and there is no styling.' })

@@ -1,0 +1,3065 @@
+{
+  "$schema": "https://raw.githubusercontent.com/prabhu-cg/Figma-plugins/main/DesignMD/schemas/designmd-components-v1.json",
+  "schema": "designmd.components/v1",
+  "metadata": {
+    "fileName": "Rayna UI v1.0 - Free 550+ Design System Components (Community)",
+    "scope": "file",
+    "generatedAt": "2026-11-10T22:18:51.990Z",
+    "pluginVersion": "1.1.0",
+    "options": {
+      "includeText": true,
+      "includeVariantDiffs": true,
+      "includeInstanceInternals": true
+    },
+    "contentHash": "017739ea17cf051f3e3eeb8457ea02eba41d58036949fa5e7f75fae26a81bb1a"
+  },
+  "index": {
+    "componentCount": 1,
+    "components": [
+      {
+        "id": "1697:24969",
+        "name": "Tab"
+      }
+    ]
+  },
+  "tokens": {},
+  "components": [
+    {
+      "id": "1697:24969",
+      "key": "56d32448a77d926480c4732983100da5a196363d",
+      "name": "Tab",
+      "description": "",
+      "isComponentSet": true,
+      "pageName": "      ✤  Tabs ",
+      "variants": [
+        {
+          "id": "1697:24811",
+          "name": "State=default, Style=Line",
+          "variantProperties": {
+            "State": "default",
+            "Style": "Line"
+          },
+          "description": ""
+        },
+        {
+          "id": "1697:24808",
+          "name": "State=hover, Style=Line",
+          "variantProperties": {
+            "State": "hover",
+            "Style": "Line"
+          },
+          "description": ""
+        },
+        {
+          "id": "1697:24807",
+          "name": "State=active, Style=Line",
+          "variantProperties": {
+            "State": "active",
+            "Style": "Line"
+          },
+          "description": ""
+        },
+        {
+          "id": "1697:24810",
+          "name": "State=disabled, Style=Line",
+          "variantProperties": {
+            "State": "disabled",
+            "Style": "Line"
+          },
+          "description": ""
+        },
+        {
+          "id": "1697:24813",
+          "name": "State=default, Style=Pill",
+          "variantProperties": {
+            "State": "default",
+            "Style": "Pill"
+          },
+          "description": ""
+        },
+        {
+          "id": "1697:24800",
+          "name": "State=hover, Style=Pill",
+          "variantProperties": {
+            "State": "hover",
+            "Style": "Pill"
+          },
+          "description": ""
+        },
+        {
+          "id": "1697:24796",
+          "name": "State=active, Style=Pill",
+          "variantProperties": {
+            "State": "active",
+            "Style": "Pill"
+          },
+          "description": ""
+        },
+        {
+          "id": "1697:24786",
+          "name": "State=disabled, Style=Pill",
+          "variantProperties": {
+            "State": "disabled",
+            "Style": "Pill"
+          },
+          "description": ""
+        }
+      ],
+      "properties": [
+        {
+          "key": "has number tag#3846:642",
+          "name": "has number tag",
+          "type": "BOOLEAN",
+          "defaultValue": "true"
+        },
+        {
+          "key": "has icon#3846:675",
+          "name": "has icon",
+          "type": "BOOLEAN",
+          "defaultValue": "true"
+        },
+        {
+          "key": "Icon#4663:9",
+          "name": "Icon",
+          "type": "INSTANCE_SWAP",
+          "defaultValue": "3253:139559",
+          "defaultResolved": {
+            "id": "3253:139559",
+            "name": "icon / home-alt"
+          }
+        },
+        {
+          "key": "State",
+          "name": "State",
+          "type": "VARIANT",
+          "defaultValue": "default",
+          "variantOptions": [
+            "default",
+            "hover",
+            "active",
+            "disabled"
+          ]
+        },
+        {
+          "key": "Style",
+          "name": "Style",
+          "type": "VARIANT",
+          "defaultValue": "Line",
+          "variantOptions": [
+            "Line",
+            "Pill"
+          ]
+        }
+      ],
+      "states": [
+        "default",
+        "hover",
+        "active",
+        "disabled"
+      ],
+      "sizes": [],
+      "relatedComponentNames": [],
+      "boundVariableIds": [],
+      "styleIds": [],
+      "layout": {
+        "measuredFrom": "State=default, Style=Line",
+        "width": 129,
+        "height": 52,
+        "layoutMode": "VERTICAL",
+        "gap": 0,
+        "padding": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "defaultVariantId": "1697:24811",
+      "tree": {
+        "id": "1697:24811",
+        "name": "Tab",
+        "type": "COMPONENT",
+        "visible": true,
+        "children": [
+          {
+            "id": "1696:24343",
+            "name": "Content",
+            "type": "FRAME",
+            "visible": true,
+            "children": [
+              {
+                "id": "3846:187061",
+                "name": "icon / home-alt",
+                "type": "INSTANCE",
+                "visible": true,
+                "children": [
+                  {
+                    "id": "I3846:187061;3253:139560",
+                    "name": "icon",
+                    "type": "VECTOR",
+                    "visible": true,
+                    "children": [],
+                    "size": {
+                      "width": 18.12,
+                      "height": 17.29
+                    },
+                    "opacity": 1,
+                    "fills": [
+                      {
+                        "type": "SOLID",
+                        "visible": true,
+                        "hex": "#98a2b3",
+                        "alpha": 1
+                      }
+                    ],
+                    "strokes": {
+                      "paints": [],
+                      "weight": 0,
+                      "align": "INSIDE"
+                    },
+                    "effects": [],
+                    "role": "icon",
+                    "roleSource": "type"
+                  }
+                ],
+                "size": {
+                  "width": 20,
+                  "height": 20
+                },
+                "opacity": 1,
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": false,
+                    "hex": "#ffffff",
+                    "alpha": 1
+                  }
+                ],
+                "strokes": {
+                  "paints": [],
+                  "weight": 0,
+                  "align": "INSIDE"
+                },
+                "effects": [],
+                "instanceOf": {
+                  "componentId": "3253:139559",
+                  "componentName": "icon / home-alt"
+                },
+                "propertyRefs": {
+                  "visible": "has icon#3846:675",
+                  "mainComponent": "Icon#4663:9"
+                },
+                "role": "icon",
+                "roleSource": "property"
+              },
+              {
+                "id": "1696:24346",
+                "name": "Label",
+                "type": "TEXT",
+                "visible": true,
+                "children": [],
+                "size": {
+                  "width": 37,
+                  "height": 20
+                },
+                "opacity": 1,
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#344054",
+                    "alpha": 1
+                  }
+                ],
+                "strokes": {
+                  "paints": [],
+                  "weight": 0,
+                  "align": "INSIDE"
+                },
+                "effects": [],
+                "text": {
+                  "fontFamily": "Inter",
+                  "fontWeight": 500,
+                  "fontSize": 14,
+                  "lineHeight": {
+                    "value": 145,
+                    "unit": "percent"
+                  },
+                  "letterSpacing": {
+                    "value": 0,
+                    "unit": "percent"
+                  },
+                  "textCase": "ORIGINAL",
+                  "textDecoration": "NONE",
+                  "align": "CENTER",
+                  "characters": "Label"
+                },
+                "role": "label",
+                "roleSource": "name"
+              },
+              {
+                "id": "4374:184770",
+                "name": "Badge",
+                "type": "INSTANCE",
+                "visible": true,
+                "children": [
+                  {
+                    "id": "I4374:184770;1913:29478",
+                    "name": "Container",
+                    "type": "FRAME",
+                    "visible": true,
+                    "children": [
+                      {
+                        "id": "I4374:184770;1913:29479",
+                        "name": "Icon-left",
+                        "type": "INSTANCE",
+                        "visible": false,
+                        "children": [
+                          {
+                            "id": "I4374:184770;1913:29479;3287:134071",
+                            "name": "icon",
+                            "type": "VECTOR",
+                            "visible": true,
+                            "children": [],
+                            "size": {
+                              "width": 10,
+                              "height": 5
+                            },
+                            "opacity": 1,
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "visible": true,
+                                "hex": "#344054",
+                                "alpha": 1
+                              }
+                            ],
+                            "strokes": {
+                              "paints": [],
+                              "weight": 0,
+                              "align": "INSIDE"
+                            },
+                            "effects": [],
+                            "role": "icon",
+                            "roleSource": "type"
+                          }
+                        ],
+                        "size": {
+                          "width": 12,
+                          "height": 12
+                        },
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "visible": false,
+                            "hex": "#ffffff",
+                            "alpha": 1
+                          }
+                        ],
+                        "strokes": {
+                          "paints": [],
+                          "weight": 0,
+                          "align": "INSIDE"
+                        },
+                        "effects": [],
+                        "instanceOf": {
+                          "componentId": "3287:134070",
+                          "componentName": "icon / arrow-left"
+                        },
+                        "role": "icon",
+                        "roleSource": "name"
+                      },
+                      {
+                        "id": "I4374:184770;1913:29480",
+                        "name": "Avatars",
+                        "type": "INSTANCE",
+                        "visible": false,
+                        "children": [
+                          {
+                            "id": "I4374:184770;1913:29480;1483:13726",
+                            "name": "Image",
+                            "type": "RECTANGLE",
+                            "visible": true,
+                            "children": [],
+                            "size": {
+                              "width": 12,
+                              "height": 12
+                            },
+                            "radius": 200,
+                            "opacity": 1,
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "visible": true,
+                                "hex": "#ffe7cc",
+                                "alpha": 1
+                              },
+                              {
+                                "type": "IMAGE",
+                                "visible": true,
+                                "description": "image, scale mode FILL"
+                              }
+                            ],
+                            "strokes": {
+                              "paints": [
+                                {
+                                  "type": "SOLID",
+                                  "visible": true,
+                                  "hex": "#ffffff",
+                                  "alpha": 1
+                                }
+                              ],
+                              "weight": 0.5,
+                              "align": "OUTSIDE"
+                            },
+                            "effects": [],
+                            "role": "image",
+                            "roleSource": "type"
+                          }
+                        ],
+                        "size": {
+                          "width": 12,
+                          "height": 12
+                        },
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "visible": false,
+                            "hex": "#ffffff",
+                            "alpha": 1
+                          }
+                        ],
+                        "strokes": {
+                          "paints": [],
+                          "weight": 0,
+                          "align": "INSIDE"
+                        },
+                        "effects": [],
+                        "instanceOf": {
+                          "componentId": "1483:13727",
+                          "componentName": "Avatars"
+                        },
+                        "role": "container",
+                        "roleSource": "type"
+                      },
+                      {
+                        "id": "I4374:184770;1913:29481",
+                        "name": "Label",
+                        "type": "TEXT",
+                        "visible": true,
+                        "children": [],
+                        "size": {
+                          "width": 8,
+                          "height": 17
+                        },
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "visible": true,
+                            "hex": "#344054",
+                            "alpha": 1
+                          }
+                        ],
+                        "strokes": {
+                          "paints": [],
+                          "weight": 0,
+                          "align": "INSIDE"
+                        },
+                        "effects": [],
+                        "text": {
+                          "fontFamily": "Inter",
+                          "fontWeight": 500,
+                          "fontSize": 12,
+                          "lineHeight": {
+                            "value": 145,
+                            "unit": "percent"
+                          },
+                          "letterSpacing": {
+                            "value": -0.5,
+                            "unit": "percent"
+                          },
+                          "textCase": "ORIGINAL",
+                          "textDecoration": "NONE",
+                          "align": "CENTER",
+                          "characters": "0"
+                        },
+                        "role": "label",
+                        "roleSource": "name"
+                      },
+                      {
+                        "id": "I4374:184770;1913:29482",
+                        "name": "Icon-right",
+                        "type": "INSTANCE",
+                        "visible": false,
+                        "children": [
+                          {
+                            "id": "I4374:184770;1913:29482;3287:134073",
+                            "name": "icon",
+                            "type": "VECTOR",
+                            "visible": true,
+                            "children": [],
+                            "size": {
+                              "width": 10,
+                              "height": 5
+                            },
+                            "opacity": 1,
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "visible": true,
+                                "hex": "#344054",
+                                "alpha": 1
+                              }
+                            ],
+                            "strokes": {
+                              "paints": [],
+                              "weight": 0,
+                              "align": "INSIDE"
+                            },
+                            "effects": [],
+                            "role": "icon",
+                            "roleSource": "type"
+                          }
+                        ],
+                        "size": {
+                          "width": 12,
+                          "height": 12
+                        },
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "visible": false,
+                            "hex": "#ffffff",
+                            "alpha": 1
+                          }
+                        ],
+                        "strokes": {
+                          "paints": [],
+                          "weight": 0,
+                          "align": "INSIDE"
+                        },
+                        "effects": [],
+                        "instanceOf": {
+                          "componentId": "3287:134072",
+                          "componentName": "icon / arrow-right"
+                        },
+                        "role": "icon",
+                        "roleSource": "name"
+                      }
+                    ],
+                    "size": {
+                      "width": 8,
+                      "height": 17
+                    },
+                    "layout": {
+                      "mode": "HORIZONTAL",
+                      "gap": 2,
+                      "padding": {
+                        "top": 0,
+                        "right": 0,
+                        "bottom": 0,
+                        "left": 0
+                      },
+                      "primaryAlign": "CENTER",
+                      "counterAlign": "CENTER",
+                      "sizingH": "HUG",
+                      "sizingV": "HUG",
+                      "wrap": false
+                    },
+                    "opacity": 1,
+                    "fills": [],
+                    "strokes": {
+                      "paints": [],
+                      "weight": 0,
+                      "align": "INSIDE"
+                    },
+                    "effects": [],
+                    "role": "container",
+                    "roleSource": "type"
+                  }
+                ],
+                "size": {
+                  "width": 24,
+                  "height": 17
+                },
+                "layout": {
+                  "mode": "VERTICAL",
+                  "gap": 8,
+                  "padding": {
+                    "top": 0,
+                    "right": 8,
+                    "bottom": 0,
+                    "left": 8
+                  },
+                  "primaryAlign": "CENTER",
+                  "counterAlign": "CENTER",
+                  "sizingH": "HUG",
+                  "sizingV": "HUG",
+                  "wrap": false
+                },
+                "radius": 12,
+                "opacity": 1,
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#f0f2f5",
+                    "alpha": 1
+                  }
+                ],
+                "strokes": {
+                  "paints": [],
+                  "weight": 0,
+                  "align": "INSIDE"
+                },
+                "effects": [],
+                "instanceOf": {
+                  "componentId": "1913:29477",
+                  "componentName": "Badge"
+                },
+                "propertyRefs": {
+                  "visible": "has number tag#3846:642"
+                },
+                "role": "container",
+                "roleSource": "type"
+              }
+            ],
+            "size": {
+              "width": 129,
+              "height": 51
+            },
+            "layout": {
+              "mode": "HORIZONTAL",
+              "gap": 8,
+              "padding": {
+                "top": 16,
+                "right": 16,
+                "bottom": 15,
+                "left": 16
+              },
+              "primaryAlign": "CENTER",
+              "counterAlign": "CENTER",
+              "sizingH": "FILL",
+              "sizingV": "HUG",
+              "wrap": false
+            },
+            "opacity": 1,
+            "fills": [],
+            "strokes": {
+              "paints": [],
+              "weight": 0,
+              "align": "INSIDE"
+            },
+            "effects": [],
+            "role": "container",
+            "roleSource": "type"
+          },
+          {
+            "id": "1696:24348",
+            "name": "Border",
+            "type": "FRAME",
+            "visible": true,
+            "children": [
+              {
+                "id": "1696:24349",
+                "name": "Rectangle",
+                "type": "RECTANGLE",
+                "visible": true,
+                "children": [],
+                "size": {
+                  "width": 129,
+                  "height": 1
+                },
+                "opacity": 1,
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#e4e7ec",
+                    "alpha": 1
+                  }
+                ],
+                "strokes": {
+                  "paints": [],
+                  "weight": 0,
+                  "align": "INSIDE"
+                },
+                "effects": [],
+                "role": "divider",
+                "roleSource": "type"
+              }
+            ],
+            "size": {
+              "width": 129,
+              "height": 1
+            },
+            "layout": {
+              "mode": "VERTICAL",
+              "gap": 10,
+              "padding": {
+                "top": 0,
+                "right": 0,
+                "bottom": 0,
+                "left": 0
+              },
+              "primaryAlign": "MIN",
+              "counterAlign": "MIN",
+              "sizingH": "FILL",
+              "sizingV": "FIXED",
+              "wrap": false
+            },
+            "opacity": 1,
+            "fills": [
+              {
+                "type": "SOLID",
+                "visible": false,
+                "hex": "#ffffff",
+                "alpha": 1
+              }
+            ],
+            "strokes": {
+              "paints": [],
+              "weight": 0,
+              "align": "INSIDE"
+            },
+            "effects": [],
+            "role": "container",
+            "roleSource": "type"
+          }
+        ],
+        "size": {
+          "width": 129,
+          "height": 52
+        },
+        "layout": {
+          "mode": "VERTICAL",
+          "gap": 0,
+          "padding": {
+            "top": 0,
+            "right": 0,
+            "bottom": 0,
+            "left": 0
+          },
+          "primaryAlign": "CENTER",
+          "counterAlign": "CENTER",
+          "sizingH": "HUG",
+          "sizingV": "HUG",
+          "wrap": false
+        },
+        "opacity": 1,
+        "fills": [
+          {
+            "type": "SOLID",
+            "visible": false,
+            "hex": "#ffffff",
+            "alpha": 1
+          }
+        ],
+        "strokes": {
+          "paints": [],
+          "weight": 0,
+          "align": "INSIDE"
+        },
+        "effects": [],
+        "role": "root",
+        "roleSource": "type"
+      },
+      "variantDiffs": [
+        {
+          "variantId": "1697:24808",
+          "variantProperties": {
+            "State": "hover",
+            "Style": "Line"
+          },
+          "layers": [
+            {
+              "path": "Tab/Content/icon / home-alt/icon",
+              "changes": {
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#667185",
+                    "alpha": 1
+                  }
+                ]
+              }
+            },
+            {
+              "path": "Tab/Content/Badge",
+              "changes": {
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#ffece5",
+                    "alpha": 1
+                  }
+                ],
+                "instanceOf": {
+                  "componentId": "1913:29447",
+                  "componentName": "Badge"
+                }
+              }
+            },
+            {
+              "path": "Tab/Content/Badge/Container/Icon-left/icon",
+              "changes": {
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#ad3307",
+                    "alpha": 1
+                  }
+                ]
+              }
+            },
+            {
+              "path": "Tab/Content/Badge/Container/Label",
+              "changes": {
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#f56630",
+                    "alpha": 1
+                  }
+                ]
+              }
+            },
+            {
+              "path": "Tab/Content/Badge/Container/Icon-right/icon",
+              "changes": {
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#ad3307",
+                    "alpha": 1
+                  }
+                ]
+              }
+            },
+            {
+              "path": "Tab/Border/Rectangle",
+              "changes": {
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#667185",
+                    "alpha": 1
+                  }
+                ]
+              }
+            }
+          ],
+          "added": [],
+          "removed": []
+        },
+        {
+          "variantId": "1697:24807",
+          "variantProperties": {
+            "State": "active",
+            "Style": "Line"
+          },
+          "layers": [
+            {
+              "path": "Tab/Content/icon / home-alt/icon",
+              "changes": {
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#f56630",
+                    "alpha": 1
+                  }
+                ]
+              }
+            },
+            {
+              "path": "Tab/Content/Label",
+              "changes": {
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#f56630",
+                    "alpha": 1
+                  }
+                ]
+              }
+            },
+            {
+              "path": "Tab/Content/Badge",
+              "changes": {
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#f56630",
+                    "alpha": 1
+                  }
+                ],
+                "instanceOf": {
+                  "componentId": "1911:37809",
+                  "componentName": "Badge"
+                }
+              }
+            },
+            {
+              "path": "Tab/Content/Badge/Container/Icon-left/icon",
+              "changes": {
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#ffffff",
+                    "alpha": 1
+                  }
+                ]
+              }
+            },
+            {
+              "path": "Tab/Content/Badge/Container/Label",
+              "changes": {
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#ffffff",
+                    "alpha": 1
+                  }
+                ]
+              }
+            },
+            {
+              "path": "Tab/Content/Badge/Container/Icon-right/icon",
+              "changes": {
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#000000",
+                    "alpha": 1
+                  }
+                ]
+              }
+            },
+            {
+              "path": "Tab/Border/Rectangle",
+              "changes": {
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#f56630",
+                    "alpha": 1
+                  }
+                ]
+              }
+            }
+          ],
+          "added": [],
+          "removed": []
+        },
+        {
+          "variantId": "1697:24810",
+          "variantProperties": {
+            "State": "disabled",
+            "Style": "Line"
+          },
+          "layers": [
+            {
+              "path": "Tab/Content/icon / home-alt/icon",
+              "changes": {
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#d0d5dd",
+                    "alpha": 1
+                  }
+                ]
+              }
+            },
+            {
+              "path": "Tab/Content/Label",
+              "changes": {
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#d0d5dd",
+                    "alpha": 1
+                  }
+                ]
+              }
+            },
+            {
+              "path": "Tab/Content/Badge",
+              "changes": {
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#e4e7ec",
+                    "alpha": 1
+                  }
+                ],
+                "instanceOf": {
+                  "componentId": "1911:37802",
+                  "componentName": "Badge"
+                }
+              }
+            },
+            {
+              "path": "Tab/Content/Badge/Container/Icon-left/icon",
+              "changes": {
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#ffffff",
+                    "alpha": 1
+                  }
+                ]
+              }
+            },
+            {
+              "path": "Tab/Content/Badge/Container/Label",
+              "changes": {
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#f9fafb",
+                    "alpha": 1
+                  }
+                ]
+              }
+            },
+            {
+              "path": "Tab/Content/Badge/Container/Icon-right/icon",
+              "changes": {
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#000000",
+                    "alpha": 1
+                  }
+                ]
+              }
+            }
+          ],
+          "added": [],
+          "removed": []
+        },
+        {
+          "variantId": "1697:24813",
+          "variantProperties": {
+            "State": "default",
+            "Style": "Pill"
+          },
+          "layers": [
+            {
+              "path": "Tab",
+              "changes": {
+                "size": {
+                  "width": 117,
+                  "height": 36
+                },
+                "layout": {
+                  "mode": "HORIZONTAL",
+                  "gap": 8,
+                  "padding": {
+                    "top": 8,
+                    "right": 12,
+                    "bottom": 8,
+                    "left": 12
+                  },
+                  "primaryAlign": "CENTER",
+                  "counterAlign": "CENTER",
+                  "sizingH": "HUG",
+                  "sizingV": "FIXED",
+                  "wrap": false
+                },
+                "radius": 6,
+                "strokes": {
+                  "paints": [
+                    {
+                      "type": "SOLID",
+                      "visible": true,
+                      "hex": "#d0d5dd",
+                      "alpha": 1
+                    }
+                  ],
+                  "weight": 1,
+                  "align": "INSIDE"
+                }
+              }
+            }
+          ],
+          "added": [
+            {
+              "parentPath": "Tab",
+              "layer": {
+                "id": "3846:187275",
+                "name": "icon / home-alt",
+                "type": "INSTANCE",
+                "visible": true,
+                "children": [
+                  {
+                    "id": "I3846:187275;3253:139560",
+                    "name": "icon",
+                    "type": "VECTOR",
+                    "visible": true,
+                    "children": [],
+                    "size": {
+                      "width": 14.5,
+                      "height": 13.83
+                    },
+                    "opacity": 1,
+                    "fills": [
+                      {
+                        "type": "SOLID",
+                        "visible": true,
+                        "hex": "#98a2b3",
+                        "alpha": 1
+                      }
+                    ],
+                    "strokes": {
+                      "paints": [],
+                      "weight": 0,
+                      "align": "INSIDE"
+                    },
+                    "effects": [],
+                    "role": "icon",
+                    "roleSource": "type"
+                  }
+                ],
+                "size": {
+                  "width": 16,
+                  "height": 16
+                },
+                "opacity": 1,
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": false,
+                    "hex": "#ffffff",
+                    "alpha": 1
+                  }
+                ],
+                "strokes": {
+                  "paints": [],
+                  "weight": 0,
+                  "align": "INSIDE"
+                },
+                "effects": [],
+                "instanceOf": {
+                  "componentId": "3253:139559",
+                  "componentName": "icon / home-alt"
+                },
+                "propertyRefs": {
+                  "visible": "has icon#3846:675",
+                  "mainComponent": "Icon#4663:9"
+                },
+                "role": "icon",
+                "roleSource": "property"
+              }
+            },
+            {
+              "parentPath": "Tab",
+              "layer": {
+                "id": "1696:24381",
+                "name": "Label",
+                "type": "TEXT",
+                "visible": true,
+                "children": [],
+                "size": {
+                  "width": 37,
+                  "height": 20
+                },
+                "opacity": 1,
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#344054",
+                    "alpha": 1
+                  }
+                ],
+                "strokes": {
+                  "paints": [],
+                  "weight": 0,
+                  "align": "INSIDE"
+                },
+                "effects": [],
+                "text": {
+                  "fontFamily": "Inter",
+                  "fontWeight": 500,
+                  "fontSize": 14,
+                  "lineHeight": {
+                    "value": 145,
+                    "unit": "percent"
+                  },
+                  "letterSpacing": {
+                    "value": 0,
+                    "unit": "percent"
+                  },
+                  "textCase": "ORIGINAL",
+                  "textDecoration": "NONE",
+                  "align": "CENTER",
+                  "characters": "Label"
+                },
+                "role": "label",
+                "roleSource": "name"
+              }
+            },
+            {
+              "parentPath": "Tab",
+              "layer": {
+                "id": "4374:184905",
+                "name": "Badge",
+                "type": "INSTANCE",
+                "visible": true,
+                "children": [
+                  {
+                    "id": "I4374:184905;1913:29478",
+                    "name": "Container",
+                    "type": "FRAME",
+                    "visible": true,
+                    "children": [
+                      {
+                        "id": "I4374:184905;1913:29479",
+                        "name": "Icon-left",
+                        "type": "INSTANCE",
+                        "visible": false,
+                        "children": [
+                          {
+                            "id": "I4374:184905;1913:29479;3287:134071",
+                            "name": "icon",
+                            "type": "VECTOR",
+                            "visible": true,
+                            "children": [],
+                            "size": {
+                              "width": 10,
+                              "height": 5
+                            },
+                            "opacity": 1,
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "visible": true,
+                                "hex": "#344054",
+                                "alpha": 1
+                              }
+                            ],
+                            "strokes": {
+                              "paints": [],
+                              "weight": 0,
+                              "align": "INSIDE"
+                            },
+                            "effects": [],
+                            "role": "icon",
+                            "roleSource": "type"
+                          }
+                        ],
+                        "size": {
+                          "width": 12,
+                          "height": 12
+                        },
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "visible": false,
+                            "hex": "#ffffff",
+                            "alpha": 1
+                          }
+                        ],
+                        "strokes": {
+                          "paints": [],
+                          "weight": 0,
+                          "align": "INSIDE"
+                        },
+                        "effects": [],
+                        "instanceOf": {
+                          "componentId": "3287:134070",
+                          "componentName": "icon / arrow-left"
+                        },
+                        "role": "icon",
+                        "roleSource": "name"
+                      },
+                      {
+                        "id": "I4374:184905;1913:29480",
+                        "name": "Avatars",
+                        "type": "INSTANCE",
+                        "visible": false,
+                        "children": [
+                          {
+                            "id": "I4374:184905;1913:29480;1483:13726",
+                            "name": "Image",
+                            "type": "RECTANGLE",
+                            "visible": true,
+                            "children": [],
+                            "size": {
+                              "width": 12,
+                              "height": 12
+                            },
+                            "radius": 200,
+                            "opacity": 1,
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "visible": true,
+                                "hex": "#ffe7cc",
+                                "alpha": 1
+                              },
+                              {
+                                "type": "IMAGE",
+                                "visible": true,
+                                "description": "image, scale mode FILL"
+                              }
+                            ],
+                            "strokes": {
+                              "paints": [
+                                {
+                                  "type": "SOLID",
+                                  "visible": true,
+                                  "hex": "#ffffff",
+                                  "alpha": 1
+                                }
+                              ],
+                              "weight": 0.5,
+                              "align": "OUTSIDE"
+                            },
+                            "effects": [],
+                            "role": "image",
+                            "roleSource": "type"
+                          }
+                        ],
+                        "size": {
+                          "width": 12,
+                          "height": 12
+                        },
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "visible": false,
+                            "hex": "#ffffff",
+                            "alpha": 1
+                          }
+                        ],
+                        "strokes": {
+                          "paints": [],
+                          "weight": 0,
+                          "align": "INSIDE"
+                        },
+                        "effects": [],
+                        "instanceOf": {
+                          "componentId": "1483:13727",
+                          "componentName": "Avatars"
+                        },
+                        "role": "container",
+                        "roleSource": "type"
+                      },
+                      {
+                        "id": "I4374:184905;1913:29481",
+                        "name": "Label",
+                        "type": "TEXT",
+                        "visible": true,
+                        "children": [],
+                        "size": {
+                          "width": 8,
+                          "height": 17
+                        },
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "visible": true,
+                            "hex": "#344054",
+                            "alpha": 1
+                          }
+                        ],
+                        "strokes": {
+                          "paints": [],
+                          "weight": 0,
+                          "align": "INSIDE"
+                        },
+                        "effects": [],
+                        "text": {
+                          "fontFamily": "Inter",
+                          "fontWeight": 500,
+                          "fontSize": 12,
+                          "lineHeight": {
+                            "value": 145,
+                            "unit": "percent"
+                          },
+                          "letterSpacing": {
+                            "value": -0.5,
+                            "unit": "percent"
+                          },
+                          "textCase": "ORIGINAL",
+                          "textDecoration": "NONE",
+                          "align": "CENTER",
+                          "characters": "0"
+                        },
+                        "role": "label",
+                        "roleSource": "name"
+                      },
+                      {
+                        "id": "I4374:184905;1913:29482",
+                        "name": "Icon-right",
+                        "type": "INSTANCE",
+                        "visible": false,
+                        "children": [
+                          {
+                            "id": "I4374:184905;1913:29482;3287:134073",
+                            "name": "icon",
+                            "type": "VECTOR",
+                            "visible": true,
+                            "children": [],
+                            "size": {
+                              "width": 10,
+                              "height": 5
+                            },
+                            "opacity": 1,
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "visible": true,
+                                "hex": "#344054",
+                                "alpha": 1
+                              }
+                            ],
+                            "strokes": {
+                              "paints": [],
+                              "weight": 0,
+                              "align": "INSIDE"
+                            },
+                            "effects": [],
+                            "role": "icon",
+                            "roleSource": "type"
+                          }
+                        ],
+                        "size": {
+                          "width": 12,
+                          "height": 12
+                        },
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "visible": false,
+                            "hex": "#ffffff",
+                            "alpha": 1
+                          }
+                        ],
+                        "strokes": {
+                          "paints": [],
+                          "weight": 0,
+                          "align": "INSIDE"
+                        },
+                        "effects": [],
+                        "instanceOf": {
+                          "componentId": "3287:134072",
+                          "componentName": "icon / arrow-right"
+                        },
+                        "role": "icon",
+                        "roleSource": "name"
+                      }
+                    ],
+                    "size": {
+                      "width": 8,
+                      "height": 17
+                    },
+                    "layout": {
+                      "mode": "HORIZONTAL",
+                      "gap": 2,
+                      "padding": {
+                        "top": 0,
+                        "right": 0,
+                        "bottom": 0,
+                        "left": 0
+                      },
+                      "primaryAlign": "CENTER",
+                      "counterAlign": "CENTER",
+                      "sizingH": "HUG",
+                      "sizingV": "HUG",
+                      "wrap": false
+                    },
+                    "opacity": 1,
+                    "fills": [],
+                    "strokes": {
+                      "paints": [],
+                      "weight": 0,
+                      "align": "INSIDE"
+                    },
+                    "effects": [],
+                    "role": "container",
+                    "roleSource": "type"
+                  }
+                ],
+                "size": {
+                  "width": 24,
+                  "height": 17
+                },
+                "layout": {
+                  "mode": "VERTICAL",
+                  "gap": 8,
+                  "padding": {
+                    "top": 0,
+                    "right": 8,
+                    "bottom": 0,
+                    "left": 8
+                  },
+                  "primaryAlign": "CENTER",
+                  "counterAlign": "CENTER",
+                  "sizingH": "HUG",
+                  "sizingV": "HUG",
+                  "wrap": false
+                },
+                "radius": 12,
+                "opacity": 1,
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#f0f2f5",
+                    "alpha": 1
+                  }
+                ],
+                "strokes": {
+                  "paints": [],
+                  "weight": 0,
+                  "align": "INSIDE"
+                },
+                "effects": [],
+                "instanceOf": {
+                  "componentId": "1913:29477",
+                  "componentName": "Badge"
+                },
+                "propertyRefs": {
+                  "visible": "has number tag#3846:642"
+                },
+                "role": "container",
+                "roleSource": "type"
+              }
+            }
+          ],
+          "removed": [
+            "Tab/Content",
+            "Tab/Border"
+          ]
+        },
+        {
+          "variantId": "1697:24800",
+          "variantProperties": {
+            "State": "hover",
+            "Style": "Pill"
+          },
+          "layers": [
+            {
+              "path": "Tab",
+              "changes": {
+                "size": {
+                  "width": 117,
+                  "height": 36
+                },
+                "layout": {
+                  "mode": "HORIZONTAL",
+                  "gap": 8,
+                  "padding": {
+                    "top": 8,
+                    "right": 12,
+                    "bottom": 8,
+                    "left": 12
+                  },
+                  "primaryAlign": "CENTER",
+                  "counterAlign": "CENTER",
+                  "sizingH": "HUG",
+                  "sizingV": "FIXED",
+                  "wrap": false
+                },
+                "radius": 6,
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#f9fafb",
+                    "alpha": 1
+                  }
+                ]
+              }
+            }
+          ],
+          "added": [
+            {
+              "parentPath": "Tab",
+              "layer": {
+                "id": "3846:187331",
+                "name": "icon / home-alt",
+                "type": "INSTANCE",
+                "visible": true,
+                "children": [
+                  {
+                    "id": "I3846:187331;3253:139560",
+                    "name": "icon",
+                    "type": "VECTOR",
+                    "visible": true,
+                    "children": [],
+                    "size": {
+                      "width": 14.5,
+                      "height": 13.83
+                    },
+                    "opacity": 1,
+                    "fills": [
+                      {
+                        "type": "SOLID",
+                        "visible": true,
+                        "hex": "#667185",
+                        "alpha": 1
+                      }
+                    ],
+                    "strokes": {
+                      "paints": [],
+                      "weight": 0,
+                      "align": "INSIDE"
+                    },
+                    "effects": [],
+                    "role": "icon",
+                    "roleSource": "type"
+                  }
+                ],
+                "size": {
+                  "width": 16,
+                  "height": 16
+                },
+                "opacity": 1,
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": false,
+                    "hex": "#ffffff",
+                    "alpha": 1
+                  }
+                ],
+                "strokes": {
+                  "paints": [],
+                  "weight": 0,
+                  "align": "INSIDE"
+                },
+                "effects": [],
+                "instanceOf": {
+                  "componentId": "3253:139559",
+                  "componentName": "icon / home-alt"
+                },
+                "propertyRefs": {
+                  "visible": "has icon#3846:675",
+                  "mainComponent": "Icon#4663:9"
+                },
+                "role": "icon",
+                "roleSource": "property"
+              }
+            },
+            {
+              "parentPath": "Tab",
+              "layer": {
+                "id": "1696:24386",
+                "name": "Label",
+                "type": "TEXT",
+                "visible": true,
+                "children": [],
+                "size": {
+                  "width": 37,
+                  "height": 20
+                },
+                "opacity": 1,
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#344054",
+                    "alpha": 1
+                  }
+                ],
+                "strokes": {
+                  "paints": [],
+                  "weight": 0,
+                  "align": "INSIDE"
+                },
+                "effects": [],
+                "text": {
+                  "fontFamily": "Inter",
+                  "fontWeight": 500,
+                  "fontSize": 14,
+                  "lineHeight": {
+                    "value": 145,
+                    "unit": "percent"
+                  },
+                  "letterSpacing": {
+                    "value": 0,
+                    "unit": "percent"
+                  },
+                  "textCase": "ORIGINAL",
+                  "textDecoration": "NONE",
+                  "align": "CENTER",
+                  "characters": "Label"
+                },
+                "role": "label",
+                "roleSource": "name"
+              }
+            },
+            {
+              "parentPath": "Tab",
+              "layer": {
+                "id": "4374:184923",
+                "name": "Badge",
+                "type": "INSTANCE",
+                "visible": true,
+                "children": [
+                  {
+                    "id": "I4374:184923;1913:29448",
+                    "name": "Container",
+                    "type": "FRAME",
+                    "visible": true,
+                    "children": [
+                      {
+                        "id": "I4374:184923;1913:29449",
+                        "name": "Icon-left",
+                        "type": "INSTANCE",
+                        "visible": false,
+                        "children": [
+                          {
+                            "id": "I4374:184923;1913:29449;3287:134071",
+                            "name": "icon",
+                            "type": "VECTOR",
+                            "visible": true,
+                            "children": [],
+                            "size": {
+                              "width": 10,
+                              "height": 5
+                            },
+                            "opacity": 1,
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "visible": true,
+                                "hex": "#ad3307",
+                                "alpha": 1
+                              }
+                            ],
+                            "strokes": {
+                              "paints": [],
+                              "weight": 0,
+                              "align": "INSIDE"
+                            },
+                            "effects": [],
+                            "role": "icon",
+                            "roleSource": "type"
+                          }
+                        ],
+                        "size": {
+                          "width": 12,
+                          "height": 12
+                        },
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "visible": false,
+                            "hex": "#ffffff",
+                            "alpha": 1
+                          }
+                        ],
+                        "strokes": {
+                          "paints": [],
+                          "weight": 0,
+                          "align": "INSIDE"
+                        },
+                        "effects": [],
+                        "instanceOf": {
+                          "componentId": "3287:134070",
+                          "componentName": "icon / arrow-left"
+                        },
+                        "role": "icon",
+                        "roleSource": "name"
+                      },
+                      {
+                        "id": "I4374:184923;1913:29450",
+                        "name": "Avatars",
+                        "type": "INSTANCE",
+                        "visible": false,
+                        "children": [
+                          {
+                            "id": "I4374:184923;1913:29450;1483:13726",
+                            "name": "Image",
+                            "type": "RECTANGLE",
+                            "visible": true,
+                            "children": [],
+                            "size": {
+                              "width": 12,
+                              "height": 12
+                            },
+                            "radius": 200,
+                            "opacity": 1,
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "visible": true,
+                                "hex": "#ffe7cc",
+                                "alpha": 1
+                              },
+                              {
+                                "type": "IMAGE",
+                                "visible": true,
+                                "description": "image, scale mode FILL"
+                              }
+                            ],
+                            "strokes": {
+                              "paints": [
+                                {
+                                  "type": "SOLID",
+                                  "visible": true,
+                                  "hex": "#ffffff",
+                                  "alpha": 1
+                                }
+                              ],
+                              "weight": 0.5,
+                              "align": "OUTSIDE"
+                            },
+                            "effects": [],
+                            "role": "image",
+                            "roleSource": "type"
+                          }
+                        ],
+                        "size": {
+                          "width": 12,
+                          "height": 12
+                        },
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "visible": false,
+                            "hex": "#ffffff",
+                            "alpha": 1
+                          }
+                        ],
+                        "strokes": {
+                          "paints": [],
+                          "weight": 0,
+                          "align": "INSIDE"
+                        },
+                        "effects": [],
+                        "instanceOf": {
+                          "componentId": "1483:13727",
+                          "componentName": "Avatars"
+                        },
+                        "role": "container",
+                        "roleSource": "type"
+                      },
+                      {
+                        "id": "I4374:184923;1913:29451",
+                        "name": "Label",
+                        "type": "TEXT",
+                        "visible": true,
+                        "children": [],
+                        "size": {
+                          "width": 8,
+                          "height": 17
+                        },
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "visible": true,
+                            "hex": "#f56630",
+                            "alpha": 1
+                          }
+                        ],
+                        "strokes": {
+                          "paints": [],
+                          "weight": 0,
+                          "align": "INSIDE"
+                        },
+                        "effects": [],
+                        "text": {
+                          "fontFamily": "Inter",
+                          "fontWeight": 500,
+                          "fontSize": 12,
+                          "lineHeight": {
+                            "value": 145,
+                            "unit": "percent"
+                          },
+                          "letterSpacing": {
+                            "value": -0.5,
+                            "unit": "percent"
+                          },
+                          "textCase": "ORIGINAL",
+                          "textDecoration": "NONE",
+                          "align": "CENTER",
+                          "characters": "0"
+                        },
+                        "role": "label",
+                        "roleSource": "name"
+                      },
+                      {
+                        "id": "I4374:184923;1913:29452",
+                        "name": "Icon-right",
+                        "type": "INSTANCE",
+                        "visible": false,
+                        "children": [
+                          {
+                            "id": "I4374:184923;1913:29452;3287:134073",
+                            "name": "icon",
+                            "type": "VECTOR",
+                            "visible": true,
+                            "children": [],
+                            "size": {
+                              "width": 10,
+                              "height": 5
+                            },
+                            "opacity": 1,
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "visible": true,
+                                "hex": "#ad3307",
+                                "alpha": 1
+                              }
+                            ],
+                            "strokes": {
+                              "paints": [],
+                              "weight": 0,
+                              "align": "INSIDE"
+                            },
+                            "effects": [],
+                            "role": "icon",
+                            "roleSource": "type"
+                          }
+                        ],
+                        "size": {
+                          "width": 12,
+                          "height": 12
+                        },
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "visible": false,
+                            "hex": "#ffffff",
+                            "alpha": 1
+                          }
+                        ],
+                        "strokes": {
+                          "paints": [],
+                          "weight": 0,
+                          "align": "INSIDE"
+                        },
+                        "effects": [],
+                        "instanceOf": {
+                          "componentId": "3287:134072",
+                          "componentName": "icon / arrow-right"
+                        },
+                        "role": "icon",
+                        "roleSource": "name"
+                      }
+                    ],
+                    "size": {
+                      "width": 8,
+                      "height": 17
+                    },
+                    "layout": {
+                      "mode": "HORIZONTAL",
+                      "gap": 2,
+                      "padding": {
+                        "top": 0,
+                        "right": 0,
+                        "bottom": 0,
+                        "left": 0
+                      },
+                      "primaryAlign": "CENTER",
+                      "counterAlign": "CENTER",
+                      "sizingH": "HUG",
+                      "sizingV": "HUG",
+                      "wrap": false
+                    },
+                    "opacity": 1,
+                    "fills": [],
+                    "strokes": {
+                      "paints": [],
+                      "weight": 0,
+                      "align": "INSIDE"
+                    },
+                    "effects": [],
+                    "role": "container",
+                    "roleSource": "type"
+                  }
+                ],
+                "size": {
+                  "width": 24,
+                  "height": 17
+                },
+                "layout": {
+                  "mode": "VERTICAL",
+                  "gap": 8,
+                  "padding": {
+                    "top": 0,
+                    "right": 8,
+                    "bottom": 0,
+                    "left": 8
+                  },
+                  "primaryAlign": "CENTER",
+                  "counterAlign": "CENTER",
+                  "sizingH": "HUG",
+                  "sizingV": "HUG",
+                  "wrap": false
+                },
+                "radius": 12,
+                "opacity": 1,
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#ffece5",
+                    "alpha": 1
+                  }
+                ],
+                "strokes": {
+                  "paints": [],
+                  "weight": 0,
+                  "align": "INSIDE"
+                },
+                "effects": [],
+                "instanceOf": {
+                  "componentId": "1913:29447",
+                  "componentName": "Badge"
+                },
+                "propertyRefs": {
+                  "visible": "has number tag#3846:642"
+                },
+                "role": "container",
+                "roleSource": "type"
+              }
+            }
+          ],
+          "removed": [
+            "Tab/Content",
+            "Tab/Border"
+          ]
+        },
+        {
+          "variantId": "1697:24796",
+          "variantProperties": {
+            "State": "active",
+            "Style": "Pill"
+          },
+          "layers": [
+            {
+              "path": "Tab",
+              "changes": {
+                "size": {
+                  "width": 117,
+                  "height": 36
+                },
+                "layout": {
+                  "mode": "HORIZONTAL",
+                  "gap": 8,
+                  "padding": {
+                    "top": 8,
+                    "right": 12,
+                    "bottom": 8,
+                    "left": 12
+                  },
+                  "primaryAlign": "CENTER",
+                  "counterAlign": "CENTER",
+                  "sizingH": "HUG",
+                  "sizingV": "FIXED",
+                  "wrap": false
+                },
+                "radius": 6,
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#ffece5",
+                    "alpha": 1
+                  }
+                ]
+              }
+            }
+          ],
+          "added": [
+            {
+              "parentPath": "Tab",
+              "layer": {
+                "id": "4663:33872",
+                "name": "icon / home-alt",
+                "type": "INSTANCE",
+                "visible": true,
+                "children": [
+                  {
+                    "id": "I4663:33872;3253:139560",
+                    "name": "icon",
+                    "type": "VECTOR",
+                    "visible": true,
+                    "children": [],
+                    "size": {
+                      "width": 14.5,
+                      "height": 13.83
+                    },
+                    "opacity": 1,
+                    "fills": [
+                      {
+                        "type": "SOLID",
+                        "visible": true,
+                        "hex": "#f56630",
+                        "alpha": 1
+                      }
+                    ],
+                    "strokes": {
+                      "paints": [],
+                      "weight": 0,
+                      "align": "INSIDE"
+                    },
+                    "effects": [],
+                    "role": "icon",
+                    "roleSource": "type"
+                  }
+                ],
+                "size": {
+                  "width": 16,
+                  "height": 16
+                },
+                "opacity": 1,
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": false,
+                    "hex": "#ffffff",
+                    "alpha": 1
+                  }
+                ],
+                "strokes": {
+                  "paints": [],
+                  "weight": 0,
+                  "align": "INSIDE"
+                },
+                "effects": [],
+                "instanceOf": {
+                  "componentId": "3253:139559",
+                  "componentName": "icon / home-alt"
+                },
+                "propertyRefs": {
+                  "visible": "has icon#3846:675",
+                  "mainComponent": "Icon#4663:9"
+                },
+                "role": "icon",
+                "roleSource": "property"
+              }
+            },
+            {
+              "parentPath": "Tab",
+              "layer": {
+                "id": "1696:24392",
+                "name": "Label",
+                "type": "TEXT",
+                "visible": true,
+                "children": [],
+                "size": {
+                  "width": 37,
+                  "height": 20
+                },
+                "opacity": 1,
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#f56630",
+                    "alpha": 1
+                  }
+                ],
+                "strokes": {
+                  "paints": [],
+                  "weight": 0,
+                  "align": "INSIDE"
+                },
+                "effects": [],
+                "text": {
+                  "fontFamily": "Inter",
+                  "fontWeight": 500,
+                  "fontSize": 14,
+                  "lineHeight": {
+                    "value": 145,
+                    "unit": "percent"
+                  },
+                  "letterSpacing": {
+                    "value": 0,
+                    "unit": "percent"
+                  },
+                  "textCase": "ORIGINAL",
+                  "textDecoration": "NONE",
+                  "align": "CENTER",
+                  "characters": "Label"
+                },
+                "role": "label",
+                "roleSource": "name"
+              }
+            },
+            {
+              "parentPath": "Tab",
+              "layer": {
+                "id": "4374:184932",
+                "name": "Badge",
+                "type": "INSTANCE",
+                "visible": true,
+                "children": [
+                  {
+                    "id": "I4374:184932;1911:37543",
+                    "name": "Container",
+                    "type": "FRAME",
+                    "visible": true,
+                    "children": [
+                      {
+                        "id": "I4374:184932;1911:37544",
+                        "name": "Icon-left",
+                        "type": "INSTANCE",
+                        "visible": false,
+                        "children": [
+                          {
+                            "id": "I4374:184932;1911:37544;3287:134071",
+                            "name": "icon",
+                            "type": "VECTOR",
+                            "visible": true,
+                            "children": [],
+                            "size": {
+                              "width": 10,
+                              "height": 5
+                            },
+                            "opacity": 1,
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "visible": true,
+                                "hex": "#ffffff",
+                                "alpha": 1
+                              }
+                            ],
+                            "strokes": {
+                              "paints": [],
+                              "weight": 0,
+                              "align": "INSIDE"
+                            },
+                            "effects": [],
+                            "role": "icon",
+                            "roleSource": "type"
+                          }
+                        ],
+                        "size": {
+                          "width": 12,
+                          "height": 12
+                        },
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "visible": false,
+                            "hex": "#ffffff",
+                            "alpha": 1
+                          }
+                        ],
+                        "strokes": {
+                          "paints": [],
+                          "weight": 0,
+                          "align": "INSIDE"
+                        },
+                        "effects": [],
+                        "instanceOf": {
+                          "componentId": "3287:134070",
+                          "componentName": "icon / arrow-left"
+                        },
+                        "role": "icon",
+                        "roleSource": "name"
+                      },
+                      {
+                        "id": "I4374:184932;1911:37545",
+                        "name": "Avatars",
+                        "type": "INSTANCE",
+                        "visible": false,
+                        "children": [
+                          {
+                            "id": "I4374:184932;1911:37545;1483:13726",
+                            "name": "Image",
+                            "type": "RECTANGLE",
+                            "visible": true,
+                            "children": [],
+                            "size": {
+                              "width": 12,
+                              "height": 12
+                            },
+                            "radius": 200,
+                            "opacity": 1,
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "visible": true,
+                                "hex": "#ffe7cc",
+                                "alpha": 1
+                              },
+                              {
+                                "type": "IMAGE",
+                                "visible": true,
+                                "description": "image, scale mode FILL"
+                              }
+                            ],
+                            "strokes": {
+                              "paints": [
+                                {
+                                  "type": "SOLID",
+                                  "visible": true,
+                                  "hex": "#ffffff",
+                                  "alpha": 1
+                                }
+                              ],
+                              "weight": 0.5,
+                              "align": "OUTSIDE"
+                            },
+                            "effects": [],
+                            "role": "image",
+                            "roleSource": "type"
+                          }
+                        ],
+                        "size": {
+                          "width": 12,
+                          "height": 12
+                        },
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "visible": false,
+                            "hex": "#ffffff",
+                            "alpha": 1
+                          }
+                        ],
+                        "strokes": {
+                          "paints": [],
+                          "weight": 0,
+                          "align": "INSIDE"
+                        },
+                        "effects": [],
+                        "instanceOf": {
+                          "componentId": "1483:13727",
+                          "componentName": "Avatars"
+                        },
+                        "role": "container",
+                        "roleSource": "type"
+                      },
+                      {
+                        "id": "I4374:184932;1911:37546",
+                        "name": "Label",
+                        "type": "TEXT",
+                        "visible": true,
+                        "children": [],
+                        "size": {
+                          "width": 8,
+                          "height": 17
+                        },
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "visible": true,
+                            "hex": "#ffffff",
+                            "alpha": 1
+                          }
+                        ],
+                        "strokes": {
+                          "paints": [],
+                          "weight": 0,
+                          "align": "INSIDE"
+                        },
+                        "effects": [],
+                        "text": {
+                          "fontFamily": "Inter",
+                          "fontWeight": 500,
+                          "fontSize": 12,
+                          "lineHeight": {
+                            "value": 145,
+                            "unit": "percent"
+                          },
+                          "letterSpacing": {
+                            "value": -0.5,
+                            "unit": "percent"
+                          },
+                          "textCase": "ORIGINAL",
+                          "textDecoration": "NONE",
+                          "align": "CENTER",
+                          "characters": "0"
+                        },
+                        "role": "label",
+                        "roleSource": "name"
+                      },
+                      {
+                        "id": "I4374:184932;1911:37547",
+                        "name": "Icon-right",
+                        "type": "INSTANCE",
+                        "visible": false,
+                        "children": [
+                          {
+                            "id": "I4374:184932;1911:37547;3287:134073",
+                            "name": "icon",
+                            "type": "VECTOR",
+                            "visible": true,
+                            "children": [],
+                            "size": {
+                              "width": 10,
+                              "height": 5
+                            },
+                            "opacity": 1,
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "visible": true,
+                                "hex": "#000000",
+                                "alpha": 1
+                              }
+                            ],
+                            "strokes": {
+                              "paints": [],
+                              "weight": 0,
+                              "align": "INSIDE"
+                            },
+                            "effects": [],
+                            "role": "icon",
+                            "roleSource": "type"
+                          }
+                        ],
+                        "size": {
+                          "width": 12,
+                          "height": 12
+                        },
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "visible": false,
+                            "hex": "#ffffff",
+                            "alpha": 1
+                          }
+                        ],
+                        "strokes": {
+                          "paints": [],
+                          "weight": 0,
+                          "align": "INSIDE"
+                        },
+                        "effects": [],
+                        "instanceOf": {
+                          "componentId": "3287:134072",
+                          "componentName": "icon / arrow-right"
+                        },
+                        "role": "icon",
+                        "roleSource": "name"
+                      }
+                    ],
+                    "size": {
+                      "width": 8,
+                      "height": 17
+                    },
+                    "layout": {
+                      "mode": "HORIZONTAL",
+                      "gap": 2,
+                      "padding": {
+                        "top": 0,
+                        "right": 0,
+                        "bottom": 0,
+                        "left": 0
+                      },
+                      "primaryAlign": "CENTER",
+                      "counterAlign": "CENTER",
+                      "sizingH": "HUG",
+                      "sizingV": "HUG",
+                      "wrap": false
+                    },
+                    "opacity": 1,
+                    "fills": [],
+                    "strokes": {
+                      "paints": [],
+                      "weight": 0,
+                      "align": "INSIDE"
+                    },
+                    "effects": [],
+                    "role": "container",
+                    "roleSource": "type"
+                  }
+                ],
+                "size": {
+                  "width": 24,
+                  "height": 17
+                },
+                "layout": {
+                  "mode": "VERTICAL",
+                  "gap": 8,
+                  "padding": {
+                    "top": 0,
+                    "right": 8,
+                    "bottom": 0,
+                    "left": 8
+                  },
+                  "primaryAlign": "CENTER",
+                  "counterAlign": "CENTER",
+                  "sizingH": "HUG",
+                  "sizingV": "HUG",
+                  "wrap": false
+                },
+                "radius": 12,
+                "opacity": 1,
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#f56630",
+                    "alpha": 1
+                  }
+                ],
+                "strokes": {
+                  "paints": [],
+                  "weight": 0,
+                  "align": "INSIDE"
+                },
+                "effects": [],
+                "instanceOf": {
+                  "componentId": "1911:37809",
+                  "componentName": "Badge"
+                },
+                "propertyRefs": {
+                  "visible": "has number tag#3846:642"
+                },
+                "role": "container",
+                "roleSource": "type"
+              }
+            }
+          ],
+          "removed": [
+            "Tab/Content",
+            "Tab/Border"
+          ]
+        },
+        {
+          "variantId": "1697:24786",
+          "variantProperties": {
+            "State": "disabled",
+            "Style": "Pill"
+          },
+          "layers": [
+            {
+              "path": "Tab",
+              "changes": {
+                "size": {
+                  "width": 117,
+                  "height": 36
+                },
+                "layout": {
+                  "mode": "HORIZONTAL",
+                  "gap": 8,
+                  "padding": {
+                    "top": 8,
+                    "right": 12,
+                    "bottom": 8,
+                    "left": 12
+                  },
+                  "primaryAlign": "CENTER",
+                  "counterAlign": "CENTER",
+                  "sizingH": "HUG",
+                  "sizingV": "FIXED",
+                  "wrap": false
+                },
+                "radius": 6,
+                "strokes": {
+                  "paints": [
+                    {
+                      "type": "SOLID",
+                      "visible": true,
+                      "hex": "#d0d5dd",
+                      "alpha": 1
+                    }
+                  ],
+                  "weight": 1,
+                  "align": "INSIDE"
+                }
+              }
+            }
+          ],
+          "added": [
+            {
+              "parentPath": "Tab",
+              "layer": {
+                "id": "3846:187365",
+                "name": "icon / home-alt",
+                "type": "INSTANCE",
+                "visible": true,
+                "children": [
+                  {
+                    "id": "I3846:187365;3253:139560",
+                    "name": "icon",
+                    "type": "VECTOR",
+                    "visible": true,
+                    "children": [],
+                    "size": {
+                      "width": 14.5,
+                      "height": 13.83
+                    },
+                    "opacity": 1,
+                    "fills": [
+                      {
+                        "type": "SOLID",
+                        "visible": true,
+                        "hex": "#d0d5dd",
+                        "alpha": 1
+                      }
+                    ],
+                    "strokes": {
+                      "paints": [],
+                      "weight": 0,
+                      "align": "INSIDE"
+                    },
+                    "effects": [],
+                    "role": "icon",
+                    "roleSource": "type"
+                  }
+                ],
+                "size": {
+                  "width": 16,
+                  "height": 16
+                },
+                "opacity": 1,
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": false,
+                    "hex": "#ffffff",
+                    "alpha": 1
+                  }
+                ],
+                "strokes": {
+                  "paints": [],
+                  "weight": 0,
+                  "align": "INSIDE"
+                },
+                "effects": [],
+                "instanceOf": {
+                  "componentId": "3253:139559",
+                  "componentName": "icon / home-alt"
+                },
+                "propertyRefs": {
+                  "visible": "has icon#3846:675",
+                  "mainComponent": "Icon#4663:9"
+                },
+                "role": "icon",
+                "roleSource": "property"
+              }
+            },
+            {
+              "parentPath": "Tab",
+              "layer": {
+                "id": "1696:24398",
+                "name": "Label",
+                "type": "TEXT",
+                "visible": true,
+                "children": [],
+                "size": {
+                  "width": 37,
+                  "height": 20
+                },
+                "opacity": 1,
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#d0d5dd",
+                    "alpha": 1
+                  }
+                ],
+                "strokes": {
+                  "paints": [],
+                  "weight": 0,
+                  "align": "INSIDE"
+                },
+                "effects": [],
+                "text": {
+                  "fontFamily": "Inter",
+                  "fontWeight": 500,
+                  "fontSize": 14,
+                  "lineHeight": {
+                    "value": 145,
+                    "unit": "percent"
+                  },
+                  "letterSpacing": {
+                    "value": 0,
+                    "unit": "percent"
+                  },
+                  "textCase": "ORIGINAL",
+                  "textDecoration": "NONE",
+                  "align": "CENTER",
+                  "characters": "Label"
+                },
+                "role": "label",
+                "roleSource": "name"
+              }
+            },
+            {
+              "parentPath": "Tab",
+              "layer": {
+                "id": "4374:184872",
+                "name": "Badge",
+                "type": "INSTANCE",
+                "visible": true,
+                "children": [
+                  {
+                    "id": "I4374:184872;1911:37624",
+                    "name": "Container",
+                    "type": "FRAME",
+                    "visible": true,
+                    "children": [
+                      {
+                        "id": "I4374:184872;1911:37625",
+                        "name": "Icon-left",
+                        "type": "INSTANCE",
+                        "visible": false,
+                        "children": [
+                          {
+                            "id": "I4374:184872;1911:37625;3287:134071",
+                            "name": "icon",
+                            "type": "VECTOR",
+                            "visible": true,
+                            "children": [],
+                            "size": {
+                              "width": 10,
+                              "height": 5
+                            },
+                            "opacity": 1,
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "visible": true,
+                                "hex": "#ffffff",
+                                "alpha": 1
+                              }
+                            ],
+                            "strokes": {
+                              "paints": [],
+                              "weight": 0,
+                              "align": "INSIDE"
+                            },
+                            "effects": [],
+                            "role": "icon",
+                            "roleSource": "type"
+                          }
+                        ],
+                        "size": {
+                          "width": 12,
+                          "height": 12
+                        },
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "visible": false,
+                            "hex": "#ffffff",
+                            "alpha": 1
+                          }
+                        ],
+                        "strokes": {
+                          "paints": [],
+                          "weight": 0,
+                          "align": "INSIDE"
+                        },
+                        "effects": [],
+                        "instanceOf": {
+                          "componentId": "3287:134070",
+                          "componentName": "icon / arrow-left"
+                        },
+                        "role": "icon",
+                        "roleSource": "name"
+                      },
+                      {
+                        "id": "I4374:184872;1911:37626",
+                        "name": "Avatars",
+                        "type": "INSTANCE",
+                        "visible": false,
+                        "children": [
+                          {
+                            "id": "I4374:184872;1911:37626;1483:13726",
+                            "name": "Image",
+                            "type": "RECTANGLE",
+                            "visible": true,
+                            "children": [],
+                            "size": {
+                              "width": 12,
+                              "height": 12
+                            },
+                            "radius": 200,
+                            "opacity": 1,
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "visible": true,
+                                "hex": "#ffe7cc",
+                                "alpha": 1
+                              },
+                              {
+                                "type": "IMAGE",
+                                "visible": true,
+                                "description": "image, scale mode FILL"
+                              }
+                            ],
+                            "strokes": {
+                              "paints": [
+                                {
+                                  "type": "SOLID",
+                                  "visible": true,
+                                  "hex": "#ffffff",
+                                  "alpha": 1
+                                }
+                              ],
+                              "weight": 0.5,
+                              "align": "OUTSIDE"
+                            },
+                            "effects": [],
+                            "role": "image",
+                            "roleSource": "type"
+                          }
+                        ],
+                        "size": {
+                          "width": 12,
+                          "height": 12
+                        },
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "visible": false,
+                            "hex": "#ffffff",
+                            "alpha": 1
+                          }
+                        ],
+                        "strokes": {
+                          "paints": [],
+                          "weight": 0,
+                          "align": "INSIDE"
+                        },
+                        "effects": [],
+                        "instanceOf": {
+                          "componentId": "1483:13727",
+                          "componentName": "Avatars"
+                        },
+                        "role": "container",
+                        "roleSource": "type"
+                      },
+                      {
+                        "id": "I4374:184872;1911:37627",
+                        "name": "Label",
+                        "type": "TEXT",
+                        "visible": true,
+                        "children": [],
+                        "size": {
+                          "width": 8,
+                          "height": 17
+                        },
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "visible": true,
+                            "hex": "#f9fafb",
+                            "alpha": 1
+                          }
+                        ],
+                        "strokes": {
+                          "paints": [],
+                          "weight": 0,
+                          "align": "INSIDE"
+                        },
+                        "effects": [],
+                        "text": {
+                          "fontFamily": "Inter",
+                          "fontWeight": 500,
+                          "fontSize": 12,
+                          "lineHeight": {
+                            "value": 145,
+                            "unit": "percent"
+                          },
+                          "letterSpacing": {
+                            "value": -0.5,
+                            "unit": "percent"
+                          },
+                          "textCase": "ORIGINAL",
+                          "textDecoration": "NONE",
+                          "align": "CENTER",
+                          "characters": "0"
+                        },
+                        "role": "label",
+                        "roleSource": "name"
+                      },
+                      {
+                        "id": "I4374:184872;1911:37628",
+                        "name": "Icon-right",
+                        "type": "INSTANCE",
+                        "visible": false,
+                        "children": [
+                          {
+                            "id": "I4374:184872;1911:37628;3287:134073",
+                            "name": "icon",
+                            "type": "VECTOR",
+                            "visible": true,
+                            "children": [],
+                            "size": {
+                              "width": 10,
+                              "height": 5
+                            },
+                            "opacity": 1,
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "visible": true,
+                                "hex": "#000000",
+                                "alpha": 1
+                              }
+                            ],
+                            "strokes": {
+                              "paints": [],
+                              "weight": 0,
+                              "align": "INSIDE"
+                            },
+                            "effects": [],
+                            "role": "icon",
+                            "roleSource": "type"
+                          }
+                        ],
+                        "size": {
+                          "width": 12,
+                          "height": 12
+                        },
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "visible": false,
+                            "hex": "#ffffff",
+                            "alpha": 1
+                          }
+                        ],
+                        "strokes": {
+                          "paints": [],
+                          "weight": 0,
+                          "align": "INSIDE"
+                        },
+                        "effects": [],
+                        "instanceOf": {
+                          "componentId": "3287:134072",
+                          "componentName": "icon / arrow-right"
+                        },
+                        "role": "icon",
+                        "roleSource": "name"
+                      }
+                    ],
+                    "size": {
+                      "width": 8,
+                      "height": 17
+                    },
+                    "layout": {
+                      "mode": "HORIZONTAL",
+                      "gap": 2,
+                      "padding": {
+                        "top": 0,
+                        "right": 0,
+                        "bottom": 0,
+                        "left": 0
+                      },
+                      "primaryAlign": "CENTER",
+                      "counterAlign": "CENTER",
+                      "sizingH": "HUG",
+                      "sizingV": "HUG",
+                      "wrap": false
+                    },
+                    "opacity": 1,
+                    "fills": [],
+                    "strokes": {
+                      "paints": [],
+                      "weight": 0,
+                      "align": "INSIDE"
+                    },
+                    "effects": [],
+                    "role": "container",
+                    "roleSource": "type"
+                  }
+                ],
+                "size": {
+                  "width": 24,
+                  "height": 17
+                },
+                "layout": {
+                  "mode": "VERTICAL",
+                  "gap": 8,
+                  "padding": {
+                    "top": 0,
+                    "right": 8,
+                    "bottom": 0,
+                    "left": 8
+                  },
+                  "primaryAlign": "CENTER",
+                  "counterAlign": "CENTER",
+                  "sizingH": "HUG",
+                  "sizingV": "HUG",
+                  "wrap": false
+                },
+                "radius": 12,
+                "opacity": 1,
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": true,
+                    "hex": "#e4e7ec",
+                    "alpha": 1
+                  }
+                ],
+                "strokes": {
+                  "paints": [],
+                  "weight": 0,
+                  "align": "INSIDE"
+                },
+                "effects": [],
+                "instanceOf": {
+                  "componentId": "1911:37802",
+                  "componentName": "Badge"
+                },
+                "propertyRefs": {
+                  "visible": "has number tag#3846:642"
+                },
+                "role": "container",
+                "roleSource": "type"
+              }
+            }
+          ],
+          "removed": [
+            "Tab/Content",
+            "Tab/Border"
+          ]
+        }
+      ],
+      "treeTruncated": false
+    }
+  ],
+  "warnings": []
+}

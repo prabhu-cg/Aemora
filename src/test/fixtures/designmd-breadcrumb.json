@@ -1,0 +1,1510 @@
+{
+  "$schema": "https://raw.githubusercontent.com/prabhu-cg/Figma-plugins/main/DesignMD/schemas/designmd-components-v1.json",
+  "schema": "designmd.components/v1",
+  "metadata": {
+    "fileName": "Rayna UI v1.0 - Free 550+ Design System Components (Community)",
+    "scope": "file",
+    "generatedAt": "2026-11-10T22:18:51.990Z",
+    "pluginVersion": "1.1.0",
+    "options": {
+      "includeText": true,
+      "includeVariantDiffs": true,
+      "includeInstanceInternals": true
+    },
+    "contentHash": "9e06b26fadb89c8340d7453fd592da9f8bed2881daea649d0ea2704e1192ec19"
+  },
+  "index": {
+    "componentCount": 1,
+    "components": [
+      {
+        "id": "2031:39144",
+        "name": "Breadcrumb"
+      }
+    ]
+  },
+  "tokens": {
+    "S:d73870637317659f1aea012fd206a2c1ad0f665a,24:520": {
+      "cssName": "--neutral-300",
+      "type": "color",
+      "value": {
+        "hex": "#d1d5db",
+        "alpha": 1,
+        "r": 209,
+        "g": 213,
+        "b": 219
+      },
+      "library": true
+    }
+  },
+  "components": [
+    {
+      "id": "2031:39144",
+      "key": "7b7f8c8ea6e320f42b1b08116f07b876875d1fe8",
+      "name": "Breadcrumb",
+      "description": "",
+      "isComponentSet": true,
+      "pageName": "      ✤  Breadcrumbs ",
+      "variants": [
+        {
+          "id": "2031:39145",
+          "name": "State=default",
+          "variantProperties": {
+            "State": "default"
+          },
+          "description": ""
+        },
+        {
+          "id": "2031:39161",
+          "name": "State=hover",
+          "variantProperties": {
+            "State": "hover"
+          },
+          "description": ""
+        },
+        {
+          "id": "2031:39169",
+          "name": "State=active",
+          "variantProperties": {
+            "State": "active"
+          },
+          "description": ""
+        },
+        {
+          "id": "2031:39153",
+          "name": "State=disabled",
+          "variantProperties": {
+            "State": "disabled"
+          },
+          "description": ""
+        }
+      ],
+      "properties": [
+        {
+          "key": "Icon#3892:0",
+          "name": "Icon",
+          "type": "INSTANCE_SWAP",
+          "defaultValue": "3253:139549",
+          "defaultResolved": {
+            "id": "3253:139549",
+            "name": "icon / heart"
+          }
+        },
+        {
+          "key": "has icon#3892:17",
+          "name": "has icon",
+          "type": "BOOLEAN",
+          "defaultValue": "true"
+        },
+        {
+          "key": "has borders#3892:26",
+          "name": "has borders",
+          "type": "BOOLEAN",
+          "defaultValue": "true"
+        },
+        {
+          "key": "State",
+          "name": "State",
+          "type": "VARIANT",
+          "defaultValue": "default",
+          "variantOptions": [
+            "default",
+            "hover",
+            "active",
+            "disabled"
+          ]
+        }
+      ],
+      "states": [
+        "default",
+        "hover",
+        "active",
+        "disabled"
+      ],
+      "sizes": [],
+      "relatedComponentNames": [],
+      "boundVariableIds": [],
+      "styleIds": [
+        "S:d73870637317659f1aea012fd206a2c1ad0f665a,24:520"
+      ],
+      "layout": {
+        "measuredFrom": "State=default",
+        "width": 82,
+        "height": 38,
+        "layoutMode": "HORIZONTAL",
+        "gap": 0,
+        "padding": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "defaultVariantId": "2031:39145",
+      "tree": {
+        "id": "2031:39145",
+        "name": "Breadcrumb",
+        "type": "COMPONENT",
+        "visible": true,
+        "children": [
+          {
+            "id": "3892:182513",
+            "name": "Container",
+            "type": "FRAME",
+            "visible": true,
+            "children": [
+              {
+                "id": "3892:184041",
+                "name": "Dividers",
+                "type": "INSTANCE",
+                "visible": true,
+                "children": [
+                  {
+                    "id": "I3892:184041;2200:54808",
+                    "name": "Divider",
+                    "type": "RECTANGLE",
+                    "visible": true,
+                    "children": [],
+                    "size": {
+                      "width": 82,
+                      "height": 1
+                    },
+                    "opacity": 1,
+                    "fills": [
+                      {
+                        "type": "SOLID",
+                        "visible": true,
+                        "hex": "#e4e7ec",
+                        "alpha": 1
+                      }
+                    ],
+                    "strokes": {
+                      "paints": [],
+                      "weight": 0,
+                      "align": "INSIDE"
+                    },
+                    "effects": [],
+                    "role": "divider",
+                    "roleSource": "type"
+                  }
+                ],
+                "size": {
+                  "width": 82,
+                  "height": 1
+                },
+                "opacity": 1,
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": false,
+                    "hex": "#ffffff",
+                    "alpha": 1
+                  }
+                ],
+                "strokes": {
+                  "paints": [],
+                  "weight": 0,
+                  "align": "INSIDE"
+                },
+                "effects": [],
+                "instanceOf": {
+                  "componentId": "2200:54809",
+                  "componentName": "Dividers"
+                },
+                "propertyRefs": {
+                  "visible": "has borders#3892:26"
+                },
+                "role": "container",
+                "roleSource": "type"
+              },
+              {
+                "id": "3892:182516",
+                "name": "Content + Separator",
+                "type": "FRAME",
+                "visible": true,
+                "children": [
+                  {
+                    "id": "3892:182517",
+                    "name": "Content",
+                    "type": "FRAME",
+                    "visible": true,
+                    "children": [
+                      {
+                        "id": "3892:182518",
+                        "name": "icon / heart",
+                        "type": "INSTANCE",
+                        "visible": true,
+                        "children": [
+                          {
+                            "id": "I3892:182518;3253:139550",
+                            "name": "icon",
+                            "type": "VECTOR",
+                            "visible": true,
+                            "children": [],
+                            "size": {
+                              "width": 18.33,
+                              "height": 16.67
+                            },
+                            "opacity": 1,
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "visible": true,
+                                "hex": "#667185",
+                                "alpha": 1
+                              }
+                            ],
+                            "strokes": {
+                              "paints": [],
+                              "weight": 0,
+                              "align": "INSIDE"
+                            },
+                            "effects": [],
+                            "role": "icon",
+                            "roleSource": "type"
+                          }
+                        ],
+                        "size": {
+                          "width": 20,
+                          "height": 20
+                        },
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "visible": false,
+                            "hex": "#ffffff",
+                            "alpha": 1
+                          }
+                        ],
+                        "strokes": {
+                          "paints": [],
+                          "weight": 0,
+                          "align": "INSIDE"
+                        },
+                        "effects": [],
+                        "instanceOf": {
+                          "componentId": "3253:139549",
+                          "componentName": "icon / heart"
+                        },
+                        "propertyRefs": {
+                          "visible": "has icon#3892:17",
+                          "mainComponent": "Icon#3892:0"
+                        },
+                        "role": "icon",
+                        "roleSource": "property"
+                      },
+                      {
+                        "id": "3892:182519",
+                        "name": "Label",
+                        "type": "TEXT",
+                        "visible": true,
+                        "children": [],
+                        "size": {
+                          "width": 58,
+                          "height": 20
+                        },
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "visible": true,
+                            "hex": "#667185",
+                            "alpha": 1
+                          }
+                        ],
+                        "strokes": {
+                          "paints": [],
+                          "weight": 0,
+                          "align": "INSIDE"
+                        },
+                        "effects": [],
+                        "text": {
+                          "fontFamily": "Inter",
+                          "fontWeight": 500,
+                          "fontSize": 14,
+                          "lineHeight": {
+                            "value": 145,
+                            "unit": "percent"
+                          },
+                          "letterSpacing": {
+                            "value": 0,
+                            "unit": "percent"
+                          },
+                          "textCase": "ORIGINAL",
+                          "textDecoration": "NONE",
+                          "align": "LEFT",
+                          "characters": "Item List"
+                        },
+                        "role": "label",
+                        "roleSource": "name"
+                      }
+                    ],
+                    "size": {
+                      "width": 82,
+                      "height": 20
+                    },
+                    "layout": {
+                      "mode": "HORIZONTAL",
+                      "gap": 4,
+                      "padding": {
+                        "top": 0,
+                        "right": 0,
+                        "bottom": 0,
+                        "left": 0
+                      },
+                      "primaryAlign": "MIN",
+                      "counterAlign": "MIN",
+                      "sizingH": "HUG",
+                      "sizingV": "HUG",
+                      "wrap": false
+                    },
+                    "opacity": 1,
+                    "fills": [],
+                    "strokes": {
+                      "paints": [],
+                      "weight": 0,
+                      "align": "INSIDE"
+                    },
+                    "effects": [],
+                    "role": "container",
+                    "roleSource": "type"
+                  },
+                  {
+                    "id": "3892:182520",
+                    "name": "Seperator",
+                    "type": "TEXT",
+                    "visible": false,
+                    "children": [],
+                    "size": {
+                      "width": 20,
+                      "height": 20
+                    },
+                    "opacity": 1,
+                    "fills": [
+                      {
+                        "type": "SOLID",
+                        "visible": true,
+                        "hex": "#d1d5db",
+                        "alpha": 1,
+                        "token": {
+                          "styleId": "S:d73870637317659f1aea012fd206a2c1ad0f665a,24:520",
+                          "cssName": "--neutral-300"
+                        }
+                      }
+                    ],
+                    "strokes": {
+                      "paints": [],
+                      "weight": 0,
+                      "align": "INSIDE"
+                    },
+                    "effects": [],
+                    "text": {
+                      "fontFamily": "Inter",
+                      "fontWeight": 500,
+                      "fontSize": 14,
+                      "lineHeight": {
+                        "value": 145,
+                        "unit": "percent"
+                      },
+                      "letterSpacing": {
+                        "value": 0,
+                        "unit": "percent"
+                      },
+                      "textCase": "ORIGINAL",
+                      "textDecoration": "NONE",
+                      "align": "CENTER",
+                      "characters": "/"
+                    },
+                    "role": "text",
+                    "roleSource": "type"
+                  }
+                ],
+                "size": {
+                  "width": 82,
+                  "height": 20
+                },
+                "layout": {
+                  "mode": "HORIZONTAL",
+                  "gap": 0,
+                  "padding": {
+                    "top": 0,
+                    "right": 0,
+                    "bottom": 0,
+                    "left": 0
+                  },
+                  "primaryAlign": "MIN",
+                  "counterAlign": "CENTER",
+                  "sizingH": "HUG",
+                  "sizingV": "HUG",
+                  "wrap": false
+                },
+                "opacity": 1,
+                "fills": [],
+                "strokes": {
+                  "paints": [],
+                  "weight": 0,
+                  "align": "INSIDE"
+                },
+                "effects": [],
+                "role": "divider",
+                "roleSource": "name"
+              },
+              {
+                "id": "3892:184078",
+                "name": "Dividers",
+                "type": "INSTANCE",
+                "visible": true,
+                "children": [
+                  {
+                    "id": "I3892:184078;2200:54808",
+                    "name": "Divider",
+                    "type": "RECTANGLE",
+                    "visible": true,
+                    "children": [],
+                    "size": {
+                      "width": 82,
+                      "height": 1
+                    },
+                    "opacity": 1,
+                    "fills": [
+                      {
+                        "type": "SOLID",
+                        "visible": true,
+                        "hex": "#e4e7ec",
+                        "alpha": 1
+                      }
+                    ],
+                    "strokes": {
+                      "paints": [],
+                      "weight": 0,
+                      "align": "INSIDE"
+                    },
+                    "effects": [],
+                    "role": "divider",
+                    "roleSource": "type"
+                  }
+                ],
+                "size": {
+                  "width": 82,
+                  "height": 1
+                },
+                "opacity": 1,
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "visible": false,
+                    "hex": "#ffffff",
+                    "alpha": 1
+                  }
+                ],
+                "strokes": {
+                  "paints": [],
+                  "weight": 0,
+                  "align": "INSIDE"
+                },
+                "effects": [],
+                "instanceOf": {
+                  "componentId": "2200:54809",
+                  "componentName": "Dividers"
+                },
+                "propertyRefs": {
+                  "visible": "has borders#3892:26"
+                },
+                "role": "container",
+                "roleSource": "type"
+              }
+            ],
+            "size": {
+              "width": 82,
+              "height": 38
+            },
+            "layout": {
+              "mode": "VERTICAL",
+              "gap": 8,
+              "padding": {
+                "top": 0,
+                "right": 0,
+                "bottom": 0,
+                "left": 0
+              },
+              "primaryAlign": "CENTER",
+              "counterAlign": "CENTER",
+              "sizingH": "HUG",
+              "sizingV": "HUG",
+              "wrap": false
+            },
+            "opacity": 1,
+            "fills": [],
+            "strokes": {
+              "paints": [],
+              "weight": 0,
+              "align": "INSIDE"
+            },
+            "effects": [],
+            "role": "container",
+            "roleSource": "type"
+          }
+        ],
+        "size": {
+          "width": 82,
+          "height": 38
+        },
+        "layout": {
+          "mode": "HORIZONTAL",
+          "gap": 0,
+          "padding": {
+            "top": 0,
+            "right": 0,
+            "bottom": 0,
+            "left": 0
+          },
+          "primaryAlign": "CENTER",
+          "counterAlign": "CENTER",
+          "sizingH": "HUG",
+          "sizingV": "FIXED",
+          "wrap": false
+        },
+        "opacity": 1,
+        "fills": [
+          {
+            "type": "SOLID",
+            "visible": false,
+            "hex": "#ffffff",
+            "alpha": 1
+          }
+        ],
+        "strokes": {
+          "paints": [],
+          "weight": 0,
+          "align": "INSIDE"
+        },
+        "effects": [],
+        "role": "root",
+        "roleSource": "type"
+      },
+      "variantDiffs": [
+        {
+          "variantId": "2031:39161",
+          "variantProperties": {
+            "State": "hover"
+          },
+          "layers": [
+            {
+              "path": "Breadcrumb",
+              "changes": {
+                "size": {
+                  "width": 102,
+                  "height": 38
+                }
+              }
+            },
+            {
+              "path": "Breadcrumb/Container",
+              "changes": {
+                "size": {
+                  "width": 102,
+                  "height": 38
+                },
+                "layout": {
+                  "mode": "VERTICAL",
+                  "gap": 8,
+                  "padding": {
+                    "top": 0,
+                    "right": 0,
+                    "bottom": 0,
+                    "left": 0
+                  },
+                  "primaryAlign": "CENTER",
+                  "counterAlign": "MIN",
+                  "sizingH": "HUG",
+                  "sizingV": "HUG",
+                  "wrap": false
+                }
+              }
+            },
+            {
+              "path": "Breadcrumb/Container/Dividers[0]",
+              "changes": {
+                "size": {
+                  "width": 102,
+                  "height": 1
+                }
+              }
+            },
+            {
+              "path": "Breadcrumb/Container/Dividers[0]/Divider",
+              "changes": {
+                "size": {
+                  "width": 102,
+                  "height": 1
+                }
+              }
+            },
+            {
+              "path": "Breadcrumb/Container/Dividers[1]",
+              "changes": {
+                "size": {
+                  "width": 102,
+                  "height": 1
+                }
+              }
+            },
+            {
+              "path": "Breadcrumb/Container/Dividers[1]/Divider",
+              "changes": {
+                "size": {
+                  "width": 102,
+                  "height": 1
+                }
+              }
+            }
+          ],
+          "added": [
+            {
+              "parentPath": "Breadcrumb/Container",
+              "layer": {
+                "id": "3892:183240",
+                "name": "Content + Separators",
+                "type": "FRAME",
+                "visible": true,
+                "children": [
+                  {
+                    "id": "3892:183241",
+                    "name": "Content",
+                    "type": "FRAME",
+                    "visible": true,
+                    "children": [
+                      {
+                        "id": "3892:183242",
+                        "name": "icon / heart",
+                        "type": "INSTANCE",
+                        "visible": true,
+                        "children": [
+                          {
+                            "id": "I3892:183242;3253:139550",
+                            "name": "icon",
+                            "type": "VECTOR",
+                            "visible": true,
+                            "children": [],
+                            "size": {
+                              "width": 18.33,
+                              "height": 16.67
+                            },
+                            "opacity": 1,
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "visible": true,
+                                "hex": "#f77a4a",
+                                "alpha": 1
+                              }
+                            ],
+                            "strokes": {
+                              "paints": [],
+                              "weight": 0,
+                              "align": "INSIDE"
+                            },
+                            "effects": [],
+                            "role": "icon",
+                            "roleSource": "type"
+                          }
+                        ],
+                        "size": {
+                          "width": 20,
+                          "height": 20
+                        },
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "visible": false,
+                            "hex": "#ffffff",
+                            "alpha": 1
+                          }
+                        ],
+                        "strokes": {
+                          "paints": [],
+                          "weight": 0,
+                          "align": "INSIDE"
+                        },
+                        "effects": [],
+                        "instanceOf": {
+                          "componentId": "3253:139549",
+                          "componentName": "icon / heart"
+                        },
+                        "propertyRefs": {
+                          "visible": "has icon#3892:17",
+                          "mainComponent": "Icon#3892:0"
+                        },
+                        "role": "icon",
+                        "roleSource": "property"
+                      },
+                      {
+                        "id": "3892:183243",
+                        "name": "Label",
+                        "type": "TEXT",
+                        "visible": true,
+                        "children": [],
+                        "size": {
+                          "width": 58,
+                          "height": 20
+                        },
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "visible": true,
+                            "hex": "#f77a4a",
+                            "alpha": 1
+                          }
+                        ],
+                        "strokes": {
+                          "paints": [],
+                          "weight": 0,
+                          "align": "INSIDE"
+                        },
+                        "effects": [],
+                        "text": {
+                          "fontFamily": "Inter",
+                          "fontWeight": 500,
+                          "fontSize": 14,
+                          "lineHeight": {
+                            "value": 145,
+                            "unit": "percent"
+                          },
+                          "letterSpacing": {
+                            "value": 0,
+                            "unit": "percent"
+                          },
+                          "textCase": "ORIGINAL",
+                          "textDecoration": "NONE",
+                          "align": "LEFT",
+                          "characters": "Item List"
+                        },
+                        "role": "label",
+                        "roleSource": "name"
+                      }
+                    ],
+                    "size": {
+                      "width": 82,
+                      "height": 20
+                    },
+                    "layout": {
+                      "mode": "HORIZONTAL",
+                      "gap": 4,
+                      "padding": {
+                        "top": 0,
+                        "right": 0,
+                        "bottom": 0,
+                        "left": 0
+                      },
+                      "primaryAlign": "MIN",
+                      "counterAlign": "MIN",
+                      "sizingH": "HUG",
+                      "sizingV": "HUG",
+                      "wrap": false
+                    },
+                    "opacity": 1,
+                    "fills": [],
+                    "strokes": {
+                      "paints": [],
+                      "weight": 0,
+                      "align": "INSIDE"
+                    },
+                    "effects": [],
+                    "role": "container",
+                    "roleSource": "type"
+                  },
+                  {
+                    "id": "3892:183244",
+                    "name": "Seperator",
+                    "type": "TEXT",
+                    "visible": true,
+                    "children": [],
+                    "size": {
+                      "width": 20,
+                      "height": 20
+                    },
+                    "opacity": 1,
+                    "fills": [
+                      {
+                        "type": "SOLID",
+                        "visible": true,
+                        "hex": "#98a2b3",
+                        "alpha": 1
+                      }
+                    ],
+                    "strokes": {
+                      "paints": [],
+                      "weight": 0,
+                      "align": "INSIDE"
+                    },
+                    "effects": [],
+                    "text": {
+                      "fontFamily": "Inter",
+                      "fontWeight": 500,
+                      "fontSize": 14,
+                      "lineHeight": {
+                        "value": 145,
+                        "unit": "percent"
+                      },
+                      "letterSpacing": {
+                        "value": 0,
+                        "unit": "percent"
+                      },
+                      "textCase": "ORIGINAL",
+                      "textDecoration": "NONE",
+                      "align": "CENTER",
+                      "characters": "/"
+                    },
+                    "role": "text",
+                    "roleSource": "type"
+                  }
+                ],
+                "size": {
+                  "width": 102,
+                  "height": 20
+                },
+                "layout": {
+                  "mode": "HORIZONTAL",
+                  "gap": 0,
+                  "padding": {
+                    "top": 0,
+                    "right": 0,
+                    "bottom": 0,
+                    "left": 0
+                  },
+                  "primaryAlign": "MIN",
+                  "counterAlign": "CENTER",
+                  "sizingH": "HUG",
+                  "sizingV": "HUG",
+                  "wrap": false
+                },
+                "opacity": 1,
+                "fills": [],
+                "strokes": {
+                  "paints": [],
+                  "weight": 0,
+                  "align": "INSIDE"
+                },
+                "effects": [],
+                "role": "container",
+                "roleSource": "type"
+              }
+            }
+          ],
+          "removed": [
+            "Breadcrumb/Container/Content + Separator"
+          ]
+        },
+        {
+          "variantId": "2031:39169",
+          "variantProperties": {
+            "State": "active"
+          },
+          "layers": [
+            {
+              "path": "Breadcrumb",
+              "changes": {
+                "size": {
+                  "width": 102,
+                  "height": 38
+                }
+              }
+            },
+            {
+              "path": "Breadcrumb/Container",
+              "changes": {
+                "size": {
+                  "width": 102,
+                  "height": 38
+                }
+              }
+            },
+            {
+              "path": "Breadcrumb/Container/Dividers[0]",
+              "changes": {
+                "size": {
+                  "width": 102,
+                  "height": 1
+                }
+              }
+            },
+            {
+              "path": "Breadcrumb/Container/Dividers[0]/Divider",
+              "changes": {
+                "size": {
+                  "width": 102,
+                  "height": 1
+                }
+              }
+            },
+            {
+              "path": "Breadcrumb/Container/Dividers[1]",
+              "changes": {
+                "size": {
+                  "width": 102,
+                  "height": 1
+                }
+              }
+            },
+            {
+              "path": "Breadcrumb/Container/Dividers[1]/Divider",
+              "changes": {
+                "size": {
+                  "width": 102,
+                  "height": 1
+                }
+              }
+            }
+          ],
+          "added": [
+            {
+              "parentPath": "Breadcrumb/Container",
+              "layer": {
+                "id": "3892:182972",
+                "name": "Content + Separators",
+                "type": "FRAME",
+                "visible": true,
+                "children": [
+                  {
+                    "id": "3892:182973",
+                    "name": "Content",
+                    "type": "FRAME",
+                    "visible": true,
+                    "children": [
+                      {
+                        "id": "3892:182974",
+                        "name": "icon / heart",
+                        "type": "INSTANCE",
+                        "visible": true,
+                        "children": [
+                          {
+                            "id": "I3892:182974;3253:139550",
+                            "name": "icon",
+                            "type": "VECTOR",
+                            "visible": true,
+                            "children": [],
+                            "size": {
+                              "width": 18.33,
+                              "height": 16.67
+                            },
+                            "opacity": 1,
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "visible": true,
+                                "hex": "#eb5017",
+                                "alpha": 1
+                              }
+                            ],
+                            "strokes": {
+                              "paints": [],
+                              "weight": 0,
+                              "align": "INSIDE"
+                            },
+                            "effects": [],
+                            "role": "icon",
+                            "roleSource": "type"
+                          }
+                        ],
+                        "size": {
+                          "width": 20,
+                          "height": 20
+                        },
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "visible": false,
+                            "hex": "#ffffff",
+                            "alpha": 1
+                          }
+                        ],
+                        "strokes": {
+                          "paints": [],
+                          "weight": 0,
+                          "align": "INSIDE"
+                        },
+                        "effects": [],
+                        "instanceOf": {
+                          "componentId": "3253:139549",
+                          "componentName": "icon / heart"
+                        },
+                        "propertyRefs": {
+                          "visible": "has icon#3892:17",
+                          "mainComponent": "Icon#3892:0"
+                        },
+                        "role": "icon",
+                        "roleSource": "property"
+                      },
+                      {
+                        "id": "3892:182975",
+                        "name": "Label",
+                        "type": "TEXT",
+                        "visible": true,
+                        "children": [],
+                        "size": {
+                          "width": 58,
+                          "height": 20
+                        },
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "visible": true,
+                            "hex": "#eb5017",
+                            "alpha": 1
+                          }
+                        ],
+                        "strokes": {
+                          "paints": [],
+                          "weight": 0,
+                          "align": "INSIDE"
+                        },
+                        "effects": [],
+                        "text": {
+                          "fontFamily": "Inter",
+                          "fontWeight": 500,
+                          "fontSize": 14,
+                          "lineHeight": {
+                            "value": 145,
+                            "unit": "percent"
+                          },
+                          "letterSpacing": {
+                            "value": 0,
+                            "unit": "percent"
+                          },
+                          "textCase": "ORIGINAL",
+                          "textDecoration": "NONE",
+                          "align": "LEFT",
+                          "characters": "Item List"
+                        },
+                        "role": "label",
+                        "roleSource": "name"
+                      }
+                    ],
+                    "size": {
+                      "width": 82,
+                      "height": 20
+                    },
+                    "layout": {
+                      "mode": "HORIZONTAL",
+                      "gap": 4,
+                      "padding": {
+                        "top": 0,
+                        "right": 0,
+                        "bottom": 0,
+                        "left": 0
+                      },
+                      "primaryAlign": "MIN",
+                      "counterAlign": "MIN",
+                      "sizingH": "HUG",
+                      "sizingV": "HUG",
+                      "wrap": false
+                    },
+                    "opacity": 1,
+                    "fills": [],
+                    "strokes": {
+                      "paints": [],
+                      "weight": 0,
+                      "align": "INSIDE"
+                    },
+                    "effects": [],
+                    "role": "container",
+                    "roleSource": "type"
+                  },
+                  {
+                    "id": "3892:182976",
+                    "name": "Seperator",
+                    "type": "TEXT",
+                    "visible": true,
+                    "children": [],
+                    "size": {
+                      "width": 20,
+                      "height": 20
+                    },
+                    "opacity": 1,
+                    "fills": [
+                      {
+                        "type": "SOLID",
+                        "visible": true,
+                        "hex": "#98a2b3",
+                        "alpha": 1
+                      }
+                    ],
+                    "strokes": {
+                      "paints": [],
+                      "weight": 0,
+                      "align": "INSIDE"
+                    },
+                    "effects": [],
+                    "text": {
+                      "fontFamily": "Inter",
+                      "fontWeight": 500,
+                      "fontSize": 14,
+                      "lineHeight": {
+                        "value": 145,
+                        "unit": "percent"
+                      },
+                      "letterSpacing": {
+                        "value": 0,
+                        "unit": "percent"
+                      },
+                      "textCase": "ORIGINAL",
+                      "textDecoration": "NONE",
+                      "align": "CENTER",
+                      "characters": "/"
+                    },
+                    "role": "text",
+                    "roleSource": "type"
+                  }
+                ],
+                "size": {
+                  "width": 102,
+                  "height": 20
+                },
+                "layout": {
+                  "mode": "HORIZONTAL",
+                  "gap": 0,
+                  "padding": {
+                    "top": 0,
+                    "right": 0,
+                    "bottom": 0,
+                    "left": 0
+                  },
+                  "primaryAlign": "MIN",
+                  "counterAlign": "CENTER",
+                  "sizingH": "HUG",
+                  "sizingV": "HUG",
+                  "wrap": false
+                },
+                "opacity": 1,
+                "fills": [],
+                "strokes": {
+                  "paints": [],
+                  "weight": 0,
+                  "align": "INSIDE"
+                },
+                "effects": [],
+                "role": "container",
+                "roleSource": "type"
+              }
+            }
+          ],
+          "removed": [
+            "Breadcrumb/Container/Content + Separator"
+          ]
+        },
+        {
+          "variantId": "2031:39153",
+          "variantProperties": {
+            "State": "disabled"
+          },
+          "layers": [
+            {
+              "path": "Breadcrumb",
+              "changes": {
+                "size": {
+                  "width": 102,
+                  "height": 38
+                }
+              }
+            },
+            {
+              "path": "Breadcrumb/Container",
+              "changes": {
+                "size": {
+                  "width": 102,
+                  "height": 38
+                }
+              }
+            },
+            {
+              "path": "Breadcrumb/Container/Dividers[0]",
+              "changes": {
+                "size": {
+                  "width": 102,
+                  "height": 1
+                }
+              }
+            },
+            {
+              "path": "Breadcrumb/Container/Dividers[0]/Divider",
+              "changes": {
+                "size": {
+                  "width": 102,
+                  "height": 1
+                }
+              }
+            },
+            {
+              "path": "Breadcrumb/Container/Dividers[1]",
+              "changes": {
+                "size": {
+                  "width": 102,
+                  "height": 1
+                }
+              }
+            },
+            {
+              "path": "Breadcrumb/Container/Dividers[1]/Divider",
+              "changes": {
+                "size": {
+                  "width": 102,
+                  "height": 1
+                }
+              }
+            }
+          ],
+          "added": [
+            {
+              "parentPath": "Breadcrumb/Container",
+              "layer": {
+                "id": "3892:183196",
+                "name": "Content + Separators",
+                "type": "FRAME",
+                "visible": true,
+                "children": [
+                  {
+                    "id": "3892:183197",
+                    "name": "Content",
+                    "type": "FRAME",
+                    "visible": true,
+                    "children": [
+                      {
+                        "id": "3892:183198",
+                        "name": "icon / heart",
+                        "type": "INSTANCE",
+                        "visible": true,
+                        "children": [
+                          {
+                            "id": "I3892:183198;3253:139550",
+                            "name": "icon",
+                            "type": "VECTOR",
+                            "visible": true,
+                            "children": [],
+                            "size": {
+                              "width": 18.33,
+                              "height": 16.67
+                            },
+                            "opacity": 1,
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "visible": true,
+                                "hex": "#98a2b3",
+                                "alpha": 1
+                              }
+                            ],
+                            "strokes": {
+                              "paints": [],
+                              "weight": 0,
+                              "align": "INSIDE"
+                            },
+                            "effects": [],
+                            "role": "icon",
+                            "roleSource": "type"
+                          }
+                        ],
+                        "size": {
+                          "width": 20,
+                          "height": 20
+                        },
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "visible": false,
+                            "hex": "#ffffff",
+                            "alpha": 1
+                          }
+                        ],
+                        "strokes": {
+                          "paints": [],
+                          "weight": 0,
+                          "align": "INSIDE"
+                        },
+                        "effects": [],
+                        "instanceOf": {
+                          "componentId": "3253:139549",
+                          "componentName": "icon / heart"
+                        },
+                        "propertyRefs": {
+                          "visible": "has icon#3892:17",
+                          "mainComponent": "Icon#3892:0"
+                        },
+                        "role": "icon",
+                        "roleSource": "property"
+                      },
+                      {
+                        "id": "3892:183199",
+                        "name": "Label",
+                        "type": "TEXT",
+                        "visible": true,
+                        "children": [],
+                        "size": {
+                          "width": 58,
+                          "height": 20
+                        },
+                        "opacity": 1,
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "visible": true,
+                            "hex": "#98a2b3",
+                            "alpha": 1
+                          }
+                        ],
+                        "strokes": {
+                          "paints": [],
+                          "weight": 0,
+                          "align": "INSIDE"
+                        },
+                        "effects": [],
+                        "text": {
+                          "fontFamily": "Inter",
+                          "fontWeight": 500,
+                          "fontSize": 14,
+                          "lineHeight": {
+                            "value": 145,
+                            "unit": "percent"
+                          },
+                          "letterSpacing": {
+                            "value": 0,
+                            "unit": "percent"
+                          },
+                          "textCase": "ORIGINAL",
+                          "textDecoration": "NONE",
+                          "align": "LEFT",
+                          "characters": "Item List"
+                        },
+                        "role": "label",
+                        "roleSource": "name"
+                      }
+                    ],
+                    "size": {
+                      "width": 82,
+                      "height": 20
+                    },
+                    "layout": {
+                      "mode": "HORIZONTAL",
+                      "gap": 4,
+                      "padding": {
+                        "top": 0,
+                        "right": 0,
+                        "bottom": 0,
+                        "left": 0
+                      },
+                      "primaryAlign": "MIN",
+                      "counterAlign": "MIN",
+                      "sizingH": "HUG",
+                      "sizingV": "HUG",
+                      "wrap": false
+                    },
+                    "opacity": 1,
+                    "fills": [],
+                    "strokes": {
+                      "paints": [],
+                      "weight": 0,
+                      "align": "INSIDE"
+                    },
+                    "effects": [],
+                    "role": "container",
+                    "roleSource": "type"
+                  },
+                  {
+                    "id": "3892:183200",
+                    "name": "Seperator",
+                    "type": "TEXT",
+                    "visible": true,
+                    "children": [],
+                    "size": {
+                      "width": 20,
+                      "height": 20
+                    },
+                    "opacity": 1,
+                    "fills": [
+                      {
+                        "type": "SOLID",
+                        "visible": true,
+                        "hex": "#98a2b3",
+                        "alpha": 1
+                      }
+                    ],
+                    "strokes": {
+                      "paints": [],
+                      "weight": 0,
+                      "align": "INSIDE"
+                    },
+                    "effects": [],
+                    "text": {
+                      "fontFamily": "Inter",
+                      "fontWeight": 500,
+                      "fontSize": 14,
+                      "lineHeight": {
+                        "value": 145,
+                        "unit": "percent"
+                      },
+                      "letterSpacing": {
+                        "value": 0,
+                        "unit": "percent"
+                      },
+                      "textCase": "ORIGINAL",
+                      "textDecoration": "NONE",
+                      "align": "CENTER",
+                      "characters": "/"
+                    },
+                    "role": "text",
+                    "roleSource": "type"
+                  }
+                ],
+                "size": {
+                  "width": 102,
+                  "height": 20
+                },
+                "layout": {
+                  "mode": "HORIZONTAL",
+                  "gap": 0,
+                  "padding": {
+                    "top": 0,
+                    "right": 0,
+                    "bottom": 0,
+                    "left": 0
+                  },
+                  "primaryAlign": "MIN",
+                  "counterAlign": "CENTER",
+                  "sizingH": "HUG",
+                  "sizingV": "HUG",
+                  "wrap": false
+                },
+                "opacity": 1,
+                "fills": [],
+                "strokes": {
+                  "paints": [],
+                  "weight": 0,
+                  "align": "INSIDE"
+                },
+                "effects": [],
+                "role": "container",
+                "roleSource": "type"
+              }
+            }
+          ],
+          "removed": [
+            "Breadcrumb/Container/Content + Separator"
+          ]
+        }
+      ],
+      "treeTruncated": false
+    }
+  ],
+  "warnings": [
+    {
+      "code": "DUPLICATE_SIBLING_NAME",
+      "message": "3 groups of sibling layers in \"Breadcrumb\" share a name, so variant differences tell them apart by index (for example: Layers inside \"Breadcrumb/Container\" share the name \"Dividers\", so they are told apart by index.).",
+      "componentId": "2031:39144",
+      "layerId": "3892:184029"
+    }
+  ]
+}

@@ -2,6 +2,8 @@ import { newId } from '../../../lib/id'
 import { classifyComponent, inferPropertyType, toKey, toLabel } from '../../components/detect'
 import type { ComponentDef, Origin, Property, PropertyType, Unsupported } from '../../components/schema'
 import type { ImportResult, Warning } from '../types'
+import { isInteractionState } from '../designmd/convert'
+import { buildDesign, pickDefaultVariant } from './design'
 
 type Json = Record<string, unknown>
 const isObj = (v: unknown): v is Json => typeof v === 'object' && v !== null && !Array.isArray(v)
@@ -14,19 +16,22 @@ const BOOLEAN_WORDS = new Set(['true', 'false', 'on', 'off', 'yes', 'no'])
 /**
  * Turns a Figma REST response (file, or the nodes endpoint) into component definitions.
  * Extracts component and variant properties, text layers, visibility and dimensions.
- * Visual design properties (fills, spacing, radii) are reported as not mapped because they
- * are not authoring fields.
+ * The layer structure is read too (positions, layout, colors, vector shapes), for the markup and the preview.
+ * Visual properties are not authoring fields, so no dialog field is made from them.
  */
 export function parseFigmaResponse(json: unknown, opts: { fileKey?: string; requestedNodeId?: string } = {}): ImportResult {
   const warnings: Warning[] = []
   const roots: Json[] = []
+  // Id -> { name } of every component the response knows, so an instance can say what it is an instance of.
+  const known: Record<string, unknown> = {}
   const fileName = isObj(json) ? str(json.name) : ''
 
   if (isObj(json) && isObj(json.document)) {
     roots.push(json.document)
+    if (isObj(json.components)) Object.assign(known, json.components)
   } else if (isObj(json) && isObj(json.nodes)) {
     for (const [id, entry] of Object.entries(json.nodes)) {
-      if (isObj(entry) && isObj(entry.document)) roots.push(entry.document)
+      if (isObj(entry) && isObj(entry.document)) { roots.push(entry.document); if (isObj(entry.components)) Object.assign(known, entry.components) }
       else warnings.push({ level: 'warning', where: id, message: `Figma did not return node ${id}. It may have been deleted, or the link points to a different file.` })
     }
   } else {
@@ -37,11 +42,11 @@ export function parseFigmaResponse(json: unknown, opts: { fileKey?: string; requ
   const walk = (node: Json, parent: Json | null) => {
     const type = str(node.type)
     if (type === 'COMPONENT_SET') {
-      components.push(buildComponent(node, 'set', warnings, opts.fileKey))
+      components.push(buildComponent(node, 'set', warnings, opts.fileKey, known))
       return // variants are children of the set, do not list them separately
     }
     if (type === 'COMPONENT' && !(parent && str(parent.type) === 'COMPONENT_SET')) {
-      components.push(buildComponent(node, 'single', warnings, opts.fileKey))
+      components.push(buildComponent(node, 'single', warnings, opts.fileKey, known))
     }
     if (Array.isArray(node.children)) for (const c of node.children) if (isObj(c)) walk(c, node)
   }
@@ -53,7 +58,7 @@ export function parseFigmaResponse(json: unknown, opts: { fileKey?: string; requ
       : 'No components were found in this file. Components must be published or defined as component sets.' })
   }
   if (components.length) {
-    warnings.push({ level: 'info', message: 'Figma visual properties such as colors, spacing and corner radius were not mapped. They are not authoring fields. Add AEM fields for anything authors should control.' })
+    warnings.push({ level: 'info', message: 'Colors, spacing and shapes are read for the markup and preview, but they are not authoring fields. Add AEM fields for anything authors should control.' })
   }
 
   return {
@@ -64,7 +69,7 @@ export function parseFigmaResponse(json: unknown, opts: { fileKey?: string; requ
 
 function cleanName(n: string) { return n.replace(/#[\w:]+$/, '').trim() }
 
-function buildComponent(node: Json, kind: 'set' | 'single', warnings: Warning[], fileKey?: string): ComponentDef {
+function buildComponent(node: Json, kind: 'set' | 'single', warnings: Warning[], fileKey?: string, known: Record<string, unknown> = {}): ComponentDef {
   const name = str(node.name) || 'Untitled component'
   const nodeId = str(node.id)
   const origin: Origin = { kind: 'figma-rest', ref: [fileKey, nodeId].filter(Boolean).join(':'), suggested: false }
@@ -91,16 +96,24 @@ function buildComponent(node: Json, kind: 'set' | 'single', warnings: Warning[],
       add({ name: rawName, label, type: 'boolean', required: false, defaultValue: typeof def.defaultValue === 'boolean' ? def.defaultValue : null, allowedValues: [], description: '', group: '' })
     } else if (def.type === 'VARIANT') {
       const opts = (def.variantOptions ?? []).map(String)
+      // Hover, focus, disabled, active ...: the look of a state is CSS, and authors do not choose it.
+      if (isInteractionState({ name: rawName, variantOptions: opts })) {
+        warnings.push({ level: 'info', where: name, message: `"${cleanName(rawName)}" lists interaction states (${opts.slice(0, 4).join(', ')}). They are styled in CSS, so no dialog field was made.` })
+        continue
+      }
       const isBool = opts.length > 0 && opts.every((o) => BOOLEAN_WORDS.has(o.toLowerCase()))
       add({
         name: rawName, label, type: isBool ? 'boolean' : 'enum', required: false,
         defaultValue: isBool ? ['true', 'on', 'yes'].includes(String(def.defaultValue).toLowerCase()) : typeof def.defaultValue === 'string' ? def.defaultValue : null,
         allowedValues: isBool ? [] : opts, description: '', group: '',
       })
+    } else if (def.type === 'INSTANCE_SWAP') {
+      // Same as the DesignMD route: a swapped component (usually an icon) is a text field for its name or path.
+      const which = isObj(known[String(def.defaultValue)]) ? str((known[String(def.defaultValue)] as Json).name) : ''
+      add({ name: rawName, label, type: 'string', required: false, defaultValue: null, allowedValues: [], description: which ? `Swaps the component. Default in the design: ${which}.` : 'Swaps the component.', group: '' })
+      warnings.push({ level: 'info', where: `${name} › ${cleanName(rawName)}`, message: 'An instance swap (usually an icon) became a text field for the icon name or path. Change its type in the inspector if authors should pick an image.' })
     } else {
-      const reason = def.type === 'INSTANCE_SWAP'
-        ? 'Instance swap picks another component. There is no single AEM field for that. Reference an independently authored component, or expose selected properties of the child.'
-        : `Figma property type "${def.type ?? 'unknown'}" has no AEM field mapping.`
+      const reason = `Figma property type "${def.type ?? 'unknown'}" has no AEM field mapping.`
       unsupported.push({ id: newId(), name: cleanName(rawName), rawType: String(def.type ?? ''), rawValue: def.defaultValue, reason, origin: { kind: 'figma-rest', ref: nodeId, suggested: false } })
       warnings.push({ level: 'warning', where: `${name} › ${cleanName(rawName)}`, message: reason })
     }
@@ -118,7 +131,7 @@ function buildComponent(node: Json, kind: 'set' | 'single', warnings: Warning[],
   }
 
   // Text layers of the default variant are candidates for authored copy.
-  const defaultVariant = kind === 'set' ? children[0] : node
+  const defaultVariant = pickDefaultVariant(node, kind) ?? (kind === 'set' ? children[0] : node)
   const hidden: string[] = []
   if (defaultVariant) {
     const visit = (n: Json) => {
@@ -145,6 +158,9 @@ function buildComponent(node: Json, kind: 'set' | 'single', warnings: Warning[],
   if (box && typeof box.width === 'number' && typeof box.height === 'number') meta.size = { width: box.width, height: box.height }
   if (hidden.length) meta.hiddenLayers = hidden
   if (str(node.description)) meta.figmaDescription = str(node.description)
+  // The layers, their layout, colors, positions and shapes: what the markup and the preview are made from.
+  const design = buildDesign(node, kind, { components: known, warn: (message, where) => warnings.push({ level: 'warning', where: where ? `${name} › ${where}` : name, message }) })
+  if (design) meta.design = design
 
   return {
     id: newId(), name, type: classifyComponent(name, properties.map((p) => p.label)), description: str(node.description),

@@ -127,7 +127,7 @@ describe('sanitizer', () => {
   const clean = (s: string) => html(sanitizeHtml(s, doc))
   it('removes scripts, handlers, styles and dangerous elements with their content', () => {
     expect(clean('<p onclick="a()" style="x:y" class="k">ok<script>bad()</script><style>*{}</style><iframe src="//x"></iframe></p>')).toBe('<p class="k">ok</p>')
-    expect(clean('<svg onload="a()"><circle/></svg><object data="x"></object><form action="x"><input></form>')).toBe('')
+    expect(clean('<object data="x"></object><form action="x"><input></form><math><mi>x</mi></math>')).toBe('')
   })
   it('keeps content of unknown tags but not the tags', () => {
     expect(clean('<custom-tag><b>x</b></custom-tag>')).toBe('<b>x</b>')
@@ -148,5 +148,17 @@ describe('sanitizer', () => {
   it('keeps aria and data attributes and limits the type attribute', () => {
     expect(clean('<button type="submit" aria-label="a" data-icon="i" role="x">b</button>')).toBe('<button aria-label="a" data-icon="i" role="x">b</button>')
     expect(clean('<input type="file"><input type="checkbox">')).toBe('<input><input type="checkbox">')
+  })
+
+  it('keeps plain vector drawings and nothing that can act', () => {
+    const svg = '<svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true" focusable="false"><path d="M0 0L10 10Z" fill="currentColor" fill-rule="evenodd"></path></svg>'
+    expect(clean(svg)).toBe(svg)
+    // Handlers, styles, references, scripts and anything outside the drawing tags go.
+    expect(clean('<svg onload="a()" style="x:y"><circle cx="1" cy="1" r="1" onclick="b()" fill="#fff"></circle></svg>')).toBe('<svg><circle cx="1" cy="1" r="1" fill="#fff"></circle></svg>')
+    expect(clean('<svg><script>bad()</script><style>*{}</style><foreignObject><div>x</div></foreignObject><use href="#a"></use><image href="x"></image><animate attributeName="x"></animate></svg>')).toBe('<svg></svg>')
+    expect(clean('<svg><path d="M0 0" fill="url(#g)"></path><path d="javascript:alert(1)"></path><path d="M0 0" stroke="red" transform="rotate(5) translate(1 2)"></path></svg>')).toBe('<svg><path d="M0 0"></path><path></path><path d="M0 0" stroke="red" transform="rotate(5) translate(1 2)"></path></svg>')
+  })
+  it('keeps HTML links outside a drawing', () => {
+    expect(clean('<a href="/p">go</a><svg><a href="/p"><path d="M0 0"></path></a></svg>')).toBe('<a href="/p" rel="noopener noreferrer">go</a><svg></svg>')
   })
 })

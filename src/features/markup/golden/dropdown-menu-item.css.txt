@@ -126,3 +126,8 @@
 .cmp-dropdown-menu-item.is-selected .cmp-dropdown-menu-item__form-control-element-2 {
   display: block;
 }
+
+.cmp-dropdown-menu-item[aria-selected="true"] .cmp-dropdown-menu-item__command-shortcut,
+.cmp-dropdown-menu-item.is-selected .cmp-dropdown-menu-item__command-shortcut {
+  display: none;
+}

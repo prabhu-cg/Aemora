@@ -1,6 +1,7 @@
 import { toKey } from '../components/detect'
 import type { ComponentDef, Property } from '../components/schema'
 import { htmlText, modelNames, modifier, slug } from './naming'
+import type { Layer } from './layers'
 import type { Node, Presence, Structure, Term } from './structure'
 import type { MarkupNote } from './types'
 
@@ -18,9 +19,15 @@ function condExpr(presence: Presence, names: Record<string, string>): string {
 
 interface Ctx { tags: Map<Node, string>; names: Record<string, string>; block: string; props: Property[]; component: ComponentDef; modelFqn: string; notes: MarkupNote[]; rootTag: string; hiddenLabels: Node[] }
 
-function propFor(ctx: Ctx, ref?: string, layerId?: string): Property | undefined {
+function propFor(ctx: Ctx, ref?: string, layerId?: string, layer?: Layer): Property | undefined {
   if (ref) { const k = toKey(ref); const p = ctx.props.find((x) => x.key === k); if (p) return p }
-  return layerId ? ctx.props.find((x) => x.origin.suggested && x.origin.ref === layerId) : undefined
+  // A field made from a text layer remembers the layer, whether or not the suggestion was kept.
+  const byLayer = layerId ? ctx.props.find((x) => x.origin.ref === layerId) : undefined
+  if (byLayer || !layer || layer.type !== 'TEXT') return byLayer
+  // The same text in another look of the component (the pill version of a tab) is another layer with another id:
+  // it is the same field when it has the same name and says the same thing.
+  const said = layer.text?.characters ?? ''
+  return ctx.props.find((x) => x.origin.ref && x.type !== 'boolean' && x.label === layer.name && String(x.defaultValue ?? '') === said)
 }
 
 export function rootTagFor(component: ComponentDef, props: Property[], names: Record<string, string>): { tag: string; attrs: string[] } {
@@ -46,6 +53,11 @@ function describe(n: Node, ctx: Ctx, inline: boolean): { tag: string; attrs: str
 function describeTag(n: Node, ctx: Ctx): { tag: string; attrs: string[] } {
   const l = n.layer
   if (!n.parent) { const r = rootTagFor(ctx.component, ctx.props, ctx.names); ctx.rootTag = r.tag; return r }
+  // A layer with a drawn shape is that drawing, inline, so the CSS can colour it like text.
+  if (l.graphic && l.size) {
+    const w = Math.round(l.size.width * 100) / 100, h = Math.round(l.size.height * 100) / 100
+    return { tag: 'svg', attrs: [`viewBox="0 0 ${w} ${h}"`, `width="${w}"`, `height="${h}"`, 'aria-hidden="true"', 'focusable="false"'] }
+  }
   switch (l.role) {
     case 'heading': return { tag: 'h2', attrs: [] }
     case 'text': case 'label': return { tag: n.children.length ? 'div' : ((l.text?.characters ?? '').length > 80 ? 'p' : 'span'), attrs: [] }
@@ -88,7 +100,7 @@ function render(n: Node, depth: number, ctx: Ctx, modifierClasses: string, inlin
 
   let content: string | null = null
   if (l.type === 'TEXT') {
-    const p = propFor(ctx, l.propertyRefs?.characters, l.id)
+    const p = propFor(ctx, l.propertyRefs?.characters, l.id, n.look ? l : undefined)
     if (p) {
       content = `\${model.${ctx.names[p.key]}${p.type === 'richtext' ? " @ context='html'" : ''}}`
       if (!p.required) conds.push(`model.${ctx.names[p.key]}`)
@@ -101,6 +113,11 @@ function render(n: Node, depth: number, ctx: Ctx, modifierClasses: string, inlin
 
   const test = conds.length ? `data-sly-test="\${${conds.length > 1 ? conds.map((c) => (/\|\||&&/.test(c) ? `(${c})` : c)).join(' && ') : conds[0]}}"` : ''
   const attrs = [`class="${cls}"`, ...(test ? [test] : []), ...d.attrs, ...(!n.parent ? rootExtra(ctx) : [])].join(' ')
+  if (d.tag === 'svg' && l.graphic) {
+    const d2 = (p: { d: string; rule?: string }, extra: string) => `${pad}${INDENT}<path${extra} d="${p.d.replace(/"/g, '')}"${p.rule === 'EVENODD' ? ' fill-rule="evenodd" clip-rule="evenodd"' : ''}${extra ? '' : ' fill="currentColor"'}/>`
+    const paths = [...l.graphic.fills.map((p) => d2(p, '')), ...(l.graphic.strokes ?? []).map((p) => d2(p, ` class="${cls}-stroke"`))]
+    return [`${pad}<svg ${attrs}>`, ...paths, `${pad}</svg>`]
+  }
   if (VOID.has(d.tag)) return [`${pad}<${d.tag} ${attrs}>`]
   if (content !== null && !n.children.length) return [`${pad}<${d.tag} ${attrs}>${content}</${d.tag}>`]
   const childInline = inline || d.tag === 'a' || d.tag === 'button'
@@ -112,7 +129,7 @@ function render(n: Node, depth: number, ctx: Ctx, modifierClasses: string, inlin
 /** An accessible name for the root when a variant hides its visible text. */
 function rootExtra(ctx: Ctx): string[] {
   if (ctx.rootTag !== 'a' && ctx.rootTag !== 'button') return []
-  const label = ctx.hiddenLabels.map((h) => propFor(ctx, h.layer.propertyRefs?.characters, h.layer.id)).find(Boolean)
+  const label = ctx.hiddenLabels.map((h) => propFor(ctx, h.layer.propertyRefs?.characters, h.layer.id, h.look ? h.layer : undefined)).find(Boolean)
   if (!label) return []
   ctx.notes.push({ level: 'info', message: `A variant hides the text of "${label.label}", so the root gets aria-label="\${model.${ctx.names[label.key]}}" to keep an accessible name.` })
   return [`aria-label="\${model.${ctx.names[label.key]}}"`]
