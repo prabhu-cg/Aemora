@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import axe, { type Result } from 'axe-core'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -7,6 +7,7 @@ import { AppRoutes } from './App'
 import { createProject, mutateProject } from './features/projects/repo'
 import { applyImport } from './features/inputs/apply'
 import { parseComponentJson } from './features/inputs/json'
+import { INPUT_TAB_FLAGS } from './features/inputs/ui/InputPanel'
 
 const samples = import.meta.glob('./features/inputs/samples/*.json', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
 
@@ -21,6 +22,8 @@ async function violations(root: Element): Promise<string[]> {
 }
 const clean = async (label: string) => { const v = await violations(document.body); expect(v, `${label}\n${v.join('\n')}`).toEqual([]) }
 
+// The JSON and Clipboard tabs are hidden in the app for now. They are still checked here while the code exists.
+beforeEach(() => { INPUT_TAB_FLAGS.text = true })
 afterEach(() => { document.title = 'Aemora' })
 const at = (path: string) => render(<MemoryRouter initialEntries={[path]}><AppRoutes /></MemoryRouter>)
 const tab = (name: string | RegExp) => userEvent.setup().click(screen.getByRole('tab', { name }))
@@ -80,7 +83,7 @@ describe('accessibility (automated)', () => {
       await userEvent.setup().click(screen.getByRole('button', { name: 'Select Heading' })); await clean('dialog editor')
     })
     it('simulated preview, including after Done with problems', async () => {
-      await open(); await tab('Preview'); await screen.findByRole('region', { name: 'Simulated dialog preview' }); await clean('preview')
+      await open(); await tab('Preview'); await userEvent.setup().click(await screen.findByRole('button', { name: 'Dialog' })); await screen.findByRole('region', { name: 'Simulated dialog preview' }); await clean('preview')
       await userEvent.setup().click(screen.getByRole('button', { name: 'Done' })); await clean('preview with errors')
     })
     it('XML tab, and the export section', async () => {
@@ -94,6 +97,8 @@ describe('accessibility (automated)', () => {
     it.each(['Properties', /AEM fields/, /^Dialog/, 'Preview', 'XML'])('%s', async (name) => {
       at('/app/sample'); await screen.findByRole('list', { name: /Properties of/ })
       if (name !== 'Properties') await tab(name)
+      // The component preview is a sandboxed frame, which axe cannot enter under jsdom. Check the dialog preview here.
+      if (name === 'Preview') await userEvent.setup().click(await screen.findByRole('button', { name: 'Dialog' }))
       await clean(`sample: ${String(name)}`)
     })
   })

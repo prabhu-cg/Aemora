@@ -15,6 +15,9 @@ import { TextImportPanel } from './TextImportPanel'
 /** The companion Figma plugin is not built yet. Flip to true to show the paste/upload tab again. */
 export const SHOW_PLUGIN_TAB = false
 
+/** The JSON and Clipboard tabs are hidden for now. Their code stays. Set `text` to true to show them again. */
+export const INPUT_TAB_FLAGS = { text: false }
+
 const ALL_TABS = [
   { id: 'json', label: 'JSON' },
   { id: 'clipboard', label: 'Clipboard' },
@@ -24,10 +27,11 @@ const ALL_TABS = [
   { id: 'screenshot', label: 'Screenshot' },
 ] as const
 type TabId = (typeof ALL_TABS)[number]['id']
-const TABS = ALL_TABS.filter((t) => SHOW_PLUGIN_TAB || t.id !== 'plugin')
+const visibleTabs = () => ALL_TABS.filter((t) => (SHOW_PLUGIN_TAB || t.id !== 'plugin') && (INPUT_TAB_FLAGS.text || (t.id !== 'json' && t.id !== 'clipboard')))
 
 export function InputPanel({ onAdd, busy }: { onAdd: (r: ImportResult) => Promise<void>; busy: boolean }) {
-  const [tab, setTab] = useState<TabId>('json')
+  const TABS = visibleTabs()
+  const [tab, setTab] = useState<TabId>(TABS[0].id)
   const [result, setResult] = useState<ImportResult | null>(null)
   const onResult = useCallback((r: ImportResult) => setResult(r), [])
   const [incoming, setIncoming] = useState<{ file: File; n: number } | null>(null)

@@ -5,10 +5,11 @@ import { MemoryRouter } from 'react-router-dom'
 import { AppRoutes } from '../../../App'
 import { db } from '../../projects/db'
 import { createProject } from '../../projects/repo'
+import { INPUT_TAB_FLAGS } from './InputPanel'
 
 const PNG = Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='), (c) => c.charCodeAt(0))
 
-beforeEach(async () => { await Promise.all([db.projects.clear(), db.previous.clear(), db.quarantine.clear()]) })
+beforeEach(async () => { INPUT_TAB_FLAGS.text = true; await Promise.all([db.projects.clear(), db.previous.clear(), db.quarantine.clear()]) })
 async function open() {
   const p = await createProject({ name: 'Teaser' })
   render(<MemoryRouter initialEntries={[`/app/generator/${p.id}`]}><AppRoutes /></MemoryRouter>)
@@ -194,7 +195,16 @@ describe('screenshots from the clipboard', () => {
 })
 
 describe('input methods', () => {
-  it('hides the old Figma plugin tab for now and shows the DesignMD tab with the others', async () => {
+  it('hides the JSON, Clipboard and old Figma plugin tabs for now, and opens on DesignMD', async () => {
+    INPUT_TAB_FLAGS.text = false
+    await open()
+    const names = within(screen.getByRole('tablist', { name: 'Input method' })).getAllByRole('tab').map((t) => t.textContent)
+    expect(names).toEqual(['DesignMD', 'Figma API', 'Screenshot'])
+    expect(screen.getByRole('tab', { name: 'DesignMD' }).getAttribute('aria-selected')).toBe('true')
+  })
+
+  it('shows JSON and Clipboard again when they are switched on', async () => {
+    INPUT_TAB_FLAGS.text = true
     await open()
     const names = within(screen.getByRole('tablist', { name: 'Input method' })).getAllByRole('tab').map((t) => t.textContent)
     expect(names).toEqual(['JSON', 'Clipboard', 'DesignMD', 'Figma API', 'Screenshot'])
