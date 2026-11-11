@@ -1,70 +1,132 @@
-# Making generated components match Figma exactly
+# Spec for the DesignMD plugin: what Aemora needs to match Figma exactly
 
-Status: proposal. Part 1 is about what DesignMD must export. Part 2 is what Aemora does with it.
+Status: requirements for the DesignMD plugin (`Figma-plugins/DesignMD`), written from Aemora's side. Everything here is additive within `designmd.components/v1`. This replaces the earlier proposal in this file.
 
-## Where things stand
-Measured in Chrome on the 500-component Rayna export, comparing the size of every layer with the size Figma recorded: **97.5% of layers match, 462 of 495 components match on every layer.** Layer presence, layout, spacing, fills, text styles, per-variant looks and interaction states are reproduced from the export.
+## Why this exists
+Aemora turns a component's layers into HTL and CSS. The result has to look and behave like the Figma component, in every variant. Aemora can only be as exact as the export. These are the ways the export falls short today, found by checking the Rayna UI file (495 components, 2,581 variants) with Aemora's fidelity check (Preview tab, "Check against the design").
 
-What is still wrong cannot be fixed in Aemora, because the export does not contain it:
+Measured with plugin 1.2.1 and the current Aemora:
 
-| Missing from the export | Effect | Share of the Rayna export |
-|---|---|---|
-| Shapes of vectors, icons, logos, illustrations | Shown as grey boxes | 930 of 3,667 layers (25%) |
-| Position (x, y) of children in frames without auto layout, and of "absolute" children | Children are stacked instead of placed | 54 of 500 components |
-| Pictures (image fills) | Shown as a box | every component with a photo, avatar or thumbnail |
-| Gradients (stops, angle), per-side strokes, dashes, blend modes, rotation, clipping | Drawn as a flat fill, a full border, or not at all | smaller, but visible where used |
-| Text details: auto-resize, truncation, line limits, italic | Wrong wrapping or length | smaller |
-| A picture of what Figma actually draws | No way to check the result against the design | all |
+| Compared | Held |
+|---|---|
+| Size of each layer | 98.7% |
+| Colour of each layer | 98.8% |
+| Order of items in each row or column | 96.6% |
+| Layer is drawn when the design shows it | 97.8% |
+| Components where every comparison holds | 440 of 495 |
 
-"Exactly" cannot mean identical pixels in every browser: text anti-aliasing and sub-pixel rounding differ. The target is **indistinguishable at 100%, with a measured difference score** that proves it.
+These numbers say less than they look like. The check compares what the export says with what Aemora draws. It cannot find what the export does not say. The requirements below are those gaps.
 
-## Part 1: what DesignMD should export (all optional, additive within `designmd.components/v1`)
+## What the export already gives (do not change)
+Layer tree per default variant, `variantDiffs` per other variant, `size`, `layout` (including `reverseZIndex`), `placement` (`sizingH`, `sizingV`, `grow`, `align`, `positioning`), `position` for layers placed by coordinates, `rotation`, `clipsContent`, `vector` shapes, fills and strokes with tokens, `text` (including `autoResize`, `alignVertical`), `instanceOf` with `properties`, `propertyRefs`, `sizeLimits`, `cornerSmoothing`, `constraints`. Aemora reads all of these except where the table at the end says otherwise.
 
-### On every layer
-| Field | From the Figma API | Used for |
-|---|---|---|
-| `position: { x, y }` | `node.x`, `node.y` (relative to the parent) | placing children of free-form frames and groups |
-| `layoutPositioning: "AUTO" \| "ABSOLUTE"` | `node.layoutPositioning` | children that ignore the auto layout of their parent |
-| `constraints: { horizontal, vertical }` | `node.constraints` | how a placed child follows its parent |
-| `rotation` | `node.rotation` | rotated layers |
-| `clipsContent` | `node.clipsContent` | `overflow: hidden` |
-| `blendMode` | `node.blendMode` | `mix-blend-mode` |
-| `minWidth`, `maxWidth`, `minHeight`, `maxHeight` | same names | limits on hugging and filling layers |
-| `layoutGrow`, `layoutAlign` | same names | exact fill and stretch behavior |
+## Requirements
+Priority 1 is what is needed to verify and to stop guessing. Priority 2 improves the result. Priority 3 is optional.
 
-### Paints and strokes
-- Gradients: `{ type, stops: [{ position, hex, alpha }], angle }` (or the transform matrix).
-- Images: `{ type: "IMAGE", imageHash, scaleMode, rotation }`, with the pixels in a top-level `assets` map (below).
-- Strokes: `sides: { top, right, bottom, left }` weights, `dash: number[]`, `cap`, `join`.
+### 1. (Priority 1) The box of every layer, in every variant
+The one change that lets Aemora prove a variant is right, with numbers.
 
-### The shape of anything drawn: `graphic`
-For `VECTOR`, `BOOLEAN_OPERATION`, `STAR`, `POLYGON`, `LINE`, and for icon or logo instances: `graphic: { svg: "<svg …>" }` from `node.exportAsync({ format: "SVG_STRING" })`. This is the single biggest step: it turns 25% of layers from grey boxes into the real artwork. Rules: one SVG per layer, `<svg>` only (no scripts, no external references), a size cap per layer with a warning above it, and a switch in the export step ("Include icon and vector shapes").
+On every layer of the default tree and in every `variantDiffs[].layers[].changes` where it differs from the default:
+```json
+"box": { "x": 12, "y": 8, "width": 37, "height": 20 }
+```
+- `x`, `y`: position of the layer's own layout box relative to the root of **that variant**, in px. From the layer's absolute transform minus the root's. For a rotated layer this is where its unrotated box sits (the same origin `rotation` turns about).
+- `width`, `height`: the layer's own width and height (the same as `size`; repeated so a box is one value).
+- Hidden layers (`visible: false`) are included, so a consumer can tell "hidden" from "missing".
+- A variant's change set includes `box` for every layer whose box differs from the default. Layers whose box is the same are left out, as with every other attribute.
 
-### Pictures: `assets`
-Top-level `assets: { "<hash>": { mime, width, height, data } }` for image fills, PNG or JPEG as base64, behind a switch ("Include images", off by default because of size) with a size cap and a `ASSET_TOO_LARGE` warning.
+Why: the bugs found so far (a pointer on the wrong side, an icon in the wrong place, a layer pushed out by an overlap, items in the wrong order) are all about where things are. Sizes alone did not show them.
 
-### Text
-`autoResize` (`NONE`, `WIDTH_AND_HEIGHT`, `HEIGHT`, `TRUNCATE`), `maxLines`, `paragraphSpacing`, `paragraphIndent`, `fontStyle` (italic), `fontPostScriptName`.
+Cost: numbers read from nodes the plugin already visits. No image export, no extra Figma calls.
 
-### Fonts: `metadata.fonts`
-`[{ family, style, weight, postScriptName }]` for every font the components use, so a tool knows what to load.
+### 2. (Priority 1) Say where a variant puts the layers it adds
+`variantDiffs[].added[]` must carry `index`: the position of the layer among its siblings **in that variant**. It is optional in the schema today and is not written. Without it Aemora guesses (it puts the new layer where a removed sibling was), which is right for the banner Alert and wrong whenever a layer is added without one going.
 
-### A reference picture of what Figma draws: `reference`
-Per component, per variant: a PNG at 2x from `node.exportAsync({ format: "PNG", constraint: { type: "SCALE", value: 2 } })`, stored next to the JSON (`components/<name>.reference/<variant>.png`) and listed in the index with its hash. Switch: "Include reference pictures". This is what makes "exact" provable instead of claimed.
+### 3. (Priority 1) Say when a variant reorders layers
+A variant can put the same layers in a different order. The tooltip's pointer is first in the default and last when the pointer is on the right or bottom. A diff holds attribute changes by name path, so this is not in the export at all, and Aemora can only guess from option names.
 
-## Part 2: what Aemora does with it
-1. **Place layers by their coordinates** when the parent has no auto layout or the child is absolute (`position: absolute` with `left/top`, constraints respected), plus rotation, clipping, blend mode and min/max sizes.
-2. **Draw the real artwork**: inline SVG in the generated HTL and in the preview (sanitized to a small allowed set of SVG elements and attributes), colored through `currentColor` where the design uses one fill so the CSS can recolor it by state.
-3. **Gradients, per-side and dashed strokes, images** in the CSS. Images become placeholders by default in the HTL (authors choose pictures in AEM) and the real picture in the preview.
-4. **Load the design's fonts** where Aemora can (Inter is already bundled), and say which fonts fall back.
-5. **Show Figma next to the result, with a difference score.** The preview shows the reference picture beside the generated one, and a difference overlay with a number (share of pixels that differ). The measuring tool used for this report runs in CI the same way, so a fidelity regression fails the build.
+Add to a variant diff, for each parent whose children are in a different order from the default:
+```json
+"reordered": [ { "parentPath": "Tool tip", "order": ["Tool tip/Container", "Tool tip/pointer"] } ]
+```
+`order` lists the paths of **all** children of that parent, first to last, as drawn in the variant (hidden layers included).
 
-## What this will not do
-- Match text rendering and sub-pixel rounding to the pixel. Browsers and Figma differ.
-- Reproduce every effect (some blend modes, stacked effects, vector networks) beyond a close approximation. Those are listed in the notes, not hidden.
-- Replace the author's own pictures in AEM. Images stay placeholders in the generated markup.
+### 4. (Priority 1) Identify layers across variants without relying on names
+Layers are matched across variants by name path (`Media Icons/Country/Vector[2]`). When two variants have different numbers of layers with the same name, the index points at different layers, and the diff changes the wrong one. This is where most of the 55 failing Rayna components fail: flags and icons made of several layers named `Vector`.
 
-## Suggested order
-1. `graphic.svg` and `position`/`layoutPositioning`/`rotation`/`clipsContent` (closes most of the visible gap).
-2. `reference` pictures plus the difference score in Aemora (proves it, and finds what is left).
-3. Gradients, side strokes, text details, images, fonts.
+- Each entry in `layers[]` gets `layerId`: the id of the layer it changes **in the default variant**. The plugin knows this at the moment it builds the diff.
+- Where same-named siblings differ in number between a variant and the default, so a match is a guess, emit the warning `AMBIGUOUS_SIBLINGS` (component id, variant id, parent path) instead of silently choosing.
+- A layer that exists only in a variant is in `added` (no `layerId`), as today.
+
+### 5. (Priority 2) Gradients with their stops
+A gradient paint is only `{ "type": "GRADIENT_LINEAR", "description": ... }` today, so Aemora draws it flat. Write:
+```json
+{ "type": "GRADIENT_LINEAR", "visible": true, "opacity": 1,
+  "stops": [ { "position": 0, "hex": "#ffffff", "alpha": 1 }, { "position": 1, "hex": "#eb5017", "alpha": 0.2 } ],
+  "angle": 135 }
+```
+- Linear: `angle` is the CSS angle in degrees (0 is up, clockwise), worked out from the paint's `gradientTransform`.
+- Radial: `center: { x, y }` and `radii: { x, y }` as fractions of the layer's box.
+- `stops[].position` is 0 to 1 along the gradient line. Angular and diamond gradients: keep `type` and say so in a warning.
+
+(Aemora's `layers.ts` already has this shape in `Gradient`, so no mapping is needed on the Aemora side.)
+
+### 6. (Priority 2) Text details that change wrapping
+Already there: `autoResize`, `alignVertical`, `paragraphSpacing`. Add:
+- `maxLines` (number or null) and `truncation` (`"ENDING"` or `"NONE"`), for text that is cut with an ellipsis.
+- `leadingTrim` (`"CAP_HEIGHT"` or `"NONE"`), because it changes the height of a text box.
+
+### 7. (Priority 2) The fonts the design uses
+`metadata.fonts`: `[ { "family": "Inter", "style": "Semi Bold", "weight": 600, "italic": false, "postScriptName": "Inter-SemiBold" } ]` for every font used in the exported components, so a tool knows what to load and what falls back.
+
+### 8. (Priority 3) Pictures
+`includeImages` exists. When it is on, write `assets: { "<imageHash>": { mime, width, height, data } }` (base64), with a size cap per picture and the warning `ASSET_TOO_LARGE`. Aemora will read this when it is present. It stays off by default because of size.
+
+### 9. (Priority 3) Spacing and size tokens
+Where a variable is bound to a gap, a padding side, a radius or a width, write its reference next to the number, the way fills already do:
+```json
+"layout": { "gap": 8, "padding": {...}, "token": { "gap": { "variableId": "VariableID:1:2", "cssName": "--space-2" } } }
+```
+Aemora would then write `gap: var(--space-2)` instead of `8px`, so a theme can change spacing. This does not change how a component looks. Rayna defines no spacing variables, so it would not show there, but other design systems do.
+
+## What the plugin should not do
+- **No reference pictures (PNG per variant).** Rayna has 2,581 variants. Exporting each is minutes of work and hundreds of MB, and a pixel difference is noisy because browsers do not render text like Figma. The boxes in requirement 1 find the same layout bugs, in numbers.
+- Aemora can fetch a picture of a **single variant** itself when someone wants to look: it already has the file key and token, and every variant's node id is in the export. That is an on-demand check in Aemora, not a plugin feature.
+
+## Limits
+- Added `box`, `index`, `layerId`, `reordered`, gradients, text details and `metadata.fonts` together should stay under a 30% increase in `components.json` size for the Rayna file, and under a 15% increase in export time. Report the real numbers in the plugin README.
+- Interaction states (hover, focus, disabled) are described like any other variant, with their `box` too.
+- Whole-file exports keep the rules in `designmd-components-v1.md`: per-component isolation, progress, cancel, split above 20 MB.
+
+## Acceptance
+For each of these Rayna components, an export with the changes above, read by Aemora, must give **zero** differences in the fidelity check, in every variant: Tab, Tool tip, Alert, Calendar, Avatars, Media Icons/Country, Misc icon, Pagination, Empty State.
+
+Aemora's check, once `box` is in the export, compares for every layer in every variant:
+- `x`, `y`, `width` and `height` of the rendered layer against `box`, within 1.5 px, relative to the root;
+- the order of siblings against the variant's children (with `reordered` applied);
+- the colour of the top solid fill;
+- that a layer the design shows is drawn.
+
+Plugin tests (in its repo):
+- a golden export for a component set with a reordering variant (the tooltip), an added layer, and two same-named siblings that differ in count;
+- every `box` equals the node's `absoluteTransform` relative to the root, for default and variants;
+- `reordered` is present only where the order differs;
+- the export validates against the published JSON schema, which gains these fields;
+- a whole-file run on Rayna, with the size and time increase recorded.
+
+## What Aemora does on its side
+| Plugin gives | Aemora does |
+|---|---|
+| `box` | Compares position and size of every layer in every variant in the fidelity check, and shows differences by layer and variant. |
+| `added[].index`, `reordered` | Uses them, and drops its name-based guesses. A guess is kept only when the export has nothing, and is said in the import report. |
+| `layerId` | Matches layers across variants by id instead of by name path. Without it, it keeps name paths and says which components are ambiguous. |
+| Gradient `stops` | Draws gradients in the CSS. |
+| `maxLines`, `truncation`, `leadingTrim` | Writes the matching CSS. |
+| `metadata.fonts` | Loads the fonts it can and lists the ones that fall back. |
+| `assets` | Shows pictures in the preview, keeps placeholders in the generated HTL (authors choose pictures in AEM). |
+| Token references on spacing | Writes `var(...)` with the literal value as the fallback. |
+| Anything unknown | Lists it in the import report as a field it does not read, so a plugin change cannot be silently ignored. |
+
+## Aemora features already done that this builds on
+- Fidelity check in the Preview tab (`src/features/fidelity`), and the import report of what is not applied (`src/features/inputs/designmd/coverage.ts`).
+- Adapter that renames `vector`, `placement`, `rotation` and infers positions, added-layer places and per-option drawings (`src/features/inputs/designmd/vectors.ts`).

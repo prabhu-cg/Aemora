@@ -42,7 +42,8 @@ The layer tree, layout, styles, variant differences and the tokens a component u
 By default DesignMD does not read what is inside a nested component (an avatar in a card, a button in a banner). The layer arrives as an empty `INSTANCE` with `instanceOf`. When the file that holds the card also holds that component, Aemora fills the empty layer in at import, from the referenced variant, and the import review says which ones.
 
 - This is the library version. Anything changed in that use of the component, such as a different label, is not applied. For exact contents, export from DesignMD with **Include layers inside nested instances** on. Layers that already carry their insides are never touched.
-- Icons are not filled in. The export holds a vector's size and colour but not its path, so there is nothing to draw. They stay as labelled boxes until DesignMD can export the shapes.
+- Icons are drawn when the export has their shapes (DesignMD 1.2 with **Include vector shapes** on: `vector.fill` and `vector.stroke` path data). Aemora reads them as inline SVG in the markup and the preview. An export without shapes leaves icons as labelled boxes.
+- The export has no x and y for layers. In a frame without auto layout, a lone layer (an icon in its badge) is centred and a layer as big as its frame sits at 0, 0. Other free-form layouts stay stacked until DesignMD exports positions.
 - Filling is limited to 3 levels deep and 400 extra layers per component, and never follows a component into itself.
 
 ## The Figma API route reads layers too
