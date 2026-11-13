@@ -35,7 +35,7 @@ export function DesignPreview({ component, assets, readOnly = false, onRemove }:
         </figure>
         {marked.length > 0 && <ol className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-ink">{marked.map((p, i) => <li key={p.id}><span className="tabular font-bold text-accent-text">{i + 1}</span> {p.label}</li>)}</ol>}
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          {open && <a href={open} target="_blank" rel="noopener noreferrer" className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-hairline-strong bg-surface px-3 text-[13px] font-bold text-ink-strong hover:bg-sand">Open in Figma<ExternalLink size={13} aria-hidden="true" /><span className="sr-only"> (opens in a new tab)</span></a>}
+          {open && <a href={open} target="_blank" rel="noopener noreferrer" className="inline-flex h-8 items-center gap-1.5 rounded-full border border-hairline-strong bg-surface px-3 text-[13px] font-bold text-ink-strong hover:bg-sand">Open in Figma<ExternalLink size={13} aria-hidden="true" /><span className="sr-only"> (opens in a new tab)</span></a>}
           {!readOnly && onRemove && <Button size="sm" variant="ghost" onClick={onRemove}><ImageOff size={14} aria-hidden="true" />Remove preview</Button>}
         </div>
       </div>

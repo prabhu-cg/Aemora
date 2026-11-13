@@ -47,7 +47,7 @@ export function SidePanel({ open, title, onClose, children }: { open: boolean; t
     >
       <div className="flex shrink-0 items-start justify-between gap-3 border-b border-hairline px-5 py-4">
         <h2 className="text-base">{title}</h2>
-        <button type="button" onClick={onClose} aria-label="Close panel" className="rounded-lg p-1.5 text-ink hover:bg-sand cursor-pointer">
+        <button type="button" onClick={onClose} aria-label="Close panel" className="rounded-full p-1.5 text-ink hover:bg-sand cursor-pointer">
           <X size={18} aria-hidden="true" />
         </button>
       </div>

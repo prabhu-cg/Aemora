@@ -59,7 +59,7 @@ export function Drawer({ open, title, onClose, children, side = 'right', size = 
       >
         <div className="flex items-start justify-between">
           <h2 className="text-lg">{title}</h2>
-          <button type="button" onClick={onClose} aria-label="Close" className="rounded-lg p-1.5 text-ink hover:bg-sand cursor-pointer">
+          <button type="button" onClick={onClose} aria-label="Close" className="rounded-full p-1.5 text-ink hover:bg-sand cursor-pointer">
             <X size={18} aria-hidden="true" />
           </button>
         </div>

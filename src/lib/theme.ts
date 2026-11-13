@@ -1,35 +1,25 @@
 import { useCallback, useEffect, useState } from 'react'
 
-export type ThemePref = 'system' | 'light' | 'dark'
+export type ThemePref = 'light' | 'dark'
 const KEY = 'aemora.theme'
 
+/** Light is the default. An older stored "system" choice is carried over once, as whatever the device prefers. */
 export function readPref(): ThemePref {
   try {
     const v = localStorage.getItem(KEY)
-    if (v === 'light' || v === 'dark' || v === 'system') return v
+    if (v === 'light' || v === 'dark') return v
+    if (v === 'system' && typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches) return 'dark'
   } catch { /* storage unavailable */ }
-  return 'system'
-}
-
-export function resolveTheme(pref: ThemePref, prefersDark: boolean): 'light' | 'dark' {
-  return pref === 'system' ? (prefersDark ? 'dark' : 'light') : pref
+  return 'light'
 }
 
 export function applyTheme(pref: ThemePref) {
-  const prefersDark = typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches
-  document.documentElement.classList.toggle('dark', resolveTheme(pref, prefersDark) === 'dark')
+  document.documentElement.classList.toggle('dark', pref === 'dark')
 }
 
 export function useTheme() {
   const [pref, setPrefState] = useState<ThemePref>(readPref)
   useEffect(() => { applyTheme(pref) }, [pref])
-  useEffect(() => {
-    if (pref !== 'system' || typeof matchMedia !== 'function') return
-    const mq = matchMedia('(prefers-color-scheme: dark)')
-    const on = () => applyTheme('system')
-    mq.addEventListener('change', on)
-    return () => mq.removeEventListener('change', on)
-  }, [pref])
   const setPref = useCallback((p: ThemePref) => {
     try { localStorage.setItem(KEY, p) } catch { /* ignore */ }
     setPrefState(p)

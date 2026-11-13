@@ -3,7 +3,6 @@ import { useTheme, type ThemePref } from '../../lib/theme'
 import { BackupSection } from '../../features/backup/ui/BackupSection'
 
 const options: { value: ThemePref; label: string }[] = [
-  { value: 'system', label: 'System' },
   { value: 'light', label: 'Light' },
   { value: 'dark', label: 'Dark' },
 ]
@@ -18,7 +17,7 @@ export function SettingsPage() {
           {options.map((o) => (
             <label
               key={o.value}
-              className={`flex h-9 cursor-pointer items-center rounded-lg border px-4 font-semibold has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent-text ${
+              className={`flex h-9 cursor-pointer items-center rounded-full border px-4 font-semibold has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent-text ${
                 pref === o.value ? 'border-accent bg-accent-tint text-accent-text' : 'border-hairline-strong text-ink hover:bg-sand'
               }`}
             >

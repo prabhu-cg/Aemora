@@ -26,8 +26,8 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, { error: E
           </p>
         </div>
         <div className="mt-6 flex flex-wrap gap-3">
-          <button type="button" onClick={() => location.reload()} className="inline-flex h-10 cursor-pointer items-center rounded-lg bg-accent px-4 text-sm font-bold text-on-accent hover:bg-accent-hover">Reload the page</button>
-          <a href="#/app" onClick={() => setTimeout(() => location.reload(), 0)} className="inline-flex h-10 items-center rounded-lg border border-hairline-strong bg-surface px-4 text-sm font-bold text-ink-strong hover:bg-sand">Go to your projects</a>
+          <button type="button" onClick={() => location.reload()} className="inline-flex h-10 cursor-pointer items-center rounded-full bg-accent px-4 text-sm font-bold text-on-accent hover:bg-accent-hover">Reload the page</button>
+          <a href="#/app" onClick={() => setTimeout(() => location.reload(), 0)} className="inline-flex h-10 items-center rounded-full border border-hairline-strong bg-surface px-4 text-sm font-bold text-ink-strong hover:bg-sand">Go to your projects</a>
         </div>
         <details className="mt-8 text-[13px] text-ink-muted">
           <summary className="cursor-pointer font-bold text-ink-strong">What happened</summary>

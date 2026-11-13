@@ -83,7 +83,7 @@ export function ProjectsPage() {
           <h2 className="flex items-center gap-2 text-base"><Lock size={15} aria-hidden="true" />Sample: component library <span className="rounded-full border border-hairline-strong px-2 py-0.5 text-[11px] font-bold text-ink-muted">Read-only</span></h2>
           <p className="mt-0.5 max-w-[62ch] text-[13px] text-ink-muted">Seven components (Button, Card, Image, Text, Container, Accordion, Tabs) already mapped, laid out and turned into XML. A quick way to see what a finished project looks like.</p>
         </div>
-        <Link to="/app/sample" className="inline-flex h-10 items-center rounded-lg border border-hairline-strong bg-surface px-4 text-sm font-bold text-ink-strong hover:bg-bg">Open the sample</Link>
+        <Link to="/app/sample" className="inline-flex h-10 items-center rounded-full border border-hairline-strong bg-surface px-4 text-sm font-bold text-ink-strong hover:bg-bg">Open the sample</Link>
       </section>
 
       {projects === undefined ? (

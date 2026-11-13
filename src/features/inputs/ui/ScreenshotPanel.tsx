@@ -151,7 +151,7 @@ export function ScreenshotPanel({ onResult, incoming }: { onResult: (r: ImportRe
                     </label>
                   ))}
                   <span className="text-ink-muted">%</span>
-                  <button type="button" aria-label={`Remove region ${i + 1}`} className="ml-auto rounded-lg p-1.5 text-ink-muted hover:bg-sand cursor-pointer" onClick={() => removeRegion(r.id)}><Trash2 size={15} aria-hidden="true" /></button>
+                  <button type="button" aria-label={`Remove region ${i + 1}`} className="ml-auto rounded-full p-1.5 text-ink-muted hover:bg-sand cursor-pointer" onClick={() => removeRegion(r.id)}><Trash2 size={15} aria-hidden="true" /></button>
                 </li>
               ))}
             </ul>
@@ -187,7 +187,7 @@ export function ScreenshotPanel({ onResult, incoming }: { onResult: (r: ImportRe
                   <select aria-label={`Property ${i + 1} type`} value={p.type} onChange={(e) => setProp(p.id, { type: e.target.value as typeof p.type })} className={sel}>
                     {PROPERTY_TYPES.map((t) => <option key={t}>{t}</option>)}
                   </select>
-                  <button type="button" aria-label={`Remove property ${i + 1}`} className="rounded-lg p-1.5 text-ink-muted hover:bg-sand cursor-pointer" onClick={() => setDraft({ ...draft, properties: draft.properties.filter((x) => x.id !== p.id) })}><Trash2 size={15} aria-hidden="true" /></button>
+                  <button type="button" aria-label={`Remove property ${i + 1}`} className="rounded-full p-1.5 text-ink-muted hover:bg-sand cursor-pointer" onClick={() => setDraft({ ...draft, properties: draft.properties.filter((x) => x.id !== p.id) })}><Trash2 size={15} aria-hidden="true" /></button>
                 </div>
                 <div className="mt-2 flex flex-wrap items-center gap-2 text-[13px]">
                   <label className="flex items-center gap-1.5"><input type="checkbox" checked={p.required} onChange={(e) => setProp(p.id, { required: e.target.checked })} />Required</label>

@@ -171,7 +171,7 @@ export function ComponentWorkspace({ project, readOnly = false, focus }: { proje
                   <button
                     type="button" aria-label={`Delete component ${c.name}`} title="Delete component"
                     onClick={() => { setSelectedId(c.id); setPropId(''); setUndo(null); setConfirmDelete(true) }}
-                    className="absolute right-1 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-md text-ink-muted opacity-0 hover:bg-danger-soft hover:text-danger focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-100"
+                    className="absolute right-1 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-ink-muted opacity-0 hover:bg-danger-soft hover:text-danger focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-100"
                   >
                     <Trash2 size={15} aria-hidden="true" />
                   </button>
@@ -181,7 +181,7 @@ export function ComponentWorkspace({ project, readOnly = false, focus }: { proje
           })}
         </ul>
         {!readOnly && components.length > 1 && (
-          <button type="button" onClick={() => setConfirmDeleteAll(true)} className="mt-3 inline-flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-semibold text-ink-muted hover:bg-danger-soft hover:text-danger">
+          <button type="button" onClick={() => setConfirmDeleteAll(true)} className="mt-3 inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-semibold text-ink-muted hover:bg-danger-soft hover:text-danger">
             <Trash2 size={14} aria-hidden="true" />Delete all components
           </button>
         )}
@@ -291,7 +291,7 @@ export function ComponentWorkspace({ project, readOnly = false, focus }: { proje
             <div role="group" aria-label="Preview type" className="mb-4 inline-flex rounded-lg border border-hairline-strong p-0.5">
               {([['component', 'Component'], ['dialog', 'Dialog']] as const).map(([id, label]) => (
                 <button key={id} type="button" aria-pressed={previewMode === id} onClick={() => setPreviewMode(id)}
-                  className={`h-8 cursor-pointer rounded-md px-3 text-[13px] font-bold ${previewMode === id ? 'bg-ink-strong/10 text-ink-strong' : 'text-ink-muted hover:text-ink-strong'}`}>{label}</button>
+                  className={`h-8 cursor-pointer rounded-full px-3 text-[13px] font-bold ${previewMode === id ? 'bg-ink-strong/10 text-ink-strong' : 'text-ink-muted hover:text-ink-strong'}`}>{label}</button>
               ))}
             </div>
             {previewMode === 'component'

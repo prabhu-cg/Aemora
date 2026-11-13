@@ -14,7 +14,7 @@ interface Props {
   readOnly?: boolean
 }
 
-const iconBtn = 'inline-flex h-7 w-7 items-center justify-center rounded-md text-ink-muted hover:bg-sand hover:text-ink-strong disabled:opacity-30 disabled:pointer-events-none cursor-pointer'
+const iconBtn = 'inline-flex h-7 w-7 items-center justify-center rounded-full text-ink-muted hover:bg-sand hover:text-ink-strong disabled:opacity-30 disabled:pointer-events-none cursor-pointer'
 
 export function PropertyList({ component, issues, selectedId, onSelect, onMove, readOnly = false }: Props) {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }))

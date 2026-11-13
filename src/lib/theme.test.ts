@@ -1,20 +1,24 @@
-import { describe, expect, it } from 'vitest'
-import { applyTheme, readPref, resolveTheme } from './theme'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { applyTheme, readPref } from './theme'
 
 describe('theme', () => {
-  it('resolves system preference', () => {
-    expect(resolveTheme('system', true)).toBe('dark')
-    expect(resolveTheme('system', false)).toBe('light')
-    expect(resolveTheme('light', true)).toBe('light')
-  })
-  it('defaults to system and reads stored value', () => {
-    expect(readPref()).toBe('system')
+  afterEach(() => { localStorage.clear(); vi.unstubAllGlobals() })
+
+  it('defaults to light and reads a stored value', () => {
+    expect(readPref()).toBe('light')
     localStorage.setItem('aemora.theme', 'dark')
     expect(readPref()).toBe('dark')
   })
   it('ignores garbage values', () => {
     localStorage.setItem('aemora.theme', 'neon')
-    expect(readPref()).toBe('system')
+    expect(readPref()).toBe('light')
+  })
+  it('carries an older "system" choice over once, as the device preference', () => {
+    localStorage.setItem('aemora.theme', 'system')
+    vi.stubGlobal('matchMedia', () => ({ matches: true }))
+    expect(readPref()).toBe('dark')
+    vi.stubGlobal('matchMedia', () => ({ matches: false }))
+    expect(readPref()).toBe('light')
   })
   it('applies the dark class', () => {
     applyTheme('dark')

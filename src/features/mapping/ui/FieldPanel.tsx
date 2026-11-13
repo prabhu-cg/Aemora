@@ -185,7 +185,7 @@ export function FieldForm({ property, field, issues, groups, actions, inline = f
                     <div className="flex gap-2">
                       <input aria-label={`Item field ${i + 1} name`} className={`${input} h-8 font-mono text-[12px]`} defaultValue={sf.key} spellCheck={false} onChange={(e) => actions.patchSubfield(sf.id, { key: e.target.value })} />
                       <input aria-label={`Item field ${i + 1} label`} className={`${input} h-8 text-[13px]`} defaultValue={sf.label} onChange={(e) => actions.patchSubfield(sf.id, { label: e.target.value })} />
-                      <button type="button" aria-label={`Remove item field ${i + 1}`} className="rounded-lg p-1.5 text-ink-muted hover:bg-hairline/60 cursor-pointer" onClick={() => actions.removeSubfield(sf.id)}><Trash2 size={15} aria-hidden="true" /></button>
+                      <button type="button" aria-label={`Remove item field ${i + 1}`} className="rounded-full p-1.5 text-ink-muted hover:bg-hairline/60 cursor-pointer" onClick={() => actions.removeSubfield(sf.id)}><Trash2 size={15} aria-hidden="true" /></button>
                     </div>
                     <select aria-label={`Item field ${i + 1} type`} className={`${input} mt-2 h-8 text-[13px]`} value={sf.fieldType} onChange={(e) => actions.patchSubfield(sf.id, { fieldType: e.target.value as Subfield['fieldType'] })}>
                       {(['textfield', 'textarea', 'numberfield', 'checkbox', 'pathfield', 'select', 'hidden'] as const).map((t) => <option key={t} value={t}>{FIELD_TYPES[t].label}</option>)}

@@ -11,8 +11,6 @@ const indexCss = read('../index.css')
 const hex = (h: string) => { const n = h.replace('#', ''); return [0, 2, 4].map((i) => parseInt(n.slice(i, i + 2), 16)) as [number, number, number] }
 const lum = ([r, g, b]: [number, number, number]) => { const f = (c: number) => { const s = c / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4 }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b) }
 const ratio = (a: string, b: string) => { const [x, y] = [lum(hex(a)), lum(hex(b))]; return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05) }
-/** A foreground at a given opacity over a background, as the eye sees it. */
-const over = (fg: string, bg: string, alpha: number) => { const [f, b] = [hex(fg), hex(bg)]; return '#' + f.map((c, i) => Math.round(c * alpha + b[i] * (1 - alpha)).toString(16).padStart(2, '0')).join('') }
 
 function vars(css: string, selector: string): Record<string, string> {
   const start = css.indexOf(`${selector} {`)
@@ -25,10 +23,10 @@ const themes = { light: vars(tokensCss, ':root'), dark: vars(tokensCss, ':root.d
 
 // [foreground token, background token, what it is]
 const TEXT: [string, string, string][] = [
-  ['ink', 'bg', 'body text'], ['ink', 'surface', 'text on cards'], ['ink', 'sand', 'text on sand bands'],
+  ['ink', 'bg', 'body text'], ['ink', 'surface', 'text on cards'], ['ink', 'sand', 'text on sand bands'], ['ink', 'desk', 'text on the pale butter desk'],
   ['ink-strong', 'bg', 'headings'], ['ink-strong', 'sand', 'headings on sand'],
-  ['ink-muted', 'bg', 'secondary text'], ['ink-muted', 'surface', 'secondary text on cards'], ['ink-muted', 'sand', 'secondary text on sand'],
-  ['accent-text', 'bg', 'orange text on page'], ['accent-text', 'sand', 'orange text on sand'], ['accent-text', 'accent-tint', 'orange text on its tint'],
+  ['ink-muted', 'bg', 'secondary text'], ['ink-muted', 'surface', 'secondary text on cards'], ['ink-muted', 'sand', 'secondary text on sand'], ['ink-muted', 'desk', 'secondary text on the desk'],
+  ['accent-text', 'bg', 'accent text on page'], ['accent-text', 'sand', 'accent text on sand'], ['accent-text', 'accent-tint', 'accent text on its tint'],
   ['on-accent', 'accent', 'text on filled buttons'],
   ['danger', 'bg', 'error text'], ['danger', 'danger-soft', 'error text on its tint'],
   ['success', 'bg', 'success text'], ['success', 'success-soft', 'success text on its tint'],
@@ -57,19 +55,20 @@ describe('text contrast meets WCAG AA (4.5:1) from the real tokens', () => {
     }
   })
 
-  it('white text on the orange closing band is solid white: at 90% it falls to 4.2:1, below AA', () => {
-    const bg = themes.light.accent
-    expect(ratio('#ffffff', bg)).toBeGreaterThanOrEqual(4.5)
-    expect(ratio(over('#ffffff', bg, 0.9), bg)).toBeLessThan(4.5) // why it is not translucent
+  it('amber is a fill, never text: it cannot carry text on white, so the accent text token is the darker ochre', () => {
+    expect(ratio(themes.light.accent, '#ffffff')).toBeLessThan(3)
+    expect(ratio(themes.light['accent-text'], '#ffffff')).toBeGreaterThanOrEqual(4.5)
   })
 
-  it('the hand-drawn orange button text on white, in the final band', () => {
-    expect(ratio(themes.light['accent-hover'], '#ffffff')).toBeGreaterThanOrEqual(4.5)
+  it('charcoal text on amber fills reaches AA in both themes (white on amber would not)', () => {
+    for (const theme of ['light', 'dark'] as const) expect(ratio(themes[theme]['on-accent'], themes[theme].accent)).toBeGreaterThanOrEqual(4.5)
+    expect(ratio('#ffffff', themes.light.accent)).toBeLessThan(4.5)
   })
 
   it('the outline of a text field reaches 3:1 on every surface it can sit on (WCAG 1.4.11)', () => {
     for (const [theme, v] of Object.entries(themes)) {
-      for (const surface of ['bg', 'surface', 'sand'] as const) {
+      for (const surface of ['bg', 'surface', 'desk', 'sand'] as const) {
+        if (!v[surface]) continue
         const r = ratio(v['control-border'], v[surface])
         expect(r, `${theme}: control border on ${surface} is ${r.toFixed(2)}:1`).toBeGreaterThanOrEqual(3)
       }

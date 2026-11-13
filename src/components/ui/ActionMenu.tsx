@@ -54,7 +54,7 @@ export function ActionMenu({ label, items }: { label: string; items: MenuItem[] 
         ref={trigger} type="button" aria-label={label} aria-haspopup="menu" aria-expanded={open} aria-controls={open ? id : undefined}
         onClick={() => (open ? close(false) : setOpen(true))}
         onKeyDown={(e) => { if (e.key === 'ArrowDown' && !open) { e.preventDefault(); setOpen(true) } }}
-        className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-ink-muted hover:bg-sand hover:text-ink-strong aria-expanded:bg-sand aria-expanded:text-ink-strong"
+        className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-ink-muted hover:bg-sand hover:text-ink-strong aria-expanded:bg-sand aria-expanded:text-ink-strong"
       >
         <EllipsisVertical size={18} aria-hidden="true" />
       </button>
@@ -68,7 +68,7 @@ export function ActionMenu({ label, items }: { label: string; items: MenuItem[] 
             <button
               key={it.label} type="button" role="menuitem" tabIndex={-1} disabled={it.disabled}
               onClick={() => { setOpen(false); trigger.current?.focus({ preventScroll: true }); it.onSelect() }}
-              className={`flex h-9 w-full cursor-pointer items-center gap-2.5 rounded-lg px-3 text-left text-[14px] font-semibold focus:outline-none focus-visible:bg-sand disabled:cursor-not-allowed disabled:opacity-50 ${it.danger ? 'text-danger hover:bg-danger-soft focus-visible:bg-danger-soft' : 'text-ink-strong hover:bg-sand'}`}
+              className={`flex h-9 w-full cursor-pointer items-center gap-2.5 rounded-full px-3 text-left text-[14px] font-semibold focus:outline-none focus-visible:bg-sand disabled:cursor-not-allowed disabled:opacity-50 ${it.danger ? 'text-danger hover:bg-danger-soft focus-visible:bg-danger-soft' : 'text-ink-strong hover:bg-sand'}`}
             >
               <span className="shrink-0 text-ink-muted" aria-hidden="true">{it.icon}</span>{it.label}
             </button>

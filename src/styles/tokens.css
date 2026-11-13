@@ -1,27 +1,29 @@
 /*
- * Aemora design tokens. Inherited from the Yedara system (DESIGN.md):
- * warm white/sand grounds, hairline borders, one burnt-orange voice, Manrope.
- * Tool surfaces use app density (14px base) with #444444 body text.
+ * Aemora design tokens. Taken from the SiteNest "Butter" system (DESIGN.md):
+ * white paper, pale butter desk, butter hairlines, one amber voice, Newsreader + DM Sans.
+ * Amber is a fill; text that carries the accent uses --accent-text (ochre). Text on amber is charcoal.
+ * Tool surfaces use app density (14px base).
  */
 :root {
   --bg: #ffffff;
   --surface: #ffffff;
-  --sand: #f4f2ea;
-  --hairline: #e8ddc8;
-  --hairline-strong: #d6c7ab;
+  --desk: #fcfaf3;
+  --sand: #f8f4e4;
+  --hairline: #ece5cc;
+  --hairline-strong: #dccfa6;
   /* The outline of text fields, selects and textareas. It is the only thing that marks where a field is, so it must reach 3:1 (WCAG 1.4.11), unlike decorative dividers. */
   --control-border: #8a7f6e;
-  --ink: #444444;
-  --ink-strong: #2b2926;
-  --ink-muted: #6f6963;
-  --brand-ink: #444444;
-  --sidebar: #f4f2ea;
-  --sidebar-border: #e8ddc8;
-  --accent: #c74504;
-  --accent-hover: #a93a03;
-  --accent-text: #a93a03;
-  --accent-tint: #fdefe7;
-  --on-accent: #ffffff;
+  --ink: #4d4a4d;
+  --ink-strong: #353335;
+  --ink-muted: #6b6b6b;
+  --brand-ink: #353335;
+  --sidebar: #fcfaf3;
+  --sidebar-border: #ece5cc;
+  --accent: #e8b923;
+  --accent-hover: #d4a615;
+  --accent-text: #826400;
+  --accent-tint: #faf4df;
+  --on-accent: #353335;
   --success: #146c43;
   --success-soft: #e6f4ec;
   --warning: #8a5a00;
@@ -34,23 +36,24 @@
 }
 
 :root.dark {
-  --bg: #12100e;
-  --surface: #1c1916;
-  --sand: #27221e;
-  --hairline: #302a25;
-  --hairline-strong: #453d35;
-  --control-border: #7d7266;
-  --ink: #e7e2da;
-  --ink-strong: #faf7f2;
-  --ink-muted: #a8a097;
-  --brand-ink: #e7e0d6;
-  --sidebar: #181512;
-  --sidebar-border: #302a25;
-  --accent: #c74504;
-  --accent-hover: #dd5211;
-  --accent-text: #ff8a5c;
-  --accent-tint: #26130a;
-  --on-accent: #ffffff;
+  --bg: #141312;
+  --surface: #1c1b19;
+  --desk: #181716;
+  --sand: #262420;
+  --hairline: #2e2b26;
+  --hairline-strong: #433e35;
+  --control-border: #7d7569;
+  --ink: #e6e2da;
+  --ink-strong: #faf8f2;
+  --ink-muted: #a8a399;
+  --brand-ink: #ece8df;
+  --sidebar: #181716;
+  --sidebar-border: #2e2b26;
+  --accent: #e8b923;
+  --accent-hover: #f0c94a;
+  --accent-text: #f0c94a;
+  --accent-tint: #2a2410;
+  --on-accent: #353335;
   --success: #7ee2ab;
   --success-soft: #10281c;
   --warning: #f5c26b;
@@ -63,9 +66,13 @@
 }
 
 @theme inline {
-  --font-sans: "Manrope Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "DM Sans Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Newsreader Variable", Georgia, serif;
+  --font-weight-bold: 600;
+  --font-weight-extrabold: 600;
   --color-bg: var(--bg);
   --color-surface: var(--surface);
+  --color-desk: var(--desk);
   --color-sand: var(--sand);
   --color-sidebar: var(--sidebar);
   --color-sidebar-border: var(--sidebar-border);
@@ -89,9 +96,10 @@
   --color-danger-soft: var(--danger-soft);
   --color-info: var(--info);
   --color-info-soft: var(--info-soft);
-  --radius-sm: 4px;
-  --radius-md: 6px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
   --radius-lg: 8px;
   --radius-xl: 12px;
-  --radius-panel: 16px;
+  --radius-card: 20px;
+  --radius-panel: 20px;
 }

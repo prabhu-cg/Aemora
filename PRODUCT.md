@@ -38,7 +38,7 @@ Inputs: Figma REST API (personal access token held in memory for the session onl
 
 ## Brand Commitments
 
-Name: Aemora. Typeface Manrope. Primary accent #C74504. Main text #444444. Neutral backgrounds. Visual tokens are inherited from the user's Yedara project (https://github.com/prabhu-cg/Yedara, DESIGN.md): warm sand/white grounds, hairline borders, one burnt-orange accent, light and dark themes. Tool UI uses Yedara's app-density tokens with #444444 body text; landing page uses Yedara's marketing values.
+Name: Aemora. Typefaces Newsreader (headlines) and DM Sans (everything else). Primary accent amber #E8B923, used as a fill; accent text is ochre #826400. Main text charcoal #353335 (body #4D4A4D). White paper on a pale butter desk. Visual tokens come from the SiteNest design system (https://github.com/prabhu-cg/SiteNest/blob/main/DESIGN.md); the tokens live in `src/styles/tokens.css`.
 
 ## Evidence on Hand
 

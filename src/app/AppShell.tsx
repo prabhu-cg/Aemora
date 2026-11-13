@@ -14,7 +14,7 @@ export function AppShell() {
   useEffect(() => { void maybeAutoSnapshot().catch(() => undefined) }, [])
   return (
     <div className="min-h-dvh bg-bg">
-      <a href="#main-content" className="sr-only z-50 rounded-md bg-bg px-4 py-2 text-sm font-semibold focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:outline-2 focus:outline-accent-text">
+      <a href="#main-content" className="sr-only z-50 rounded-full bg-bg px-4 py-2 text-sm font-semibold focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:outline-2 focus:outline-accent-text">
         Skip to main content
       </a>
 
@@ -30,7 +30,7 @@ export function AppShell() {
       </aside>
 
       <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-hairline bg-bg/92 px-4 backdrop-blur lg:hidden">
-        <button type="button" onClick={() => setMenu(true)} aria-label="Open navigation" className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-ink hover:bg-sand">
+        <button type="button" onClick={() => setMenu(true)} aria-label="Open navigation" className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-ink hover:bg-sand">
           <Menu size={18} aria-hidden="true" />
         </button>
         <Link to="/" aria-label="Aemora home" className="rounded-lg"><Logo markClassName="size-7" /></Link>

@@ -31,7 +31,7 @@ function PointerHighlight({ children }: { children: string }) {
 
 function Section({ id, tone = 'white', children, label }: { id?: string; tone?: 'white' | 'sand'; children: React.ReactNode; label: string }) {
   return (
-    <section id={id} aria-label={label} className={tone === 'sand' ? 'border-y border-hairline bg-sand' : ''}>
+    <section id={id} aria-label={label} className={tone === 'sand' ? 'border-y border-hairline bg-desk' : ''}>
       <Frame className="py-20 sm:py-28">{children}</Frame>
     </section>
   )
@@ -98,7 +98,7 @@ export function Landing() {
           </nav>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Link to="/app/sample" className="hidden h-10 items-center rounded-lg px-3 text-[15px] font-semibold text-ink hover:bg-sand sm:inline-flex">Sample project</Link>
+            <Link to="/app/sample" className="hidden h-10 items-center rounded-full px-4 text-[15px] font-semibold text-ink hover:bg-sand sm:inline-flex">Sample project</Link>
             <Link to="/app" className={buttonClass('primary', 'md')}>Open the tool</Link>
           </div>
         </Frame>
@@ -116,7 +116,7 @@ export function Landing() {
                 Aemora turns a design component into a complete AEM Cloud Service dialog, mapped to Granite UI fields, arranged in tabs, previewed and written out as XML, and into the HTL, CSS and Sling Model to match. Deterministic, in your browser, with no AI and no backend.
               </p>
               <div className="mt-9 flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
-                <Link to="/app" className={`${buttonClass('primary', 'lg')} rounded-full`}>Open the tool<ArrowRight size={18} aria-hidden="true" /></Link>
+                <Link to="/app" className={`${buttonClass('primary', 'lg')}`}>Open the tool<ArrowRight size={18} aria-hidden="true" /></Link>
                 <Link to="/app/sample" className="text-[15px] font-semibold text-ink-muted underline-offset-4 hover:text-ink-strong hover:underline">See the sample project</Link>
               </div>
             </div>
@@ -269,13 +269,13 @@ export function Landing() {
           </div>
         </Section>
 
-        <section aria-label="Get started" className="bg-accent text-on-accent">
+        <section aria-label="Get started" className="border-t border-hairline bg-desk">
           <Frame className="py-20 text-center sm:py-24">
-            <h2 className="mx-auto max-w-[20ch] text-[clamp(2rem,4.6vw,3.25rem)] leading-[1.05] tracking-[-0.03em] !text-on-accent">Try it on a real component.</h2>
-            <p className="mx-auto mt-4 max-w-[48ch] text-[1.125rem] text-on-accent">Bring in a component and have a dialog, and the markup to go with it, to review in a few minutes. Nothing to install or sign up for.</p>
+            <h2 className="mx-auto max-w-[20ch] text-[clamp(2rem,4.6vw,3.25rem)] leading-[1.05]">Try it on a real component.</h2>
+            <p className="mx-auto mt-4 max-w-[48ch] text-[1.125rem] text-ink">Bring in a component and have a dialog, and the markup to go with it, to review in a few minutes. Nothing to install or sign up for.</p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <Link to="/app" className="inline-flex h-11 items-center rounded-lg bg-white px-6 text-sm font-bold text-accent-hover hover:bg-white/90 focus-visible:!outline-white">Open the tool</Link>
-              <Link to="/app/sample" className="inline-flex h-11 items-center rounded-lg border border-white/70 px-6 text-sm font-bold text-on-accent hover:bg-white/10 focus-visible:!outline-white">Open the sample project</Link>
+              <Link to="/app" className={buttonClass('primary', 'md')}>Open the tool</Link>
+              <Link to="/app/sample" className={buttonClass('outline', 'md')}>Open the sample project</Link>
             </div>
           </Frame>
         </section>

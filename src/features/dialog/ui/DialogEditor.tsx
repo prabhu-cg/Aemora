@@ -33,7 +33,7 @@ interface Props {
   readOnly?: boolean
 }
 
-const iconBtn = 'inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-ink-muted hover:bg-ink-strong/5 hover:text-ink-strong disabled:opacity-30 disabled:pointer-events-none cursor-pointer'
+const iconBtn = 'inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-ink-muted hover:bg-ink-strong/5 hover:text-ink-strong disabled:opacity-30 disabled:pointer-events-none cursor-pointer'
 const titleInput = 'h-8 min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-2 font-extrabold tracking-tight text-ink-strong hover:border-hairline-strong focus:border-hairline-strong aria-[invalid=true]:border-danger'
 
 export function DialogEditor(p: Props) {

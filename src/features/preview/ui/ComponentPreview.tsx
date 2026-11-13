@@ -91,7 +91,7 @@ export function ComponentPreview({ project, component, fields, dialog }: { proje
             <span role="group" aria-label="State" className="flex flex-wrap gap-1">
               {[{ id: 'default' as PreviewState, label: 'Default' }, ...states].map((s) => (
                 <button key={s.id} type="button" aria-pressed={shownState === s.id} onClick={() => setState(s.id)}
-                  className={`h-7 cursor-pointer rounded-md border px-2 text-[12px] font-bold ${shownState === s.id ? 'border-accent bg-accent-tint text-accent-text' : 'border-hairline-strong bg-surface text-ink hover:bg-sand'}`}>{s.label}</button>
+                  className={`h-7 cursor-pointer rounded-full border px-2 text-[12px] font-bold ${shownState === s.id ? 'border-accent bg-accent-tint text-accent-text' : 'border-hairline-strong bg-surface text-ink hover:bg-sand'}`}>{s.label}</button>
               ))}
             </span>
           )}
@@ -103,7 +103,7 @@ export function ComponentPreview({ project, component, fields, dialog }: { proje
           <button
             type="button" aria-pressed={bg === 'dark'} aria-label="Dark background" title={bg === 'dark' ? 'Dark background on' : 'Dark background off'}
             onClick={() => setBg((b) => (b === 'dark' ? 'light' : 'dark'))}
-            className={`inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border ${bg === 'dark' ? 'border-ink-strong bg-ink-strong text-surface' : 'border-hairline-strong bg-surface text-ink hover:bg-sand'}`}
+            className={`inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border ${bg === 'dark' ? 'border-ink-strong bg-ink-strong text-surface' : 'border-hairline-strong bg-surface text-ink hover:bg-sand'}`}
           >{bg === 'dark' ? <Moon size={14} aria-hidden="true" /> : <Sun size={14} aria-hidden="true" />}</button>
         </div>
       </div>
@@ -153,7 +153,7 @@ function Control({ property: p, value, onChange }: { property: Property; value: 
   const field = 'mt-1 w-full rounded-lg border border-hairline-strong bg-surface px-3 text-[13px] font-normal'
   if (p.type === 'boolean') {
     return (
-      <label className={`inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg border px-3 text-[13px] font-bold ${value === true ? 'border-accent bg-accent-tint text-accent-text' : 'border-hairline-strong bg-surface text-ink-strong hover:bg-sand'}`}>
+      <label className={`inline-flex h-9 cursor-pointer items-center gap-2 rounded-full border px-3 text-[13px] font-bold ${value === true ? 'border-accent bg-accent-tint text-accent-text' : 'border-hairline-strong bg-surface text-ink-strong hover:bg-sand'}`}>
         <input type="checkbox" checked={value === true} onChange={(e) => onChange(e.target.checked)} />{p.label}
       </label>
     )

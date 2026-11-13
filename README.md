@@ -90,4 +90,4 @@ What automation cannot tell you: whether the dialogs and markup work in AEM (see
 
 ## Design
 
-Tokens and tone are inherited from the Yedara design system: warm white and sand grounds, hairline rules, one orange accent, Manrope. See [DESIGN.md](DESIGN.md) and [PRODUCT.md](PRODUCT.md).
+Tokens and tone come from the SiteNest design system: white paper on a pale butter desk, butter hairlines, one amber accent, Newsreader and DM Sans. See [DESIGN.md](DESIGN.md) and [PRODUCT.md](PRODUCT.md).
