@@ -8,7 +8,7 @@ web
 
 ## Stack
 
-Specified by the user's brief: React, TypeScript, Vite, Tailwind CSS, Dexie (IndexedDB), Zod, dnd-kit, Monaco (or equivalent) XML editor. One Vite app with two surfaces: marketing landing at `/` and the tool at `/app` (hash routing so it works on static hosts). Static deploy only; Vercel or GitHub Pages decided in the final chunk. Repo: https://github.com/prabhu-cg/Aemora.git (commit per chunk to main).
+Specified by the user's brief: React, TypeScript, Vite, Tailwind CSS, Dexie (IndexedDB), Zod, dnd-kit, Monaco (or equivalent) XML editor. One Vite app with two surfaces: marketing landing at `/` and the tool at `/app` (hash routing so it works on static hosts). Static deploy only, on Vercel. Repo: https://github.com/prabhu-cg/Aemora.git (commit per chunk to main).
 
 ## Users
 
@@ -34,15 +34,23 @@ Inputs: Figma REST API (personal access token held in memory for the session onl
 - Screenshots do not provide reliable Figma metadata; no OCR or AI.
 - Figma tokens never persisted, exported, or logged.
 - V1 scope only: no shared component definitions or cross-instance sync (V2).
-- Undecided: production hosting target (Vercel vs GitHub Pages).
+- Hosting: Vercel (production at https://aemora.vercel.app), deployed from `main` through the Git integration.
 
 ## Brand Commitments
 
-Name: Aemora. Typefaces Newsreader (headlines) and DM Sans (everything else). Primary accent amber #E8B923, used as a fill; accent text is ochre #826400. Main text charcoal #353335 (body #4D4A4D). White paper on a pale butter desk. Visual tokens come from the SiteNest design system (https://github.com/prabhu-cg/SiteNest/blob/main/DESIGN.md); the tokens live in `src/styles/tokens.css`.
+Name: Aemora. The visual identity is the SiteNest "Butter" system (https://github.com/prabhu-cg/SiteNest/blob/main/DESIGN.md), applied to both the marketing site and the tool. Tokens live in `src/styles/tokens.css`; the rules are in `DESIGN.md`.
+
+- **Colour:** white paper on a pale butter desk (#FCFAF3), butter hairlines, one amber accent (#E8B923). Amber is a fill, never text; accent text is ochre (#826400), and text on amber is charcoal (#353335), never white. Body text is #4D4A4D.
+- **Type:** Newsreader for headlines (h1, h2), DM Sans for everything else; both self-hosted.
+- **Shape:** every button is a full pill; inputs 12px; landing cards and panels 20px.
+- **Selection:** a selected tab, row, list item or segment takes the butter tint with ochre or charcoal text. Never a grey fill.
+- **Themes:** light and dark only, light by default; no "system" option. Dark is a warm charcoal ramp (#141312), never neutral grey.
+- **Logo:** the Aemora mark with an amber stroke and a charcoal letterform (it follows the theme in dark mode).
+- The simulated AEM dialog preview keeps Adobe-style blue on purpose; it imitates AEM, not the brand.
 
 ## Evidence on Hand
 
-No customers, testimonials, statistics, pricing, or AEM-environment test results exist. Landing page must not fabricate any. Real product screenshots become available only once the tool is built; until then, labelled authored previews with sample data.
+No customers, testimonials, statistics, pricing, or AEM-environment test results exist. Landing page must not fabricate any. The landing page's laptop screenshots (`src/marketing/assets/app-light.webp`, `app-dark.webp`) are real captures of the tool on the built-in sample project, and must be retaken whenever the visible chrome changes.
 
 ## Product Principles
 

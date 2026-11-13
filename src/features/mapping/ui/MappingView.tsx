@@ -55,7 +55,7 @@ export function MappingView({ component, fields, issues, selectedId, onSelect, o
           const errors = mine.filter((i) => i.level === 'error')
           const warn = fieldTypeWarning(p, f.fieldType)
           return (
-            <li key={f.propertyId} className={`flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-hairline px-2 py-2 first:border-t-0 ${f.propertyId === selectedId ? 'bg-ink-strong/5' : 'hover:bg-ink-strong/[0.03]'}`}>
+            <li key={f.propertyId} className={`flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-hairline px-2 py-2 first:border-t-0 ${f.propertyId === selectedId ? 'bg-accent-tint' : 'hover:bg-sand'}`}>
               <button type="button" onClick={() => onSelect(f.propertyId)} aria-pressed={f.propertyId === selectedId} aria-label={`Configure ${f.label || f.key}`}
                 className="flex min-w-0 flex-1 basis-56 cursor-pointer flex-wrap items-center gap-x-3 gap-y-0.5 text-left">
                 <span className="min-w-0 basis-40 truncate font-bold text-ink-strong">{f.label || f.key}</span>

@@ -21,7 +21,7 @@ export function ComponentsPage() {
                   const errors = validateComponent(c).filter((i) => i.level === 'error').length
                   return (
                     <li key={c.id}>
-                      <Link to={`/app/generator/${p.id}`} className="flex flex-wrap items-center gap-3 py-2.5 hover:bg-ink-strong/[0.03]">
+                      <Link to={`/app/generator/${p.id}`} className="flex flex-wrap items-center gap-3 py-2.5 hover:bg-sand">
                         <strong className="text-ink-strong">{c.name || 'Untitled component'}</strong>
                         <span className="rounded-md bg-sand px-1.5 py-0.5 text-[12px] font-bold text-ink">{c.type}</span>
                         <span className="tabular text-[13px] text-ink-muted">{c.properties.length} properties</span>

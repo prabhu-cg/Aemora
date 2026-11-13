@@ -33,7 +33,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
                   to={to}
                   end={end}
                   onClick={onNavigate}
-                  className={({ isActive }) => `${item} ${isActive ? 'bg-ink-strong/5 font-semibold text-ink-strong' : 'text-ink-muted hover:bg-ink-strong/5 hover:text-ink-strong'}`}
+                  className={({ isActive }) => `${item} ${isActive ? 'bg-accent-tint font-semibold text-ink-strong' : 'text-ink-muted hover:bg-sand hover:text-ink-strong'}`}
                 >
                   <Icon aria-hidden="true" className="size-4 shrink-0" />
                   <span className="flex-1 truncate">{label}</span>

@@ -45,7 +45,7 @@ function Row({ property: p, index, last, issues, selected, onSelect, onMove, rea
     <li
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={`flex items-center gap-1 border-t border-hairline first:border-t-0 ${selected ? 'bg-ink-strong/5' : 'bg-bg hover:bg-ink-strong/[0.03]'} ${isDragging ? 'relative z-10 shadow-[0_8px_24px_-6px_#1010141f]' : ''}`}
+      className={`flex items-center gap-1 border-t border-hairline first:border-t-0 ${selected ? 'bg-accent-tint' : 'bg-bg hover:bg-sand'} ${isDragging ? 'relative z-10 shadow-[0_8px_24px_-6px_#1010141f]' : ''}`}
     >
       <button ref={setActivatorNodeRef} type="button" disabled={readOnly} className={`${iconBtn} cursor-grab touch-none`} aria-label={`Reorder ${p.label}. Press space, then use the arrow keys.`} {...attributes} {...listeners}>
         <GripVertical size={16} aria-hidden="true" />

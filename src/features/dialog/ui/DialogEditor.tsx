@@ -33,7 +33,7 @@ interface Props {
   readOnly?: boolean
 }
 
-const iconBtn = 'inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-ink-muted hover:bg-ink-strong/5 hover:text-ink-strong disabled:opacity-30 disabled:pointer-events-none cursor-pointer'
+const iconBtn = 'inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-ink-muted hover:bg-sand hover:text-ink-strong disabled:opacity-30 disabled:pointer-events-none cursor-pointer'
 const titleInput = 'h-8 min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-2 font-extrabold tracking-tight text-ink-strong hover:border-hairline-strong focus:border-hairline-strong aria-[invalid=true]:border-danger'
 
 export function DialogEditor(p: Props) {
@@ -253,7 +253,7 @@ function FieldRow({ propertyId, container, first, last, byId, issuesOf, selected
   const name = f.label || f.key
   return (
     <li ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={`flex items-center gap-1 rounded-md ${propertyId === selectedId ? 'bg-ink-strong/5' : 'hover:bg-ink-strong/[0.03]'} ${isDragging ? 'relative z-10 bg-bg shadow-[0_8px_24px_-6px_#1010141f]' : ''}`}>
+      className={`flex items-center gap-1 rounded-md ${propertyId === selectedId ? 'bg-accent-tint' : 'hover:bg-sand'} ${isDragging ? 'relative z-10 bg-bg shadow-[0_8px_24px_-6px_#1010141f]' : ''}`}>
       <button ref={setActivatorNodeRef} type="button" disabled={ro} className={`${iconBtn} cursor-grab touch-none`} aria-label={`Reorder ${name}. Press space, then use the arrow keys.`} {...attributes} {...listeners}><GripVertical size={16} aria-hidden="true" /></button>
       <button type="button" onClick={() => onSelect(propertyId)} aria-pressed={propertyId === selectedId} aria-label={`Select ${name}`} className="flex min-w-0 flex-1 cursor-pointer flex-wrap items-center gap-x-3 gap-y-0.5 py-2 pr-1 text-left">
         <span className="min-w-0 basis-32 truncate font-bold text-ink-strong">{name}</span>

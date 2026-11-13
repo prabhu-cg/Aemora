@@ -161,7 +161,7 @@ export function ComponentWorkspace({ project, readOnly = false, focus }: { proje
                 <button
                   type="button" aria-current={c.id === component.id ? 'true' : undefined}
                   onClick={() => { setSelectedId(c.id); setPropId(''); setUndo(null); setConfirmDelete(false) }}
-                  className={`flex w-full cursor-pointer items-center justify-between gap-2 rounded-md py-2 pl-3 text-left text-sm font-medium ${readOnly ? 'pr-3' : 'pr-10'} ${c.id === component.id ? 'bg-ink-strong/5 font-semibold text-ink-strong' : 'text-ink-muted hover:bg-ink-strong/5 hover:text-ink-strong'}`}
+                  className={`flex w-full cursor-pointer items-center justify-between gap-2 rounded-md py-2 pl-3 text-left text-sm font-medium ${readOnly ? 'pr-3' : 'pr-10'} ${c.id === component.id ? 'bg-accent-tint font-semibold text-ink-strong' : 'text-ink-muted hover:bg-sand hover:text-ink-strong'}`}
                 >
                   <span className="truncate">{c.name}</span>
                   <span className={`tabular text-[12px] ${n ? 'text-danger' : 'text-ink-muted'}`}>{n ? `${n} to fix` : c.properties.length}</span>
@@ -288,10 +288,10 @@ export function ComponentWorkspace({ project, readOnly = false, focus }: { proje
           </div>
         ) : view === 'preview' ? (
           <div role="tabpanel" className="mt-4">
-            <div role="group" aria-label="Preview type" className="mb-4 inline-flex rounded-lg border border-hairline-strong p-0.5">
+            <div role="group" aria-label="Preview type" className="mb-4 inline-flex rounded-full border border-hairline bg-desk p-1">
               {([['component', 'Component'], ['dialog', 'Dialog']] as const).map(([id, label]) => (
                 <button key={id} type="button" aria-pressed={previewMode === id} onClick={() => setPreviewMode(id)}
-                  className={`h-8 cursor-pointer rounded-full px-3 text-[13px] font-bold ${previewMode === id ? 'bg-ink-strong/10 text-ink-strong' : 'text-ink-muted hover:text-ink-strong'}`}>{label}</button>
+                  className={`h-8 cursor-pointer rounded-full px-4 text-[13px] font-semibold ${previewMode === id ? 'bg-accent-tint text-accent-text' : 'text-ink-muted hover:text-ink-strong'}`}>{label}</button>
               ))}
             </div>
             {previewMode === 'component'
